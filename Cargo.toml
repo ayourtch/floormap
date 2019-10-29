@@ -37,4 +37,7 @@ hyper = "*"
 params = "*"
 
 uuid = { version = "0.7", features = ["v4"] }
+mustache = "*"
+urlencoded = "*"
+
 

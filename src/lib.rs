@@ -4,6 +4,12 @@ extern crate chrono;
 extern crate dotenv;
 
 #[macro_use]
+extern crate iron;
+
+#[macro_use]
+extern crate hyper;
+
+#[macro_use]
 extern crate serde_derive;
 
 extern crate serde;
@@ -27,6 +33,9 @@ use std::io::{Error, ErrorKind};
 pub mod apiv1;
 pub mod models;
 pub mod schema;
+
+#[macro_use]
+pub mod template;
 
 pub fn sqlite3_establish_connection() -> SqliteConnection {
     dotenv().ok();
