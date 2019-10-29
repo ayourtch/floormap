@@ -1,4 +1,3 @@
-
 use iron::prelude::*;
 use iron::status;
 
@@ -19,7 +18,6 @@ pub struct ApiV1ServiceRecord {
     pub ServiceLabel: String,
     pub MenuOrder: i32,
 }
-
 
 pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     use super::schema::Services::dsl::*;
@@ -45,5 +43,3 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
         .collect();
     new_results
 }
-
-

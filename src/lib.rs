@@ -14,7 +14,6 @@ extern crate r2d2_diesel;
 #[macro_use]
 extern crate lazy_static;
 
-
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
@@ -25,12 +24,9 @@ use std::env;
 
 use std::io::{Error, ErrorKind};
 
-
+pub mod apiv1;
 pub mod models;
 pub mod schema;
-pub mod apiv1;
-
-
 
 pub fn sqlite3_establish_connection() -> SqliteConnection {
     dotenv().ok();
@@ -68,10 +64,6 @@ pub fn uncached_establish_connection() -> DB_CONN_TYPE {
     sqlite3_establish_connection()
 }
 
-
-
-
-
 pub fn create_db_pool() -> Pool<ConnectionManager<DB_CONN_TYPE>> {
     dotenv().ok();
 
@@ -104,7 +96,28 @@ impl DB {
     }
 }
 
+macro_rules! db_insert_returning {
+    ( $tbl: ident, $rec: expr, $retfield: ident, $typ: ty ) => {{
+        let db = get_db();
+        #[cfg(feature = "floormap_postgres")]
+        let inserted_id: std::result::Result<$typ, diesel::result::Error> =
+            diesel::insert_into(schema::$tbl::dsl::$tbl)
+                .values($rec)
+                .returning(schema::$tbl::dsl::$retfield)
+                .get_result(db.conn());
 
+        #[cfg(feature = "floormap_sqlite")]
+        let inserted_id: std::result::Result<_, diesel::result::Error> = {
+            panic!("sqlite3 backend does not support insertion fully. FIXME");
+            diesel::insert_into(schema::$tbl::dsl::$tbl)
+                .values($rec)
+                .execute(db.conn());
+            // FIXME SQLITE3
+            Ok(-1)
+        };
+        inserted_id
+    }};
+}
 
 pub fn get_db() -> DB {
     use std::thread;
@@ -124,5 +137,3 @@ pub fn get_db() -> DB {
         }
     }
 }
-
-

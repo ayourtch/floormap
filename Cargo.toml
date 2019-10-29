@@ -36,3 +36,5 @@ serde_json = "*"
 hyper = "*"
 params = "*"
 
+uuid = { version = "0.7", features = ["v4"] }
+
