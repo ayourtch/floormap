@@ -91,5 +91,6 @@ fn main() {
         read: Some(Duration::from_secs(10)),
         write: Some(Duration::from_secs(10)),
     };
-    iron.http("127.0.0.1:4242").unwrap();
+    //iron.http("127.0.0.1:4242").unwrap();
+    iron.http("0.0.0.0:4242").unwrap();
 }
