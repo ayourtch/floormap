@@ -135,14 +135,14 @@ fn main() {
         let db = get_db();
         use uuid::Uuid;
         let my_uuid = Uuid::new_v4();
-        let rand_uuid = format!("{}", my_uuid);
 
         let svc = Service {
-            ServiceUUID: rand_uuid,
+            // ServiceUUID: rand_uuid, -- set by default
             MenuOrder: 0,
             Deleted: false,
             ServiceName: "SomeName".to_owned(),
             ServiceLabel: "SomeName".to_owned(),
+            ..Default::default()
         };
 
         // let inserted_id: std::result::Result<_, diesel::result::Error> = {

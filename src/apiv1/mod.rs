@@ -15,7 +15,7 @@ use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1ServiceRecord {
-    pub ServiceUUID: String,
+    pub ServiceUUID: flexuuid::FlexUuid,
     pub ServiceName: String,
     pub ServiceLabel: String,
     pub MenuOrder: i32,

@@ -38,6 +38,7 @@ use std::io::{Error, ErrorKind};
 
 pub mod apiv1;
 pub mod flextimestamp;
+pub mod flexuuid;
 pub mod models;
 pub mod schema;
 

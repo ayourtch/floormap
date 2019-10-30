@@ -1,4 +1,5 @@
 use super::flextimestamp::FlexTimestamp;
+use super::flexuuid::FlexUuid;
 use crate::schema;
 use chrono;
 use diesel;
@@ -13,7 +14,7 @@ use std;
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "Comments"]
 pub struct Comment {
-    pub RecordUUID: String,
+    pub RecordUUID: FlexUuid,
     pub Deleted: bool,
     pub ChangesetID: i32,
     pub CommentID: i32,
@@ -23,7 +24,7 @@ pub struct Comment {
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "FloorMaps"]
 pub struct FloorMap {
-    pub FloorMapUUID: String,
+    pub FloorMapUUID: FlexUuid,
     pub Deleted: bool,
     pub Name: String,
     pub Description: String,
@@ -33,7 +34,7 @@ pub struct FloorMap {
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "Jobs"]
 pub struct Job {
-    pub RecordUUID: String,
+    pub RecordUUID: FlexUuid,
     pub JobGrouName: String,
     pub InstanceID: i32,
     pub JobID: String,
@@ -57,11 +58,11 @@ pub struct Job {
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "MapObjects"]
 pub struct MapObject {
-    pub ObjectUUID: String,
+    pub ObjectUUID: FlexUuid,
     pub Deleted: bool,
     pub Name: String,
     pub Description: String,
-    pub ParentMapUUID: String,
+    pub ParentMapUUID: FlexUuid,
     pub MapX: i32,
     pub MapY: i32,
     pub UpdatedAt: FlexTimestamp,
@@ -71,7 +72,7 @@ pub struct MapObject {
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "Services"]
 pub struct Service {
-    pub ServiceUUID: String,
+    pub ServiceUUID: FlexUuid,
     pub Deleted: bool,
     pub MenuOrder: i32,
     pub ServiceName: String,
