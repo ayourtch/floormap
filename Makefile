@@ -5,9 +5,12 @@ install-rust:
 	sudo apt-get install -y libssl-dev pkg-config moreutils libpq-dev libsqlite3-dev
 	source ~/.cargo/env && cargo install diesel_cli --no-default-features --features postgres,sqlite
 	mkdir db
-	source ~/.cargo/env && diesel setup --database-url db/floor.sqlite3
+	source ~/.cargo/env
 	echo To finish Rust installation, please logout and login back
-regen-db:
+db/floor.sqlite3:
+	diesel setup --database-url db/floor.sqlite3
+
+regen-db: db/floor.sqlite3
 	diesel migration redo --database-url db/floor.sqlite3
 	rustfmt src/schema.rs
 	./dev-scripts/print-model >src/models.rs
