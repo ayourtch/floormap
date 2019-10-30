@@ -1,6 +1,6 @@
 default: regen-db sqlite
 install-rust:
-	sudo apt-get install -y make build-essential git
+	sudo apt-get install -y make build-essential git jsbeautifier
 	curl https://sh.rustup.rs -sSf | sh -s -- -y
 	sudo apt-get install -y libssl-dev pkg-config moreutils libpq-dev libsqlite3-dev
 	source ~/.cargo/env && cargo install diesel_cli --no-default-features --features postgres,sqlite
@@ -21,6 +21,8 @@ sqlite:
 	cargo build --features floorplan_sqlite 
 clippy-sqlite:
 	cargo clippy --features floorplan_sqlite 
+js-beautify:
+	js-beautify -r templates/root.mustache
 
 
 
