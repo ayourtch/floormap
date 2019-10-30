@@ -83,6 +83,25 @@ function save_item_details() {
     selectedElement.innerText = txt.value;
 }
 
+function setSelectedElement(elmnt) {
+    if (selectedElement != undefined) {
+        selectedElement.classList.remove("sw1");
+        selectedElement.classList.add("sw0");
+    }
+    if (elmnt != undefined) {
+        elmnt.classList.remove("sw0");
+        elmnt.classList.add("sw1");
+        selectedElement = elmnt;
+        load_item_details(elmnt);
+        document.getElementById("new_item_details").classList.add("hidden_pane");
+        document.getElementById("existing_item_details").classList.remove("hidden_pane");
+    } else {
+        document.getElementById("existing_item_details").classList.add("hidden_pane");
+        document.getElementById("new_item_details").classList.remove("hidden_pane");
+        selectedElement = undefined;
+    }
+}
+
 function getJSON(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
@@ -237,21 +256,10 @@ function dragElement(elmnt) {
             return;
         }
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
-            if (selectedElement != undefined) {
-                selectedElement.classList.remove("sw1");
-                selectedElement.classList.add("sw0");
-            }
             if (selectedElement != elmnt) {
-                elmnt.classList.remove("sw0");
-                elmnt.classList.add("sw1");
-                selectedElement = elmnt;
-                load_item_details(elmnt);
-                document.getElementById("new_item_details").classList.add("hidden_pane");
-                document.getElementById("existing_item_details").classList.remove("hidden_pane");
+                setSelectedElement(elmnt)
             } else {
-                document.getElementById("existing_item_details").classList.add("hidden_pane");
-                document.getElementById("new_item_details").classList.remove("hidden_pane");
-                selectedElement = undefined;
+                setSelectedElement(undefined)
             }
         }
 
@@ -279,21 +287,10 @@ function dragElement(elmnt) {
             return;
         }
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
-            if (selectedElement != undefined) {
-                selectedElement.classList.remove("sw1");
-                selectedElement.classList.add("sw0");
-            }
             if (selectedElement != elmnt) {
-                elmnt.classList.remove("sw0");
-                elmnt.classList.add("sw1");
-                selectedElement = elmnt;
-                load_item_details(elmnt);
-                document.getElementById("new_item_details").classList.add("hidden_pane");
-                document.getElementById("existing_item_details").classList.remove("hidden_pane");
+                setSelectedElement(elmnt)
             } else {
-                document.getElementById("existing_item_details").classList.add("hidden_pane");
-                document.getElementById("new_item_details").classList.remove("hidden_pane");
-                selectedElement = undefined;
+                setSelectedElement(undefined)
             }
         }
         // get the mouse cursor position at startup:
