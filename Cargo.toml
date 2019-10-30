@@ -40,9 +40,4 @@ uuid = { version = "0.7", features = ["v4"] }
 mustache = "*"
 urlencoded = "*"
 
-rspten = { git = "https://github.com/ayourtch/rspten.git" }
-iron-sessionstorage = { git = "https://github.com/ayourtch/iron-sessionstorage.git" }
-
-
-
 

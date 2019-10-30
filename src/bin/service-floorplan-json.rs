@@ -35,12 +35,6 @@ extern crate serde_json;
 extern crate hyper;
 extern crate params;
 
-#[macro_use]
-extern crate rspten;
-
-#[macro_use]
-pub mod pages;
-
 use chrono::{NaiveDate, NaiveDateTime};
 
 pub fn build_response(template: mustache::Template, data: mustache::MapBuilder) -> iron::Response {
@@ -114,8 +108,7 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
 }
 
 fn main() {
-    // let mut router = Router::new();
-    let mut router = pages::get_router();
+    let mut router = Router::new();
 
     use mount::Mount;
     use staticfile::Static;
@@ -155,7 +148,25 @@ fn main() {
         Ok(Response::with((status::Ok, payload)))
     }
 
-    let mut s = rspten::RspServer::new();
+    let mut mount = Mount::new();
+    mount.mount("/", router);
+    mount.mount("/static/", Static::new(Path::new("staticfiles/")));
 
-    s.run(router, "test service", 4242);
+    use std::time::Duration;
+    // use iron::prelude::*;
+    //  use iron::status;
+    use iron::Timeouts;
+
+    let mut iron = Iron::new(mount);
+    iron.threads = 1;
+    iron.timeouts = Timeouts {
+        keep_alive: Some(Duration::from_secs(10)),
+        read: Some(Duration::from_secs(10)),
+        write: Some(Duration::from_secs(10)),
+    };
+
+    let port = 4242;
+    let bind_ip = std::env::var("BIND_IP").unwrap_or("127.0.0.1".to_string());
+    println!("HTTP server starting on {}:{}", &bind_ip, port);
+    iron.http(&format!("{}:{}", &bind_ip, port)).unwrap();
 }

@@ -5,8 +5,6 @@ extern crate dotenv;
 
 #[macro_use]
 extern crate iron;
-extern crate iron_sessionstorage;
-
 
 #[macro_use]
 extern crate hyper;
