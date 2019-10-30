@@ -53,7 +53,7 @@ pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> Vec<ApiV1MapObject> {
 
     let db = get_db();
     let results = MapObjects
-        .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+        // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
         .limit(2000)
         .load::<MapObject>(db.conn())
         .expect("Error loading services");

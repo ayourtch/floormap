@@ -77,6 +77,53 @@ function save_item_details() {
   selectedElement.innerText = txt.value;
 }
 
+function getJSON(url, callback) {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+      var status = xhr.status;
+      if (status === 200) {
+        callback(null, xhr.response);
+      } else {
+        callback(status, xhr.response);
+      }
+    };
+    xhr.send();
+}
+
+function get_item_id(jse) {
+	var el_id = "item_" + jse["ObjectUUID"].replace(/-/gi, "_");
+	return el_id;
+}
+
+function processJSON(err, data) {
+	if (err !== null) {
+		alert('Something went wrong: ' + err);
+	} else {
+		// alert('Your data: ' + data.length);
+  		for (var i = 0; i < data.length; i++) {
+			var jse = data[i];
+			var el_id = get_item_id(jse);
+			var el = document.getElementById(el_id);
+			if (el != null) {
+				update_item_jso(el, jse)
+			} else {
+				if (!jse["Deleted"]) {
+					add_item_jso(jse)
+				}
+			}
+
+		}
+  		setTimeout(JsonPollCycle, 1000);
+	}
+}
+
+function JsonPollCycle() {
+	var api_url = "/api/v1/mapobjects/get/json";
+	getJSON(api_url, processJSON);
+}
+
 function noop(e) {
       e.preventDefault();
 }
@@ -269,6 +316,7 @@ function add_item(e) {
 	var cnv = document.getElementById("floor_canvas");
 	var node = document.createElement("div");
 	node.classList.add("item")
+	node.classList.add("sw0");
 	node.style.top = next_y + "px";
 	node.id = "sw_" + next_number;
 	next_number = next_number + 1;
@@ -280,14 +328,47 @@ function add_item(e) {
 	dragElement(node)
 	document.getElementById("new_item").value = "new_item_" + next_number;
 }
+function add_item_jso(jso) {
+	var cnv = document.getElementById("floor_canvas");
+	var node = document.createElement("div");
+	node.classList.add("item")
+	node.classList.add("sw0");
+	node.style.top = jso["MapY"] + "px";
+	node.style.left = jso["MapX"] + "px";
+        var el_id = get_item_id(jso);
+	node.id = el_id;
+	var label = jso["Name"];
+	var textnode = document.createTextNode(label);
+	textnode.id = el_id + "_label";
+	node.appendChild(textnode);
+	cnv.appendChild(node);
+	dragElement(node)
+}
+
+function update_item_jso(node, jso) {
+	var cnv = document.getElementById("floor_canvas");
+	if (jso["Deleted"]) {
+	  node.outerHTML = "";
+	} else {
+	  if (selectedElement != node) {
+		node.style.top = jso["MapY"] + "px";
+		node.style.left = jso["MapX"] + "px";
+	  }
+	  var label = jso["Name"];
+	  node.innerText = label;
+	}  
+}
 
 	</script>
 	</head>
 	<body>
+		<input id="start_poll" type="button" value="start_poll"/>
 		<div class="img-overlay-wrap" id="floor_canvas">
 		  <img class="map" src="out-21.ppm.png"/>
+		  <!--
 		  <div id="sw_0" class="item" style="top: 0px; left: 0px">c3750-1</div>
 		  <div id="sw_1" class="item" style="top: 20px; left: 0px">S0052</div>
+		  -->
 		  <div id="control_panel" class="panel">
 		  	  <div id="new_item_details">
 				  <div class="draggable">Add new draggable item</div>
@@ -302,10 +383,16 @@ function add_item(e) {
 		  </div>
 		</div>
 	<script>
-dragElement(document.getElementById("sw_0"));
-dragElement(document.getElementById("sw_1"));
+// dragElement(document.getElementById("sw_0"));
+// dragElement(document.getElementById("sw_1"));
 dragElement(document.getElementById("control_panel"));
 document.getElementById("new_item_add").onclick=add_item;
+document.getElementById("start_poll").onclick=JsonPollCycle;
+document.onreadystatechange = function () {
+    if (document.readyState == "complete") {
+        JsonPollCycle();
+    }
+}
 	</script>
 	</body>
 </html>
