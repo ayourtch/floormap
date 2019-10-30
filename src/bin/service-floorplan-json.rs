@@ -127,6 +127,11 @@ fn main() {
         api_http_get_map_objects_for_map,
         "mapobjects-for-map",
     );
+    router.put(
+        "/api/v1/mapobjects/xy/put/json",
+        api_http_put_map_object_xy,
+        "set mapobjects-for-map",
+    );
     router.get("/", root_page, "root_page");
 
     fn insert_new_service() {
@@ -166,6 +171,30 @@ fn main() {
         let new_results = api_get_map_objects_for_map(map_uuid);
         let payload = serde_json::to_string(&new_results).unwrap();
         Ok(Response::with((status::Ok, payload)))
+    }
+    fn api_http_put_map_object_xy(req: &mut Request) -> IronResult<Response> {
+        use std::str::FromStr;
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1MapObjectSetXYRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    db_set_mapobject_xy(&o.MapObjectUUID, o.MapX, o.MapY).unwrap();
+                }
+                let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
+                let new_results = api_get_map_objects_for_map(map_uuid);
+                let payload = serde_json::to_string(&new_results).unwrap();
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
     }
 
     let mut mount = Mount::new();

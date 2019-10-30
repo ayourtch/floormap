@@ -23,6 +23,13 @@ pub struct ApiV1ServiceRecord {
 
 type ApiV1MapObject = MapObject;
 
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1MapObjectSetXYRecord {
+    pub MapObjectUUID: flexuuid::FlexUuid,
+    pub MapX: i32,
+    pub MapY: i32,
+}
+
 pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     use super::schema::Services::dsl::*;
 
@@ -63,4 +70,46 @@ pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> Vec<ApiV1MapObject> {
         .map(|x| ApiV1MapObject { ..x })
         .collect();
     new_results
+}
+
+pub fn db_set_mapobject_xy(
+    mapobject_uuid: &FlexUuid,
+    new_x: i32,
+    new_y: i32,
+) -> Result<bool, std::io::Error> {
+    use std::io::{Error, ErrorKind};
+    let res = db_get_mapobject(&mapobject_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!(
+                "port {} - error setting description: {:?}",
+                mapobject_uuid, e
+            );
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("map object {} - is locked", &mapobject_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+
+            use schema::MapObjects::dsl::*;
+            let db = get_db();
+            let updated_row_res = diesel::update(
+                MapObjects.filter(MapObjectUUID.eq(mapobject_uuid).and(Deleted.eq(false))),
+            )
+            .set((MapX.eq(new_x), MapY.eq(new_y)))
+            .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!("mapobject {} - error updating XY: {:?}", mapobject_uuid, e);
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
 }

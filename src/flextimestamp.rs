@@ -12,15 +12,13 @@ use serde;
 use std::fmt;
 
 // use serde::ser::{Serialize, Serializer, SerializeSeq, SerializeMap};
-use serde::{Serialize, Serializer, Deserialize, Deserializer, de, de::Error};
-
-
+use serde::{de, de::Error, Deserialize, Deserializer, Serialize, Serializer};
 
 // use diesel::sql_types::{Unsigned, Smallint};
 use diesel::sql_types::Timestamp;
 use std::io::Write;
 
-#[derive(AsExpression, FromSqlRow, PartialEq, Debug, Clone) ]
+#[derive(AsExpression, FromSqlRow, PartialEq, Debug, Clone)]
 #[sql_type = "Timestamp"]
 pub struct FlexTimestamp {
     Ndt: NaiveDateTime,
@@ -59,7 +57,6 @@ impl Serialize for FlexTimestamp {
     }
 }
 
-
 struct FlexTimestampVisitor;
 
 impl<'de> de::Visitor<'de> for FlexTimestampVisitor {
@@ -74,7 +71,7 @@ impl<'de> de::Visitor<'de> for FlexTimestampVisitor {
         E: de::Error,
     {
         match NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S.%f") {
-            Ok(t) => Ok(FlexTimestamp { Ndt: t} ),
+            Ok(t) => Ok(FlexTimestamp { Ndt: t }),
             Err(_) => Err(de::Error::invalid_value(de::Unexpected::Str(s), &self)),
         }
     }
@@ -88,7 +85,3 @@ impl<'de> Deserialize<'de> for FlexTimestamp {
         deserializer.deserialize_str(FlexTimestampVisitor)
     }
 }
-
-
-
-

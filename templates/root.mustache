@@ -119,8 +119,25 @@ function getJSON(url, callback) {
     xhr.send();
 }
 
+function putJSON(url, data, callback) {
+    var json = JSON.stringify(data);
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', url, true);
+    xhr.setRequestHeader('Content-type', 'application/json; charset=utf-8');
+    xhr.responseType = 'json';
+    xhr.onload = function() {
+        var status = xhr.status;
+        if (status === 200) {
+            callback(null, xhr.response);
+        } else {
+            callback(status, xhr.response);
+        }
+    };
+    xhr.send(json);
+}
+
 function get_item_id(jse) {
-    var el_id = "item_" + jse["ObjectUUID"].replace(/-/gi, "_");
+    var el_id = "item_" + jse["MapObjectUUID"].replace(/-/gi, "_");
     return el_id;
 }
 
@@ -140,15 +157,36 @@ function processJSON(err, data) {
                     add_item_jso(jse)
                 }
             }
-
         }
         setTimeout(JsonPollCycle, 1000);
     }
 }
 
+var api_root = "/api/";
+
 function JsonPollCycle() {
-    var api_url = "/api/v1/mapobjects/get/json";
+    var api_url = api_root + "v1/mapobjects/get/json";
     getJSON(api_url, processJSON);
+}
+
+function check_save(data) {}
+
+function SavePosition(node) {
+    var api_url = api_root + "v1/mapobjects/xy/put/json";
+    var cnv = document.getElementById("floor_canvas");
+    var cnv_rect = cnv.getBoundingClientRect();
+    var rect = node.getBoundingClientRect();
+    var data = new Object();
+    data["MapX"] = rect.left - cnv_rect.left;
+    data["MapY"] = rect.top - cnv_rect.top;
+    data["MapObjectUUID"] = node.uuid;
+    var arr = new Array();
+    arr[0] = data;
+    putJSON(api_url, arr, check_save);
+}
+
+function DragEnd(node) {
+    SavePosition(node);
 }
 
 function noop(e) {
@@ -160,6 +198,7 @@ function dragElement(elmnt) {
         pos2 = 0,
         pos3 = 0,
         pos4 = 0;
+    var elmnt_moved = false;
     if (document.getElementById(elmnt.id + "header")) {
         // if present, the header is where you move the DIV from:
         document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
@@ -212,6 +251,10 @@ function dragElement(elmnt) {
             document.ontouchend = null;
             document.ontouchcancel = null;
             document.ontouchmove = null;
+            if (elmnt_moved) {
+                DragEnd(elmnt);
+            }
+            elmnt_moved = false;
         }
     }
 
@@ -224,6 +267,10 @@ function dragElement(elmnt) {
             ongoingTouches.splice(idx, 1); // remove it; we're done
         }
         document.getElementById("new_item").value = "cancel touches: " + ongoingTouches.length;
+        if (elmnt_moved) {
+            DragEnd(elmnt);
+        }
+        elmnt_moved = false;
     }
 
     function handleMove(evt) {
@@ -244,6 +291,7 @@ function dragElement(elmnt) {
                 // set the element's new position:
                 elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                elmnt_moved = true;
                 ongoingTouches.splice(idx, 1, copyTouch(touches[i])); // swap in the new touch record
                 // document.getElementById("new_item").value = "Xove touches: " + elmnt.style.top + " " + elmnt.style.left; 
             }
@@ -274,6 +322,7 @@ function dragElement(elmnt) {
         document.ontouchmove = handleMove;
         pos3 = ongoingTouches[0].PageX;
         pos4 = ongoingTouches[0].PageY;
+        elmnt_moved = false;
 
         // get the mouse cursor position at startup:
         // document.onmouseup = closeDragElement;
@@ -301,6 +350,7 @@ function dragElement(elmnt) {
         document.onmouseup = closeDragElement;
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
+        elmnt_moved = false;
     }
 
     function elementDrag(e) {
@@ -314,12 +364,17 @@ function dragElement(elmnt) {
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        elmnt_moved = true;
     }
 
     function closeDragElement() {
         // stop moving when mouse button is released:
+        if (elmnt_moved) {
+            DragEnd(elmnt);
+        }
         document.onmouseup = null;
         document.onmousemove = null;
+        elmnt_moved = false;
     }
 }
 
@@ -352,6 +407,7 @@ function add_item_jso(jso) {
     node.style.left = jso["MapX"] + "px";
     var el_id = get_item_id(jso);
     node.id = el_id;
+    node.uuid = jso["MapObjectUUID"];
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
     textnode.id = el_id + "_label";
@@ -412,3 +468,6 @@ document.onreadystatechange = function () {
 	</script>
 	</body>
 </html>
+<!--
+/* beautify ignore:end*/
+-->

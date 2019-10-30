@@ -58,8 +58,13 @@ pub struct Job {
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "MapObjects"]
 pub struct MapObject {
-    pub ObjectUUID: FlexUuid,
+    pub MapObjectUUID: FlexUuid,
     pub Deleted: bool,
+    pub DeletedBy: Option<String>,
+    pub DeletedAt: Option<FlexTimestamp>,
+    pub Locked: bool,
+    pub LockedBy: Option<String>,
+    pub LockedAt: Option<FlexTimestamp>,
     pub Name: String,
     pub Description: String,
     pub ParentMapUUID: FlexUuid,

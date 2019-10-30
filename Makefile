@@ -23,6 +23,7 @@ clippy-sqlite:
 	cargo clippy --features floorplan_sqlite 
 js-beautify:
 	js-beautify -r templates/root.mustache
+cute: rustfmt js-beautify
 
 
 

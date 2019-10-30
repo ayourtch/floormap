@@ -40,9 +40,14 @@ table! {
 }
 
 table! {
-    MapObjects (ObjectUUID) {
-        ObjectUUID -> Text,
+    MapObjects (MapObjectUUID) {
+        MapObjectUUID -> Text,
         Deleted -> Bool,
+        DeletedBy -> Nullable<Text>,
+        DeletedAt -> Nullable<Timestamp>,
+        Locked -> Bool,
+        LockedBy -> Nullable<Text>,
+        LockedAt -> Nullable<Timestamp>,
         Name -> Text,
         Description -> Text,
         ParentMapUUID -> Text,

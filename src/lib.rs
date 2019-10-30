@@ -41,6 +41,7 @@ pub mod flextimestamp;
 pub mod flexuuid;
 pub mod models;
 pub mod schema;
+use flexuuid::FlexUuid;
 
 #[macro_use]
 pub mod template;
@@ -156,3 +157,43 @@ pub fn get_db() -> DB {
         }
     }
 }
+
+macro_rules! define_db_get_by_ref {
+    ( $fnname: ident, $typ: ident, $types: ident, $idfield: ident, $idtype: ty) => {
+        pub fn $fnname(item_id: &$idtype) -> Result<$typ, std::io::Error> {
+            use schema::$types::dsl::*;
+            let db = get_db();
+            let res = $types
+                .filter(Deleted.eq(false).and($idfield.eq(item_id)))
+                .limit(2)
+                .load::<$typ>(db.conn())
+                .expect(&format!("Error loading {}", stringify!($types)));
+            match res.len() {
+                1 => Ok(res[0].clone()),
+                x => {
+                    let thing = format!(
+                        "{} with {} == {}",
+                        stringify!($typ),
+                        stringify!($idfield),
+                        item_id
+                    );
+                    let msg = if x == 0 {
+                        format!("{} not found", &thing)
+                    } else {
+                        format!("more than one {}", &thing)
+                    };
+                    Err(Error::new(ErrorKind::Other, msg))
+                }
+            }
+        }
+    };
+}
+use models::*;
+
+define_db_get_by_ref!(
+    db_get_mapobject,
+    MapObject,
+    MapObjects,
+    MapObjectUUID,
+    FlexUuid
+);
