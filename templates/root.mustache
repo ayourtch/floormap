@@ -96,9 +96,11 @@ function setSelectedElement(elmnt) {
         document.getElementById("new_item_details").classList.add("hidden_pane");
         document.getElementById("existing_item_details").classList.remove("hidden_pane");
     } else {
-        document.getElementById("existing_item_details").classList.add("hidden_pane");
-        document.getElementById("new_item_details").classList.remove("hidden_pane");
-        selectedElement = undefined;
+        if (selectedElement != undefined) {
+            document.getElementById("existing_item_details").classList.add("hidden_pane");
+            document.getElementById("new_item_details").classList.remove("hidden_pane");
+            selectedElement = undefined;
+        }
     }
 }
 
