@@ -1,4 +1,8 @@
+<!--
+/* beautify ignore:start */
+-->
 <!doctype html>
+	
 
 <html lang="en">
 	<head>
@@ -63,18 +67,20 @@ div.sw0 {
 
 </style>
 	<script>
+// -->
+/* beautify ignore:end */
 
 var selectedElement = undefined;
 var ongoingTouches = [];
 
 function load_item_details(el) {
-  var txt = document.getElementById("edit_item_txt");
-  txt.value = el.innerText;
+    var txt = document.getElementById("edit_item_txt");
+    txt.value = el.innerText;
 }
 
 function save_item_details() {
-  var txt = document.getElementById("edit_item_txt");
-  selectedElement.innerText = txt.value;
+    var txt = document.getElementById("edit_item_txt");
+    selectedElement.innerText = txt.value;
 }
 
 function getJSON(url, callback) {
@@ -82,282 +88,293 @@ function getJSON(url, callback) {
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
     xhr.onload = function() {
-      var status = xhr.status;
-      if (status === 200) {
-        callback(null, xhr.response);
-      } else {
-        callback(status, xhr.response);
-      }
+        var status = xhr.status;
+        if (status === 200) {
+            callback(null, xhr.response);
+        } else {
+            callback(status, xhr.response);
+        }
     };
     xhr.send();
 }
 
 function get_item_id(jse) {
-	var el_id = "item_" + jse["ObjectUUID"].replace(/-/gi, "_");
-	return el_id;
+    var el_id = "item_" + jse["ObjectUUID"].replace(/-/gi, "_");
+    return el_id;
 }
 
 function processJSON(err, data) {
-	if (err !== null) {
-		alert('Something went wrong: ' + err);
-	} else {
-		// alert('Your data: ' + data.length);
-  		for (var i = 0; i < data.length; i++) {
-			var jse = data[i];
-			var el_id = get_item_id(jse);
-			var el = document.getElementById(el_id);
-			if (el != null) {
-				update_item_jso(el, jse)
-			} else {
-				if (!jse["Deleted"]) {
-					add_item_jso(jse)
-				}
-			}
+    if (err !== null) {
+        alert('Something went wrong: ' + err);
+    } else {
+        // alert('Your data: ' + data.length);
+        for (var i = 0; i < data.length; i++) {
+            var jse = data[i];
+            var el_id = get_item_id(jse);
+            var el = document.getElementById(el_id);
+            if (el != null) {
+                update_item_jso(el, jse)
+            } else {
+                if (!jse["Deleted"]) {
+                    add_item_jso(jse)
+                }
+            }
 
-		}
-  		setTimeout(JsonPollCycle, 1000);
-	}
+        }
+        setTimeout(JsonPollCycle, 1000);
+    }
 }
 
 function JsonPollCycle() {
-	var api_url = "/api/v1/mapobjects/get/json";
-	getJSON(api_url, processJSON);
+    var api_url = "/api/v1/mapobjects/get/json";
+    getJSON(api_url, processJSON);
 }
 
 function noop(e) {
-      e.preventDefault();
+    e.preventDefault();
 }
 
 function dragElement(elmnt) {
-  var pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-  if (document.getElementById(elmnt.id + "header")) {
-    // if present, the header is where you move the DIV from:
-    document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
-  } else {
-    // otherwise, move the DIV from anywhere inside the DIV:
-    elmnt.onmousedown = dragMouseDown;
-    elmnt.ontouchstart = handleTouchStart;
-    elmnt.onclick = noop;
-    document.addEventListener('touchmove', function (event) {
-  if (event.scale !== 1) { event.preventDefault(); }
-}, false);
-  }
-  elmnt.classList.add("draggable");
-
-  function copyTouch(touch) {
-    return { identifier: touch.identifier, pageX: touch.pageX, pageY: touch.pageY };
-  }
-
-function ongoingTouchIndexById(idToFind) {
-  for (var i = 0; i < ongoingTouches.length; i++) {
-    var id = ongoingTouches[i].identifier;
-
-    if (id == idToFind) {
-      return i;
-    }
-  }
-  return -1;    // not found
-}
-
-function handleEnd(evt) {
-  evt.preventDefault();
-  var touches = evt.changedTouches;
-
-  for (var i = 0; i < touches.length; i++) {
-    var idx = ongoingTouchIndexById(touches[i].identifier);
-
-    if (idx >= 0) {
-      // ctx.lineTo(touches[i].pageX, touches[i].pageY);
-      ongoingTouches.splice(idx, 1);  // remove it; we're done
-    }
-  }
-  // document.getElementById("new_item").value = "end touches: " + ongoingTouches.length;
-  if (ongoingTouches.length == 0) {
-    document.ontouchend = null;
-    document.ontouchcancel = null;
-    document.ontouchmove = null;
-  }
-}
-
-function handleCancel(evt) {
-  evt.preventDefault();
-  var touches = evt.changedTouches;
-
-  for (var i = 0; i < touches.length; i++) {
-    var idx = ongoingTouchIndexById(touches[i].identifier);
-    ongoingTouches.splice(idx, 1);  // remove it; we're done
-  }
-  document.getElementById("new_item").value = "cancel touches: " + ongoingTouches.length;
-}
-
-function handleMove(evt) {
-  evt.preventDefault();
-  var touches = evt.changedTouches;
-  // document.getElementById("new_item").value = "move touches: " + touches[0].pageX + " " + touches[0].pageY; 
-
-  for (var i = 0; i < touches.length; i++) {
-    var idx = ongoingTouchIndexById(touches[i].identifier);
-
-    if (idx >= 0) {
-      /* (touches[i].pageX, touches[i].pageY); */
-      pos1 = pos3 - touches[i].pageX;
-      pos2 = pos4 - touches[i].pageY;
-      pos3 = touches[i].pageX;
-      pos4 = touches[i].pageY;
-      // document.getElementById("new_item").value = "touches: " + ongoingTouches.length + " " + pos1 + " " + pos2;
-      // set the element's new position:
-      elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-      elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-      ongoingTouches.splice(idx, 1, copyTouch(touches[i]));  // swap in the new touch record
-      // document.getElementById("new_item").value = "Xove touches: " + elmnt.style.top + " " + elmnt.style.left; 
-    }
-  }
-}
-
-  function handleTouchStart(e) {
-    var touches = e.changedTouches;
-    if (event.target.classList.contains('draggable')) {
-      e.preventDefault();
+    var pos1 = 0,
+        pos2 = 0,
+        pos3 = 0,
+        pos4 = 0;
+    if (document.getElementById(elmnt.id + "header")) {
+        // if present, the header is where you move the DIV from:
+        document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
     } else {
-      return;
+        // otherwise, move the DIV from anywhere inside the DIV:
+        elmnt.onmousedown = dragMouseDown;
+        elmnt.ontouchstart = handleTouchStart;
+        elmnt.onclick = noop;
+        document.addEventListener('touchmove', function(event) {
+            if (event.scale !== 1) {
+                event.preventDefault();
+            }
+        }, false);
     }
-    if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
-	    if (selectedElement != undefined) {
-	      selectedElement.classList.remove("sw1");
-	      selectedElement.classList.add("sw0");
-	    }
-	    if (selectedElement != elmnt) {
-	    	elmnt.classList.remove("sw0");
-	    	elmnt.classList.add("sw1");
-		selectedElement = elmnt;
-		load_item_details(elmnt);
-	    	document.getElementById("new_item_details").classList.add("hidden_pane");
-	    	document.getElementById("existing_item_details").classList.remove("hidden_pane");
-	    } else {
-	    	document.getElementById("existing_item_details").classList.add("hidden_pane");
-	    	document.getElementById("new_item_details").classList.remove("hidden_pane");
-		selectedElement = undefined;
-	    }
+    elmnt.classList.add("draggable");
+
+    function copyTouch(touch) {
+        return {
+            identifier: touch.identifier,
+            pageX: touch.pageX,
+            pageY: touch.pageY
+        };
     }
 
-    for (var i = 0; i < touches.length; i++) {
-       ongoingTouches.push(copyTouch(touches[i]));
+    function ongoingTouchIndexById(idToFind) {
+        for (var i = 0; i < ongoingTouches.length; i++) {
+            var id = ongoingTouches[i].identifier;
+
+            if (id == idToFind) {
+                return i;
+            }
+        }
+        return -1; // not found
     }
-    // document.getElementById("new_item").value = "start touches: " + ongoingTouches.length;
-    document.ontouchend = handleEnd;
-    document.ontouchcancel = handleCancel;
-    document.ontouchmove = handleMove;
-    pos3 = ongoingTouches[0].PageX;
-    pos4 = ongoingTouches[0].PageY;
 
-    // get the mouse cursor position at startup:
-    // document.onmouseup = closeDragElement;
-    // call a function whenever the cursor moves:
-    // document.onmousemove = elementDrag;
-  }
+    function handleEnd(evt) {
+        evt.preventDefault();
+        var touches = evt.changedTouches;
 
-  function dragMouseDown(e) {
-    e = e || window.event;
-    if (event.target.classList.contains('draggable')) {
-      e.preventDefault();
-    } else {
-      return;
+        for (var i = 0; i < touches.length; i++) {
+            var idx = ongoingTouchIndexById(touches[i].identifier);
+
+            if (idx >= 0) {
+                // ctx.lineTo(touches[i].pageX, touches[i].pageY);
+                ongoingTouches.splice(idx, 1); // remove it; we're done
+            }
+        }
+        // document.getElementById("new_item").value = "end touches: " + ongoingTouches.length;
+        if (ongoingTouches.length == 0) {
+            document.ontouchend = null;
+            document.ontouchcancel = null;
+            document.ontouchmove = null;
+        }
     }
-    if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
-	    if (selectedElement != undefined) {
-	      selectedElement.classList.remove("sw1");
-	      selectedElement.classList.add("sw0");
-	    }
-	    if (selectedElement != elmnt) {
-	    	elmnt.classList.remove("sw0");
-	    	elmnt.classList.add("sw1");
-		selectedElement = elmnt;
-		load_item_details(elmnt);
-	    	document.getElementById("new_item_details").classList.add("hidden_pane");
-	    	document.getElementById("existing_item_details").classList.remove("hidden_pane");
-	    } else {
-	    	document.getElementById("existing_item_details").classList.add("hidden_pane");
-	    	document.getElementById("new_item_details").classList.remove("hidden_pane");
-		selectedElement = undefined;
-	    }
+
+    function handleCancel(evt) {
+        evt.preventDefault();
+        var touches = evt.changedTouches;
+
+        for (var i = 0; i < touches.length; i++) {
+            var idx = ongoingTouchIndexById(touches[i].identifier);
+            ongoingTouches.splice(idx, 1); // remove it; we're done
+        }
+        document.getElementById("new_item").value = "cancel touches: " + ongoingTouches.length;
     }
-    // get the mouse cursor position at startup:
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    document.onmouseup = closeDragElement;
-    // call a function whenever the cursor moves:
-    document.onmousemove = elementDrag;
-  }
 
-  function elementDrag(e) {
-    e = e || window.event;
-    e.preventDefault();
-    // calculate the new cursor position:
-    pos1 = pos3 - e.clientX;
-    pos2 = pos4 - e.clientY;
-    pos3 = e.clientX;
-    pos4 = e.clientY;
-    // set the element's new position:
-    elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
-    elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-  }
+    function handleMove(evt) {
+        evt.preventDefault();
+        var touches = evt.changedTouches;
+        // document.getElementById("new_item").value = "move touches: " + touches[0].pageX + " " + touches[0].pageY; 
 
-  function closeDragElement() {
-    // stop moving when mouse button is released:
-    document.onmouseup = null;
-    document.onmousemove = null;
-  }
+        for (var i = 0; i < touches.length; i++) {
+            var idx = ongoingTouchIndexById(touches[i].identifier);
+
+            if (idx >= 0) {
+                /* (touches[i].pageX, touches[i].pageY); */
+                pos1 = pos3 - touches[i].pageX;
+                pos2 = pos4 - touches[i].pageY;
+                pos3 = touches[i].pageX;
+                pos4 = touches[i].pageY;
+                // document.getElementById("new_item").value = "touches: " + ongoingTouches.length + " " + pos1 + " " + pos2;
+                // set the element's new position:
+                elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+                elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                ongoingTouches.splice(idx, 1, copyTouch(touches[i])); // swap in the new touch record
+                // document.getElementById("new_item").value = "Xove touches: " + elmnt.style.top + " " + elmnt.style.left; 
+            }
+        }
+    }
+
+    function handleTouchStart(e) {
+        var touches = e.changedTouches;
+        if (event.target.classList.contains('draggable')) {
+            e.preventDefault();
+        } else {
+            return;
+        }
+        if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
+            if (selectedElement != undefined) {
+                selectedElement.classList.remove("sw1");
+                selectedElement.classList.add("sw0");
+            }
+            if (selectedElement != elmnt) {
+                elmnt.classList.remove("sw0");
+                elmnt.classList.add("sw1");
+                selectedElement = elmnt;
+                load_item_details(elmnt);
+                document.getElementById("new_item_details").classList.add("hidden_pane");
+                document.getElementById("existing_item_details").classList.remove("hidden_pane");
+            } else {
+                document.getElementById("existing_item_details").classList.add("hidden_pane");
+                document.getElementById("new_item_details").classList.remove("hidden_pane");
+                selectedElement = undefined;
+            }
+        }
+
+        for (var i = 0; i < touches.length; i++) {
+            ongoingTouches.push(copyTouch(touches[i]));
+        }
+        // document.getElementById("new_item").value = "start touches: " + ongoingTouches.length;
+        document.ontouchend = handleEnd;
+        document.ontouchcancel = handleCancel;
+        document.ontouchmove = handleMove;
+        pos3 = ongoingTouches[0].PageX;
+        pos4 = ongoingTouches[0].PageY;
+
+        // get the mouse cursor position at startup:
+        // document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        // document.onmousemove = elementDrag;
+    }
+
+    function dragMouseDown(e) {
+        e = e || window.event;
+        if (event.target.classList.contains('draggable')) {
+            e.preventDefault();
+        } else {
+            return;
+        }
+        if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
+            if (selectedElement != undefined) {
+                selectedElement.classList.remove("sw1");
+                selectedElement.classList.add("sw0");
+            }
+            if (selectedElement != elmnt) {
+                elmnt.classList.remove("sw0");
+                elmnt.classList.add("sw1");
+                selectedElement = elmnt;
+                load_item_details(elmnt);
+                document.getElementById("new_item_details").classList.add("hidden_pane");
+                document.getElementById("existing_item_details").classList.remove("hidden_pane");
+            } else {
+                document.getElementById("existing_item_details").classList.add("hidden_pane");
+                document.getElementById("new_item_details").classList.remove("hidden_pane");
+                selectedElement = undefined;
+            }
+        }
+        // get the mouse cursor position at startup:
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        // call a function whenever the cursor moves:
+        document.onmousemove = elementDrag;
+    }
+
+    function elementDrag(e) {
+        e = e || window.event;
+        e.preventDefault();
+        // calculate the new cursor position:
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        // set the element's new position:
+        elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
+        elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+    }
+
+    function closeDragElement() {
+        // stop moving when mouse button is released:
+        document.onmouseup = null;
+        document.onmousemove = null;
+    }
 }
 
 var next_y = 40;
 var next_number = 3;
 
 function add_item(e) {
-	var cnv = document.getElementById("floor_canvas");
-	var node = document.createElement("div");
-	node.classList.add("item")
-	node.classList.add("sw0");
-	node.style.top = next_y + "px";
-	node.id = "sw_" + next_number;
-	next_number = next_number + 1;
-	var label = document.getElementById("new_item").value;
-	var textnode = document.createTextNode(label);
-	node.appendChild(textnode);
-	cnv.appendChild(node);
-	next_y = next_y + 20;
-	dragElement(node)
-	document.getElementById("new_item").value = "new_item_" + next_number;
+    var cnv = document.getElementById("floor_canvas");
+    var node = document.createElement("div");
+    node.classList.add("item")
+    node.classList.add("sw0");
+    node.style.top = next_y + "px";
+    node.id = "sw_" + next_number;
+    next_number = next_number + 1;
+    var label = document.getElementById("new_item").value;
+    var textnode = document.createTextNode(label);
+    node.appendChild(textnode);
+    cnv.appendChild(node);
+    next_y = next_y + 20;
+    dragElement(node)
+    document.getElementById("new_item").value = "new_item_" + next_number;
 }
+
 function add_item_jso(jso) {
-	var cnv = document.getElementById("floor_canvas");
-	var node = document.createElement("div");
-	node.classList.add("item")
-	node.classList.add("sw0");
-	node.style.top = jso["MapY"] + "px";
-	node.style.left = jso["MapX"] + "px";
-        var el_id = get_item_id(jso);
-	node.id = el_id;
-	var label = jso["Name"];
-	var textnode = document.createTextNode(label);
-	textnode.id = el_id + "_label";
-	node.appendChild(textnode);
-	cnv.appendChild(node);
-	dragElement(node)
+    var cnv = document.getElementById("floor_canvas");
+    var node = document.createElement("div");
+    node.classList.add("item")
+    node.classList.add("sw0");
+    node.style.top = jso["MapY"] + "px";
+    node.style.left = jso["MapX"] + "px";
+    var el_id = get_item_id(jso);
+    node.id = el_id;
+    var label = jso["Name"];
+    var textnode = document.createTextNode(label);
+    textnode.id = el_id + "_label";
+    node.appendChild(textnode);
+    cnv.appendChild(node);
+    dragElement(node)
 }
 
 function update_item_jso(node, jso) {
-	var cnv = document.getElementById("floor_canvas");
-	if (jso["Deleted"]) {
-	  node.outerHTML = "";
-	} else {
-	  if (selectedElement != node) {
-		node.style.top = jso["MapY"] + "px";
-		node.style.left = jso["MapX"] + "px";
-	  }
-	  var label = jso["Name"];
-	  node.innerText = label;
-	}  
+    var cnv = document.getElementById("floor_canvas");
+    if (jso["Deleted"]) {
+        node.outerHTML = "";
+    } else {
+        if (selectedElement != node) {
+            node.style.top = jso["MapY"] + "px";
+            node.style.left = jso["MapX"] + "px";
+        }
+        var label = jso["Name"];
+        node.innerText = label;
+    }
 }
+/* beautify ignore:start */
 
 	</script>
 	</head>
