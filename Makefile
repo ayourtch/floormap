@@ -19,6 +19,8 @@ rustfmt:
 
 sqlite:
 	cargo build --features floorplan_sqlite 
+clippy-sqlite:
+	cargo clippy --features floorplan_sqlite 
 
 
 

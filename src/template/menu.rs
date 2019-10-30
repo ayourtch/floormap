@@ -20,6 +20,7 @@ impl MenuItem {
 
 pub fn get_page_menu(username: &str, role: &str) -> Vec<MenuItem> {
     let mut items: Vec<MenuItem> = vec![];
+    #[allow(unused_assignments)]
     let mut mi = MenuItem::new("x", "x");
 
     mi = MenuItem::new("Home", "/Default.aspx");

@@ -1,3 +1,9 @@
+#![allow(non_snake_case)]
+#![allow(dead_code)]
+#![allow(unused_macros)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
 #[macro_use]
 extern crate diesel;
 extern crate chrono;
@@ -31,6 +37,7 @@ use std::env;
 use std::io::{Error, ErrorKind};
 
 pub mod apiv1;
+pub mod flextimestamp;
 pub mod models;
 pub mod schema;
 
@@ -56,6 +63,7 @@ pub fn postgres_establish_connection() -> PgConnection {
 }
 
 #[cfg(feature = "floorplan_postgres")]
+#[allow(non_camel_case_types)]
 type DB_CONN_TYPE = PgConnection;
 #[cfg(feature = "floorplan_postgres")]
 pub const DB_TYPE_NAME: &str = "Postgres";
@@ -65,6 +73,7 @@ pub fn uncached_establish_connection() -> DB_CONN_TYPE {
 }
 
 #[cfg(feature = "floorplan_sqlite")]
+#[allow(non_camel_case_types)]
 type DB_CONN_TYPE = SqliteConnection;
 #[cfg(feature = "floorplan_sqlite")]
 pub const DB_TYPE_NAME: &str = "Sqlite";

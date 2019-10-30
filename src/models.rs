@@ -1,12 +1,11 @@
+use super::flextimestamp::FlexTimestamp;
 use crate::schema;
 use chrono;
-use chrono::NaiveDateTime;
 use diesel;
 use diesel::connection::TransactionManager;
 use diesel::pg::PgConnection;
 use diesel::prelude::*;
 use diesel::sqlite::SqliteConnection;
-use diesel::types::*;
 use schema::*;
 use serde_derive;
 use std;
@@ -18,6 +17,16 @@ pub struct Comment {
     pub Deleted: bool,
     pub ChangesetID: i32,
     pub CommentID: i32,
+}
+
+#[serde(default)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[table_name = "FloorMaps"]
+pub struct FloorMap {
+    pub FloorMapUUID: String,
+    pub Deleted: bool,
+    pub Name: String,
+    pub Description: String,
 }
 
 #[serde(default)]
@@ -36,12 +45,26 @@ pub struct Job {
     pub command_pid: Option<i32>,
     pub remote_host: Option<String>,
     pub status_message: String,
-    pub status_updated_at: Option<NaiveDateTime>,
-    pub started_at: Option<NaiveDateTime>,
-    pub finished_at: Option<NaiveDateTime>,
+    pub status_updated_at: Option<FlexTimestamp>,
+    pub started_at: Option<FlexTimestamp>,
+    pub finished_at: Option<FlexTimestamp>,
     pub return_success: bool,
     pub return_code: Option<i32>,
     pub trigger_event_id: Option<String>,
+}
+
+#[serde(default)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[table_name = "MapObjects"]
+pub struct MapObject {
+    pub ObjectUUID: String,
+    pub Deleted: bool,
+    pub Name: String,
+    pub Description: String,
+    pub ParentMapUUID: String,
+    pub MapX: i32,
+    pub MapY: i32,
+    pub UpdatedAt: FlexTimestamp,
 }
 
 #[serde(default)]
@@ -53,20 +76,4 @@ pub struct Service {
     pub MenuOrder: i32,
     pub ServiceName: String,
     pub ServiceLabel: String,
-}
-
-#[serde(default)]
-#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
-#[table_name = "counters"]
-pub struct counter {
-    pub name: String,
-    pub value: i32,
-}
-
-#[serde(default)]
-#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
-#[table_name = "timestamps"]
-pub struct timestamp {
-    pub name: String,
-    pub value: Option<NaiveDateTime>,
 }

@@ -2,7 +2,6 @@ use super::DB_TYPE_NAME;
 use iron::prelude::*;
 use mustache::Template;
 
-#[macro_use]
 use iron;
 
 static GIT_COMMIT_INFO: &'static str = include_str!(concat!(env!("OUT_DIR"), "/commit-info.txt"));

@@ -8,6 +8,15 @@ table! {
 }
 
 table! {
+    FloorMaps (FloorMapUUID) {
+        FloorMapUUID -> Text,
+        Deleted -> Bool,
+        Name -> Text,
+        Description -> Text,
+    }
+}
+
+table! {
     Jobs (RecordUUID) {
         RecordUUID -> Text,
         JobGrouName -> Text,
@@ -31,6 +40,19 @@ table! {
 }
 
 table! {
+    MapObjects (ObjectUUID) {
+        ObjectUUID -> Text,
+        Deleted -> Bool,
+        Name -> Text,
+        Description -> Text,
+        ParentMapUUID -> Text,
+        MapX -> Integer,
+        MapY -> Integer,
+        UpdatedAt -> Timestamp,
+    }
+}
+
+table! {
     Services (ServiceUUID) {
         ServiceUUID -> Text,
         Deleted -> Bool,
@@ -40,18 +62,4 @@ table! {
     }
 }
 
-table! {
-    counters (name) {
-        name -> Text,
-        value -> Integer,
-    }
-}
-
-table! {
-    timestamps (name) {
-        name -> Text,
-        value -> Nullable<Timestamp>,
-    }
-}
-
-allow_tables_to_appear_in_same_query!(Comments, Jobs, Services, counters, timestamps,);
+allow_tables_to_appear_in_same_query!(Comments, FloorMaps, Jobs, MapObjects, Services,);

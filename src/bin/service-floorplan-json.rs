@@ -1,3 +1,8 @@
+#![allow(dead_code)]
+#![allow(unused_parens)]
+#![allow(unused_imports)]
+#![allow(unused_variables)]
+
 extern crate chrono;
 extern crate iron;
 extern crate mount;
@@ -5,6 +10,8 @@ extern crate router;
 extern crate staticfile;
 extern crate urlencoded;
 extern crate uuid;
+
+use uuid::Uuid;
 
 use iron::prelude::*;
 use iron::status;
@@ -54,7 +61,7 @@ pub fn build_response(template: mustache::Template, data: mustache::MapBuilder) 
 macro_rules! render_response {
     ($template: ident, $data: ident, $redirect_to: ident) => {
         if $redirect_to.is_empty() {
-            let mut resp = build_response($template, $data);
+            let resp = build_response($template, $data);
             Ok(resp)
         } else {
             use iron::headers::Location;
@@ -115,6 +122,11 @@ fn main() {
     use std::path::Path;
 
     router.get("/services", api_http_get_services_json, "get the services");
+    router.get(
+        "/api/v1/mapobjects/get/json",
+        api_http_get_map_objects_for_map,
+        "mapobjects-for-map",
+    );
     router.get("/", root_page, "root_page");
 
     fn insert_new_service() {
@@ -125,7 +137,7 @@ fn main() {
         let my_uuid = Uuid::new_v4();
         let rand_uuid = format!("{}", my_uuid);
 
-        let mut svc = Service {
+        let svc = Service {
             ServiceUUID: rand_uuid,
             MenuOrder: 0,
             Deleted: false,
@@ -144,6 +156,14 @@ fn main() {
     fn api_http_get_services_json(_: &mut Request) -> IronResult<Response> {
         insert_new_service();
         let new_results = api_get_all_services();
+        let payload = serde_json::to_string(&new_results).unwrap();
+        Ok(Response::with((status::Ok, payload)))
+    }
+
+    fn api_http_get_map_objects_for_map(_: &mut Request) -> IronResult<Response> {
+        use std::str::FromStr;
+        let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
+        let new_results = api_get_map_objects_for_map(map_uuid);
         let payload = serde_json::to_string(&new_results).unwrap();
         Ok(Response::with((status::Ok, payload)))
     }

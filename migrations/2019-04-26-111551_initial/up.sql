@@ -16,6 +16,51 @@ CREATE TABLE Services (
 	ServiceLabel VARCHAR NOT NULL
 );
 
+CREATE TABLE FloorMaps (
+	FloorMapUUID VARCHAR(32) NOT NULL PRIMARY KEY,
+	Deleted BOOLEAN NOT NULL,
+	Name VARCHAR NOT NULL,
+	Description VARCHAR NOT NULL
+);
+
+INSERT INTO "FloorMaps" VALUES(
+	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
+	0,
+	'Test Floor',
+	'Pre-created basic test floor'
+);
+
+CREATE TABLE MapObjects (
+	ObjectUUID VARCHAR(32) NOT NULL PRIMARY KEY,
+	Deleted BOOLEAN NOT NULL,
+	Name VARCHAR NOT NULL,
+	Description VARCHAR NOT NULL,
+	ParentMapUUID VARCHAR(32) NOT NULL,
+	MapX INT NOT NULL,
+	MapY INT NOT NULL,
+	UpdatedAt datetime NOT NULL
+);
+
+INSERT INTO "MapObjects" VALUES (
+	'4b06c4b4-fb3a-11e9-af57-fb611161d50b', 0,
+	'Test object 1',
+	'First test object',
+	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
+	10,10, '2017-02-24 16:20:49.983'
+);
+
+INSERT INTO "MapObjects" VALUES (
+	'7392f6f0-fb3a-11e9-b567-633aa008f004', 0,
+	'Test object 2',
+	'second test object',
+	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
+	20,20, '2017-02-24 16:20:49.983'
+);
+
+
+
+
+
 CREATE TABLE Jobs (
 	RecordUUID VARCHAR(32) NOT NULL PRIMARY KEY,
 	JobGrouName VARCHAR NOT NULL,
@@ -36,15 +81,4 @@ CREATE TABLE Jobs (
 	return_code INT,
 	trigger_event_id VARCHAR
 );
-
-CREATE TABLE counters (
-	name VARCHAR NOT NULL PRIMARY KEY,
-	value INT NOT NULL
-);
-
-CREATE TABLE timestamps (
-	name VARCHAR NOT NULL PRIMARY KEY,
-	value datetime
-);
-
 
