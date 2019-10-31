@@ -80,7 +80,10 @@ function load_item_details(el) {
 
 function save_item_details() {
     var txt = document.getElementById("edit_item_txt");
-    selectedElement.innerText = txt.value;
+    if (selectedElement != undefined) {
+        selectedElement.innerText = txt.value;
+        SaveName(selectedElement);
+    }
 }
 
 function setSelectedElement(elmnt) {
@@ -208,6 +211,24 @@ function SavePosition(node) {
     putJSON(api_url, arr, function() {
         node.f7n.saving--;
         console.debug("Saved for " + node.uuid);
+    });
+}
+
+function SaveName(node) {
+    var api_url = api_root + "v1/mapobjects/name_description/put/json";
+    var data = new Object();
+    data["Name"] = node.innerText;
+    data["Description"] = "FIXME-SAVED";
+    data["MapObjectUUID"] = node.uuid;
+    node.f7n.saving++;
+    console.debug("Saving name: " + node.uuid + " name: " + node.innerText);
+    var arr = new Array();
+    arr[0] = data;
+    putJSON(api_url, arr, function(err, res) {
+        node.f7n.saving--;
+        console.debug("Saved for " + node.uuid);
+        console.debug("Err: " + err);
+        console.debug("Res: " + res);
     });
 }
 

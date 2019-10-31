@@ -40,6 +40,13 @@ pub struct ApiV1MapObjectSetXYRecord {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1MapObjectSetNameDescriptionRecord {
+    pub MapObjectUUID: flexuuid::FlexUuid,
+    pub Name: String,
+    pub Description: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1NewMapObjectRecord {
     pub Name: String,
     pub MapX: i32,
@@ -158,6 +165,56 @@ pub fn db_set_mapobject_xy(
             match updated_row_res {
                 Err(e) => {
                     let msg = format!("mapobject {} - error updating XY: {:?}", mapobject_uuid, e);
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
+}
+
+pub fn db_set_mapobject_name_description(
+    mapobject_uuid: &FlexUuid,
+    new_name: &str,
+    new_description: &str,
+) -> Result<bool, std::io::Error> {
+    use std::io::{Error, ErrorKind};
+    let res = db_get_mapobject(&mapobject_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!(
+                "port {} - error setting description: {:?}",
+                mapobject_uuid, e
+            );
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("map object {} - is locked", &mapobject_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+
+            use schema::MapObjects::dsl::*;
+            let db = get_db();
+            let now_ts = FlexTimestamp::now();
+            let updated_row_res = diesel::update(
+                MapObjects.filter(MapObjectUUID.eq(mapobject_uuid).and(Deleted.eq(false))),
+            )
+            .set((
+                Name.eq(new_name),
+                Description.eq(new_description),
+                UpdatedAt.eq(now_ts),
+            ))
+            .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!(
+                        "mapobject {} - error updating name/desc: {:?}",
+                        mapobject_uuid, e
+                    );
                     return Err(Error::new(ErrorKind::Other, msg));
                 }
                 Ok(v) => {
