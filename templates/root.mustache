@@ -141,7 +141,7 @@ function get_item_id(jse) {
     return el_id;
 }
 
-var api_root = "/api/";
+var api_root = document.baseURI + "/api/";
 var next_pull_horizon = null;
 
 function processJSON(err, reply_data) {
