@@ -18,6 +18,8 @@ use serde::{de, de::Error, Deserialize, Deserializer, Serialize, Serializer};
 use diesel::sql_types::Timestamp;
 use std::io::Write;
 
+use std::str::FromStr;
+
 #[derive(AsExpression, FromSqlRow, PartialEq, Debug, Clone)]
 #[sql_type = "Timestamp"]
 pub struct FlexTimestamp {
@@ -27,6 +29,13 @@ pub struct FlexTimestamp {
 impl FlexTimestamp {
     pub fn now() -> Self {
         Default::default()
+    }
+    pub fn from_timestamp(x: i64) -> Self {
+        let t = NaiveDateTime::from_timestamp(x, 0);
+        FlexTimestamp { Ndt: t }
+    }
+    pub fn timestamp(&self) -> i64 {
+        self.Ndt.timestamp()
     }
 }
 
@@ -89,5 +98,14 @@ impl<'de> Deserialize<'de> for FlexTimestamp {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_str(FlexTimestampVisitor)
+    }
+}
+
+impl FromStr for FlexTimestamp {
+    type Err = chrono::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let t = NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S.%f")?;
+        Ok(FlexTimestamp { Ndt: t })
     }
 }

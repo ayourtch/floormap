@@ -142,7 +142,8 @@ function get_item_id(jse) {
 }
 
 var api_root = document.baseURI + "/api/";
-var next_pull_horizon = null;
+var next_poll_horizon = 0;
+var poll_map_id = null;
 
 function processJSON(err, reply_data) {
     if (err !== null) {
@@ -171,7 +172,7 @@ function processJSON(err, reply_data) {
 
 
 function JsonPollCycle() {
-    var api_url = api_root + "v1/mapobjects/get/json";
+    var api_url = api_root + "v1/mapobjects/get/json" + "/" + poll_map_id + "/" + next_poll_horizon;
     getJSON(api_url, processJSON);
 }
 

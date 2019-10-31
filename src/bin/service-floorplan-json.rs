@@ -116,6 +116,7 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
 }
 
 fn main() {
+    use floorplan::flextimestamp::FlexTimestamp;
     let mut router = Router::new();
 
     use mount::Mount;
@@ -124,9 +125,14 @@ fn main() {
 
     router.get("/services", api_http_get_services_json, "get the services");
     router.get(
-        "/api/v1/mapobjects/get/json",
+        "/api/v1/mapobjects/get/jsonX",
         api_http_get_map_objects_for_map,
         "mapobjects-for-map",
+    );
+    router.get(
+        "/api/v1/mapobjects/get/json/:query_map/:query_timestamp",
+        api_http_get_map_objects_for_map,
+        "mapobjects-for-map with argument",
     );
     router.put(
         "/api/v1/mapobjects/xy/put/json",
@@ -166,11 +172,36 @@ fn main() {
         Ok(Response::with((status::Ok, payload)))
     }
 
-    fn api_http_get_map_objects_for_map(_: &mut Request) -> IronResult<Response> {
+    fn api_http_get_map_objects_for_map(req: &mut Request) -> IronResult<Response> {
+        use floorplan::flextimestamp::FlexTimestamp;
+        use floorplan::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
+
         use std::str::FromStr;
-        let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
-        let new_results = api_get_map_objects_for_map(map_uuid);
+        let map_str = "4b06c4b4-fb3a-11e9-af57-fb611161d50b";
+        let map_uuid = Uuid::from_str(map_str).unwrap();
+        let flex_uuid = FlexUuid::from_str(map_str).unwrap();
+
+        let ref query_map = req
+            .extensions
+            .get::<Router>()
+            .unwrap()
+            .find("query_map")
+            .map_or(flex_uuid.clone(), |s| {
+                FlexUuid::from_str(&s).unwrap_or(flex_uuid.clone())
+            });
+        // .map_or(format!(""), |s| format!("{:?}", &s));
+        let ref query_ts = req
+            .extensions
+            .get::<Router>()
+            .unwrap()
+            .find("query_timestamp")
+            .map_or(FlexTimestamp::from_timestamp(0), |s| {
+                FlexTimestamp::from_timestamp(s.parse::<i64>().unwrap_or(0))
+            });
+        println!("on map: {:?} from start: {:?}", query_map, &query_ts);
+
+        let new_results = api_get_map_objects_for_map(&query_map.to_uuid(), &query_ts);
         let payload = serde_json::to_string(&new_results).unwrap();
         let mut resp = Response::with((status::Ok, payload));
         resp.headers.set(Connection::close());
@@ -186,10 +217,10 @@ fn main() {
             Ok(cr) => {
                 println!("CR: {:?}", &cr);
                 for o in cr {
-                    db_set_mapobject_xy(&o.MapObjectUUID, o.MapX, o.MapY).unwrap();
+                    db_set_mapobject_xy(&o.MapObjectUUID, o.MapX, o.MapY, "web").unwrap();
                 }
                 let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
-                let new_results = api_get_map_objects_for_map(map_uuid);
+                let new_results = api_get_map_objects_for_map(&map_uuid, &FlexTimestamp::now());
                 let payload = serde_json::to_string(&new_results).unwrap();
 
                 Ok(Response::with((status::Ok, payload)))

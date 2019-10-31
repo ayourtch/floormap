@@ -11,6 +11,7 @@ use router::Router;
 
 use chrono::{NaiveDate, NaiveDateTime};
 
+use flextimestamp::FlexTimestamp;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -25,7 +26,7 @@ type ApiV1MapObject = MapObject;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
-    pub NextPollHorizon: flextimestamp::FlexTimestamp,
+    pub NextPollHorizon: i64,
     pub MapObjects: Vec<ApiV1MapObject>,
 }
 
@@ -61,13 +62,17 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     new_results
 }
 
-pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> ApiV1GetMapObjectsResponse {
+pub fn api_get_map_objects_for_map(
+    map_uuid: &Uuid,
+    since: &FlexTimestamp,
+) -> ApiV1GetMapObjectsResponse {
     use super::schema::MapObjects::dsl::*;
 
     let db = get_db();
-    let next_ts = flextimestamp::FlexTimestamp::now();
+    let next_ts = flextimestamp::FlexTimestamp::now().timestamp();
     let results = MapObjects
         // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+        .filter(UpdatedAt.ge(since))
         .limit(2000)
         .load::<MapObject>(db.conn())
         .expect("Error loading services");
@@ -86,6 +91,7 @@ pub fn db_set_mapobject_xy(
     mapobject_uuid: &FlexUuid,
     new_x: i32,
     new_y: i32,
+    user: &str,
 ) -> Result<bool, std::io::Error> {
     use std::io::{Error, ErrorKind};
     let res = db_get_mapobject(&mapobject_uuid);
@@ -105,10 +111,11 @@ pub fn db_set_mapobject_xy(
 
             use schema::MapObjects::dsl::*;
             let db = get_db();
+            let now_ts = FlexTimestamp::now();
             let updated_row_res = diesel::update(
                 MapObjects.filter(MapObjectUUID.eq(mapobject_uuid).and(Deleted.eq(false))),
             )
-            .set((MapX.eq(new_x), MapY.eq(new_y)))
+            .set((MapX.eq(new_x), MapY.eq(new_y), UpdatedAt.eq(now_ts)))
             .execute(db.conn());
             match updated_row_res {
                 Err(e) => {

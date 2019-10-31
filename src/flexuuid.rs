@@ -27,6 +27,15 @@ pub struct FlexUuid {
     Uuid: uuid::Uuid,
 }
 
+impl FlexUuid {
+    pub fn to_uuid(&self) -> uuid::Uuid {
+        self.Uuid
+    }
+    pub fn from_uuid(uuid: uuid::Uuid) -> Self {
+        Self { Uuid: uuid }
+    }
+}
+
 impl ToSql<Text, Sqlite> for FlexUuid {
     fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> serialize::Result {
         let t = format!("{}", self.Uuid);
@@ -95,5 +104,15 @@ impl<'de> Deserialize<'de> for FlexUuid {
         D: Deserializer<'de>,
     {
         deserializer.deserialize_str(FlexUuidVisitor)
+    }
+}
+
+impl FromStr for FlexUuid {
+    type Err = uuid::parser::ParseError;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        let val = uuid::Uuid::from_str(s)?;
+        let ret = FlexUuid { Uuid: val };
+        Ok(ret)
     }
 }
