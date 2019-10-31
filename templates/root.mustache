@@ -198,7 +198,6 @@ function dragElement(elmnt) {
         pos2 = 0,
         pos3 = 0,
         pos4 = 0;
-    var elmnt_moved = false;
     if (document.getElementById(elmnt.id + "header")) {
         // if present, the header is where you move the DIV from:
         document.getElementById(elmnt.id + "header").onmousedown = dragMouseDown;
@@ -251,10 +250,10 @@ function dragElement(elmnt) {
             document.ontouchend = null;
             document.ontouchcancel = null;
             document.ontouchmove = null;
-            if (elmnt_moved) {
+            if (elmnt.f7n.dragging) {
                 DragEnd(elmnt);
             }
-            elmnt_moved = false;
+            elmnt.f7n.dragging = false;
         }
     }
 
@@ -267,10 +266,10 @@ function dragElement(elmnt) {
             ongoingTouches.splice(idx, 1); // remove it; we're done
         }
         document.getElementById("new_item").value = "cancel touches: " + ongoingTouches.length;
-        if (elmnt_moved) {
+        if (elmnt.f7n.dragging) {
             DragEnd(elmnt);
         }
-        elmnt_moved = false;
+        elmnt.f7n.dragging = false;
     }
 
     function handleMove(evt) {
@@ -291,7 +290,7 @@ function dragElement(elmnt) {
                 // set the element's new position:
                 elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-                elmnt_moved = true;
+                elmnt.f7n.dragging = true;
                 ongoingTouches.splice(idx, 1, copyTouch(touches[i])); // swap in the new touch record
                 // document.getElementById("new_item").value = "Xove touches: " + elmnt.style.top + " " + elmnt.style.left; 
             }
@@ -322,7 +321,7 @@ function dragElement(elmnt) {
         document.ontouchmove = handleMove;
         pos3 = ongoingTouches[0].PageX;
         pos4 = ongoingTouches[0].PageY;
-        elmnt_moved = false;
+        elmnt.f7n.dragging = false;
 
         // get the mouse cursor position at startup:
         // document.onmouseup = closeDragElement;
@@ -350,7 +349,7 @@ function dragElement(elmnt) {
         document.onmouseup = closeDragElement;
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
-        elmnt_moved = false;
+        elmnt.f7n.dragging = false;
     }
 
     function elementDrag(e) {
@@ -364,17 +363,18 @@ function dragElement(elmnt) {
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
-        elmnt_moved = true;
+        elmnt.f7n.moved = true;
+        elmnt.f7n.dragging = true;
     }
 
     function closeDragElement() {
         // stop moving when mouse button is released:
-        if (elmnt_moved) {
+        if (elmnt.f7n.dragging) {
             DragEnd(elmnt);
         }
         document.onmouseup = null;
         document.onmousemove = null;
-        elmnt_moved = false;
+        elmnt.f7n.dragging = false;
     }
 }
 
@@ -388,6 +388,8 @@ function add_item(e) {
     node.classList.add("sw0");
     node.style.top = next_y + "px";
     node.id = "sw_" + next_number;
+    node.f7n = {};
+    node.f7n.dragging = false;
     next_number = next_number + 1;
     var label = document.getElementById("new_item").value;
     var textnode = document.createTextNode(label);
@@ -407,6 +409,8 @@ function add_item_jso(jso) {
     node.style.left = jso["MapX"] + "px";
     var el_id = get_item_id(jso);
     node.id = el_id;
+    node.f7n = {};
+    node.f7n.dragging = false;
     node.uuid = jso["MapObjectUUID"];
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
@@ -421,7 +425,7 @@ function update_item_jso(node, jso) {
     if (jso["Deleted"]) {
         node.outerHTML = "";
     } else {
-        if (selectedElement != node) {
+        if (!node.f7n.dragging) {
             node.style.top = jso["MapY"] + "px";
             node.style.left = jso["MapX"] + "px";
         }
