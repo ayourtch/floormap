@@ -45,7 +45,7 @@ extern crate params;
 use chrono::{NaiveDate, NaiveDateTime};
 
 pub fn build_response(template: mustache::Template, data: mustache::MapBuilder) -> iron::Response {
-    use iron::headers::ContentType;
+    use iron::headers::{Connection, ContentType};
     let mut bytes = vec![];
     let data_built = data.build();
     template
@@ -55,6 +55,7 @@ pub fn build_response(template: mustache::Template, data: mustache::MapBuilder) 
 
     let mut resp = Response::with((status::Ok, payload));
     resp.headers.set(ContentType::html());
+    resp.headers.set(Connection::close());
     resp
 }
 
@@ -166,11 +167,14 @@ fn main() {
     }
 
     fn api_http_get_map_objects_for_map(_: &mut Request) -> IronResult<Response> {
+        use iron::headers::{Connection, ContentType};
         use std::str::FromStr;
         let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
         let new_results = api_get_map_objects_for_map(map_uuid);
         let payload = serde_json::to_string(&new_results).unwrap();
-        Ok(Response::with((status::Ok, payload)))
+        let mut resp = Response::with((status::Ok, payload));
+        resp.headers.set(Connection::close());
+        Ok(resp)
     }
     fn api_http_put_map_object_xy(req: &mut Request) -> IronResult<Response> {
         use std::str::FromStr;
