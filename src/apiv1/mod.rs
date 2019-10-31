@@ -12,6 +12,7 @@ use router::Router;
 use chrono::{NaiveDate, NaiveDateTime};
 
 use flextimestamp::FlexTimestamp;
+use flexuuid::FlexUuid;
 use uuid::Uuid;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -27,6 +28,7 @@ type ApiV1MapObject = MapObject;
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
     pub NextPollHorizon: i64,
+    pub MapUUID: FlexUuid,
     pub MapObjects: Vec<ApiV1MapObject>,
 }
 
@@ -35,6 +37,14 @@ pub struct ApiV1MapObjectSetXYRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
     pub MapX: i32,
     pub MapY: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1NewMapObjectRecord {
+    pub Name: String,
+    pub MapX: i32,
+    pub MapY: i32,
+    pub ParentMapUUID: FlexUuid,
 }
 
 pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
@@ -63,7 +73,7 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
 }
 
 pub fn api_get_map_objects_for_map(
-    map_uuid: &Uuid,
+    map_uuid: &FlexUuid,
     since: &FlexTimestamp,
 ) -> ApiV1GetMapObjectsResponse {
     use super::schema::MapObjects::dsl::*;
@@ -72,7 +82,7 @@ pub fn api_get_map_objects_for_map(
     let next_ts = flextimestamp::FlexTimestamp::now().timestamp();
     let results = MapObjects
         // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
-        .filter(UpdatedAt.ge(since))
+        .filter(UpdatedAt.ge(since).and(ParentMapUUID.eq(map_uuid)))
         .limit(2000)
         .load::<MapObject>(db.conn())
         .expect("Error loading services");
@@ -83,8 +93,36 @@ pub fn api_get_map_objects_for_map(
         .collect();
     ApiV1GetMapObjectsResponse {
         NextPollHorizon: next_ts,
+        MapUUID: map_uuid.clone(),
         MapObjects: new_results,
     }
+}
+
+pub fn db_insert_new_mapobject(
+    mapfloor_uuid: &FlexUuid,
+    new_name: &str,
+    new_description: &str,
+    new_x: i32,
+    new_y: i32,
+) -> FlexUuid {
+    use self::diesel::prelude::*;
+    use schema::MapObjects::dsl::*;
+
+    let new_item = MapObject {
+        Name: new_name.to_string(),
+        Description: new_description.to_string(),
+        MapX: new_x,
+        MapY: new_y,
+        ParentMapUUID: mapfloor_uuid.clone(),
+
+        ..Default::default()
+    };
+
+    let db = get_db();
+    let rows_inserted = diesel::insert_into(MapObjects)
+        .values(&new_item)
+        .execute(db.conn());
+    new_item.MapObjectUUID
 }
 
 pub fn db_set_mapobject_xy(

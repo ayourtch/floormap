@@ -139,6 +139,11 @@ fn main() {
         api_http_put_map_object_xy,
         "set mapobjects-for-map",
     );
+    router.put(
+        "/api/v1/mapobjects/new/put/json",
+        api_http_put_new_mapobject,
+        "make new mapobject",
+    );
     router.get("/", root_page, "root_page");
 
     fn insert_new_service() {
@@ -178,7 +183,7 @@ fn main() {
         use iron::headers::{Connection, ContentType};
 
         use std::str::FromStr;
-        let map_str = "4b06c4b4-fb3a-11e9-af57-fb611161d50b";
+        let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
         let map_uuid = Uuid::from_str(map_str).unwrap();
         let flex_uuid = FlexUuid::from_str(map_str).unwrap();
 
@@ -201,7 +206,7 @@ fn main() {
             });
         println!("on map: {:?} from start: {:?}", query_map, &query_ts);
 
-        let new_results = api_get_map_objects_for_map(&query_map.to_uuid(), &query_ts);
+        let new_results = api_get_map_objects_for_map(&query_map, &query_ts);
         let payload = serde_json::to_string(&new_results).unwrap();
         let mut resp = Response::with((status::Ok, payload));
         resp.headers.set(Connection::close());
@@ -219,9 +224,33 @@ fn main() {
                 for o in cr {
                     db_set_mapobject_xy(&o.MapObjectUUID, o.MapX, o.MapY, "web").unwrap();
                 }
+                /*
                 let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();
                 let new_results = api_get_map_objects_for_map(&map_uuid, &FlexTimestamp::now());
                 let payload = serde_json::to_string(&new_results).unwrap();
+                */
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+
+    fn api_http_put_new_mapobject(req: &mut Request) -> IronResult<Response> {
+        use std::str::FromStr;
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<ApiV1NewMapObjectRecord, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(o) => {
+                println!("O: {:?}", &o);
+                let uuid =
+                    db_insert_new_mapobject(&o.ParentMapUUID, &o.Name, "FIXME", o.MapX, o.MapY);
+                let payload = serde_json::to_string(&uuid).unwrap();
 
                 Ok(Response::with((status::Ok, payload)))
             }

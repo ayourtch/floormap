@@ -143,7 +143,7 @@ function get_item_id(jse) {
 
 var api_root = document.baseURI + "/api/";
 var next_poll_horizon = 0;
-var poll_map_id = null;
+var current_map_uuid = null;
 
 function processJSON(err, reply_data) {
     if (err !== null) {
@@ -152,7 +152,8 @@ function processJSON(err, reply_data) {
         // alert('Your data: ' + data.length);
         var data = reply_data["MapObjects"];
         next_poll_horizon = reply_data["NextPollHorizon"];
-        console.debug("Next poll: " + next_poll_horizon);
+        current_map_uuid = reply_data["MapUUID"];
+        console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
 
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
@@ -172,7 +173,7 @@ function processJSON(err, reply_data) {
 
 
 function JsonPollCycle() {
-    var api_url = api_root + "v1/mapobjects/get/json" + "/" + poll_map_id + "/" + next_poll_horizon;
+    var api_url = api_root + "v1/mapobjects/get/json" + "/" + current_map_uuid + "/" + next_poll_horizon;
     getJSON(api_url, processJSON);
 }
 
@@ -426,24 +427,20 @@ function dragElement(elmnt) {
 var next_y = 40;
 var next_number = 3;
 
+
 function add_item(e) {
-    var cnv = document.getElementById("floor_canvas");
-    var node = document.createElement("div");
-    node.classList.add("item")
-    node.classList.add("sw0");
-    node.style.top = next_y + "px";
-    node.id = "sw_" + next_number;
-    node.f7n = {};
-    node.f7n.dragging = 0;
-    node.f7n.saving = 0;
-    next_number = next_number + 1;
-    var label = document.getElementById("new_item").value;
-    var textnode = document.createTextNode(label);
-    node.appendChild(textnode);
-    cnv.appendChild(node);
+    var api_url = api_root + "v1/mapobjects/new/put/json";
+    var o = new Object();
+    o["Name"] = document.getElementById("new_item").value;
+    o["MapX"] = 100;
+    o["MapY"] = next_y;
+    o["ParentMapUUID"] = current_map_uuid;
     next_y = next_y + 20;
-    dragElement(node)
-    document.getElementById("new_item").value = "new_item_" + next_number;
+    next_number = next_number + 1;
+    putJSON(api_url, o, function(err, d) {
+        console.debug("err: " + err);
+        console.debug("Made new node: " + d);
+    });
 }
 
 function add_item_jso(jso) {
