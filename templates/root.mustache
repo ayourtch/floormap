@@ -177,8 +177,11 @@ function SavePosition(node) {
     var cnv_rect = cnv.getBoundingClientRect();
     var rect = node.getBoundingClientRect();
     var data = new Object();
-    var MapX = rect.left - cnv_rect.left;
-    var MapY = rect.top - cnv_rect.top;
+    /* apparently with varoius zooms the left/top may be fractional! */
+    var MapX = Math.round(rect.left - cnv_rect.left);
+    var MapY = Math.round(rect.top - cnv_rect.top);
+    console.debug("Maybe Saving position: " + node.uuid + " X: " + MapX + " Y: " + MapY);
+    console.debug("rect X: " + rect.left + " Y: " + rect.top + " cnv X: " + cnv_rect.left + " Y: " + cnv_rect.top);
     if (rect.left < cnv_rect.left) {
         console.warn("Rect left " + rect.left + " < cnv rect left " + cnv_rect.left);
         return;
@@ -192,7 +195,9 @@ function SavePosition(node) {
     data["MapObjectUUID"] = node.uuid;
     var arr = new Array();
     arr[0] = data;
-    putJSON(api_url, arr, check_save);
+    node.f7n.saving = true;
+    console.debug("Saving position: " + node.uuid + " X: " + MapX + " Y: " + MapY);
+    putJSON(api_url, arr, function() { node.f7n.saving = false; });
 }
 
 function DragEnd(node) {
@@ -263,6 +268,7 @@ function dragElement(elmnt) {
             if (elmnt.f7n.dragging) {
                 DragEnd(elmnt);
             }
+	    console.debug("Drag end - handleEnd");
             elmnt.f7n.dragging = false;
         }
     }
@@ -279,6 +285,7 @@ function dragElement(elmnt) {
         if (elmnt.f7n.dragging) {
             DragEnd(elmnt);
         }
+	console.debug("Drag end - handleCancel");
         elmnt.f7n.dragging = false;
     }
 
@@ -379,12 +386,13 @@ function dragElement(elmnt) {
 
     function closeDragElement() {
         // stop moving when mouse button is released:
-        if (elmnt.f7n.dragging) {
+        // if (elmnt.f7n.dragging) {
             DragEnd(elmnt);
-        }
+        //}
         document.onmouseup = null;
         document.onmousemove = null;
         elmnt.f7n.dragging = false;
+	console.debug("Drag end - closeDragElement");
     }
 }
 
@@ -400,6 +408,7 @@ function add_item(e) {
     node.id = "sw_" + next_number;
     node.f7n = {};
     node.f7n.dragging = false;
+    node.f7n.saving = false;
     next_number = next_number + 1;
     var label = document.getElementById("new_item").value;
     var textnode = document.createTextNode(label);
@@ -421,6 +430,7 @@ function add_item_jso(jso) {
     node.id = el_id;
     node.f7n = {};
     node.f7n.dragging = false;
+    node.f7n.saving = false;
     node.uuid = jso["MapObjectUUID"];
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
@@ -435,7 +445,7 @@ function update_item_jso(node, jso) {
     if (jso["Deleted"]) {
         node.outerHTML = "";
     } else {
-        if (!node.f7n.dragging) {
+        if (!node.f7n.dragging && !node.f7n.saving) {
             node.style.top = jso["MapY"] + "px";
             node.style.left = jso["MapX"] + "px";
         }
