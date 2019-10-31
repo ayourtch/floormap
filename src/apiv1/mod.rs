@@ -24,6 +24,12 @@ pub struct ApiV1ServiceRecord {
 type ApiV1MapObject = MapObject;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1GetMapObjectsResponse {
+    pub NextPollHorizon: flextimestamp::FlexTimestamp,
+    pub MapObjects: Vec<ApiV1MapObject>,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1MapObjectSetXYRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
     pub MapX: i32,
@@ -55,10 +61,11 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     new_results
 }
 
-pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> Vec<ApiV1MapObject> {
+pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> ApiV1GetMapObjectsResponse {
     use super::schema::MapObjects::dsl::*;
 
     let db = get_db();
+    let next_ts = flextimestamp::FlexTimestamp::now();
     let results = MapObjects
         // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
         .limit(2000)
@@ -69,7 +76,10 @@ pub fn api_get_map_objects_for_map(map_uuid: Uuid) -> Vec<ApiV1MapObject> {
         .into_iter()
         .map(|x| ApiV1MapObject { ..x })
         .collect();
-    new_results
+    ApiV1GetMapObjectsResponse {
+        NextPollHorizon: next_ts,
+        MapObjects: new_results,
+    }
 }
 
 pub fn db_set_mapobject_xy(

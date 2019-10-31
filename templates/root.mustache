@@ -141,11 +141,18 @@ function get_item_id(jse) {
     return el_id;
 }
 
-function processJSON(err, data) {
+var api_root = "/api/";
+var next_pull_horizon = null;
+
+function processJSON(err, reply_data) {
     if (err !== null) {
         alert('Something went wrong: ' + err);
     } else {
         // alert('Your data: ' + data.length);
+        var data = reply_data["MapObjects"];
+        next_poll_horizon = reply_data["NextPollHorizon"];
+        console.debug("Next poll: " + next_poll_horizon);
+
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
             var el_id = get_item_id(jse);
@@ -162,7 +169,6 @@ function processJSON(err, data) {
     }
 }
 
-var api_root = "/api/";
 
 function JsonPollCycle() {
     var api_url = api_root + "v1/mapobjects/get/json";

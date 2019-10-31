@@ -24,6 +24,12 @@ pub struct FlexTimestamp {
     Ndt: NaiveDateTime,
 }
 
+impl FlexTimestamp {
+    pub fn now() -> Self {
+        Default::default()
+    }
+}
+
 impl ToSql<Timestamp, Sqlite> for FlexTimestamp {
     fn to_sql<W: Write>(&self, out: &mut Output<W, Sqlite>) -> serialize::Result {
         let t = self.Ndt;
