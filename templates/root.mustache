@@ -10,14 +10,15 @@
 
 .img-overlay-wrap {
   position: relative;
-  display: inline-block; /* <= shrinks container to image size */
+  display: inline-block; // <= shrinks container to image size 
 }
 
-.img-overlay-wrap img.map { /* <= optional, for responsiveness */
+
+.img-overlay-wrap img.map { // <= optional, for responsiveness
    display: block;
    width: 1000px;
-   /* max-width: 100%; */
-   height: auto; */
+   max-width: 100%;
+   height: auto; 
 }
 
 .img-overlay-wrap svg {
@@ -44,10 +45,9 @@ div.sw0 {
   border: solid 1px green;
 }
 
-.draggable 
-    {
+.draggable {
          cursor: pointer;
-    }
+}
 
 .img-overlay-wrap div.panel {
   font-size: 8px;
@@ -58,12 +58,56 @@ div.sw0 {
   background-color: #ccc;
   border: solid 3px;
   cursor: pointer;
-  white-space:nowrap;
+  white-space: nowrap;
 }
 
   div.panel div.hidden_pane {
 	  display: none;
   }
+
+
+// thumbnail scroll
+.thumbnail-container {
+    overflow-x:scroll;
+    // height: 175px;
+    width:100%;
+    padding: 0 0px;
+    // background-color: red;
+}
+
+.thumbnail-list {
+    white-space:nowrap;
+    // margin: 0 0;
+}
+
+.thumbnail-image {
+    display: inline-block;
+    padding:2px;
+    max-height: 100px;
+    // height:100;
+    // width:160;
+}
+
+.thumbnail-list li {
+   display: inline-block;
+}
+.thumbnail-list li div {
+   // background-color: green;
+   display: inline-block;
+   max-width:160;
+}
+.thumbnail-list li div p {
+    margin: 0 0;
+    white-space: normal;
+}
+
+.thumbnail-filter {
+    position: absolute;
+    left: 1px;
+    top: 1px;
+    padding:6 6;
+    background-color: red;
+}
 
 </style>
 	<script>
@@ -501,10 +545,28 @@ function update_item_jso(node, jso) {
 }
 /* beautify ignore:start */
 
-	</script>
-	</head>
-	<body>
-		<input id="start_poll" type="button" value="start_poll"/>
+</script>
+
+</head>
+<body>
+
+  <div class="thumbnail-filter">
+          <input type="text" value="search here"/>
+          <input type="button" value="Click here"/>
+  </div>
+
+
+<div class="thumbnail-container">
+   <ul class="thumbnail-list">
+              <li><div><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 2 asdasd</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 3  asddsadsa d fj hfasdf ahd kjafhdsafasdf df </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 4</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 5</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 6</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 7</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+   </ul>
+</div>
 		<div class="img-overlay-wrap" id="floor_canvas">
 		  <img class="map" src="static/out-21.ppm.png"/>
 		  <!--
@@ -529,14 +591,13 @@ function update_item_jso(node, jso) {
 // dragElement(document.getElementById("sw_1"));
 dragElement(document.getElementById("control_panel"));
 document.getElementById("new_item_add").onclick=add_item;
-document.getElementById("start_poll").onclick=JsonPollCycle;
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
         JsonPollCycle();
     }
 }
-	</script>
-	</body>
+</script>
+</body>
 </html>
 <!--
 /* beautify ignore:end*/
