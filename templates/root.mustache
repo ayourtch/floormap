@@ -101,6 +101,11 @@ div.sw0 {
    display: inline-block;
    max-width:160px;
 }
+.thumbnail-list li div:hover {
+box-shadow: inset 0 0 0 25px #53a7ea;
+}
+
+
 .thumbnail-list li div p {
     margin: 0px 0px;
     white-space: normal;
@@ -232,6 +237,8 @@ function JsonPollCycle() {
 
 function check_save(data) {}
 
+var total_saving = 0;
+
 function SavePosition(node) {
     var api_url = api_root + "v1/mapobjects/xy/put/json";
     var cnv = document.getElementById("floor_canvas");
@@ -257,9 +264,19 @@ function SavePosition(node) {
     var arr = new Array();
     arr[0] = data;
     node.f7n.saving++;
+    total_saving++;
+    document.body.style.cursor = 'wait';
+    node.style.cursor = 'wait';
     console.debug("Saving position: " + node.uuid + " X: " + MapX + " Y: " + MapY);
     putJSON(api_url, arr, function() {
         node.f7n.saving--;
+        total_saving--;
+        if (node.f7n.saving == 0) {
+            node.style.cursor = 'move';
+        }
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
         console.debug("Saved for " + node.uuid);
     });
 }
@@ -271,11 +288,21 @@ function SaveName(node) {
     data["Description"] = "FIXME-SAVED";
     data["MapObjectUUID"] = node.uuid;
     node.f7n.saving++;
+    total_saving++;
+    node.style.cursor = 'wait';
+    document.body.style.cursor = 'wait';
     console.debug("Saving name: " + node.uuid + " name: " + data["Name"]);
     var arr = new Array();
     arr[0] = data;
     putJSON(api_url, arr, function(err, res) {
         node.f7n.saving--;
+        total_saving--;
+        if (node.f7n.saving == 0) {
+            node.style.cursor = 'move';
+        }
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
         console.debug("Saved for " + node.uuid);
         console.debug("Err: " + err);
         console.debug("Res: " + res);
@@ -441,9 +468,15 @@ function dragElement(elmnt) {
     function dragMouseDown(e) {
         e = e || window.event;
         if (event.target.classList.contains('draggable')) {
+            console.debug("Preventdefault");
             e.preventDefault();
         } else {
-            return;
+            if (this.classList.contains('draggable')) {
+                /* this allows to drag by the children as well */
+            } else {
+                console.debug("return - no prevent default");
+                return true;
+            }
         }
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
             if (selectedElement != elmnt) {
@@ -617,9 +650,9 @@ function QuickSearchHandler(e) {
     
    <ul class="thumbnail-list" id="page_thumbnails">
               <li><div><p>&nbsp;</p><img height="100px" width="1px" class="thumbnail-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+AMAAQIA/mGM61QAAAAASUVORK5CYII="></div></li>
-              <li><div><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
-              <li><div><p>Page 2 asdasd</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
-              <li><div><p>Page 3  asddsadsadf </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div id='page_1'><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div id='page_2'><p>Page 2 asdasd</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div id='page_3'><p>Page 3  asddsadsadf </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 4</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 5</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 6</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
@@ -632,7 +665,7 @@ function QuickSearchHandler(e) {
           <input type="button" value="Click here"/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
-		  <img class="map" src="static/out-21.ppm.png"/>
+		  <img id="map" class="map" src="static/out-21.ppm.png"/>
 		  <!--
 		  <div id="sw_0" class="item" style="top: 0px; left: 0px">c3750-1</div>
 		  <div id="sw_1" class="item" style="top: 20px; left: 0px">S0052</div>
@@ -656,6 +689,12 @@ function QuickSearchHandler(e) {
 dragElement(document.getElementById("control_panel"));
 dragElement(document.getElementById("search_thumbnails"));
 document.getElementById("new_item_add").onclick=add_item;
+document.getElementById("page_1").onclick= function(e) {
+  alert(e);
+};
+document.getElementById("map").onclick= function(e) {
+  alert(e);
+};
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
        var e = document.getElementById('quickSearch');
