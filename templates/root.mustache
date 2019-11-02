@@ -10,29 +10,30 @@
 
 .img-overlay-wrap {
   position: relative;
-  display: inline-block; // <= shrinks container to image size 
+  display: inline-block; /* <= shrinks container to image size  */
 }
 
 
-.img-overlay-wrap img.map { // <= optional, for responsiveness
+.img-overlay-wrap img.map { /* <= optional, for responsiveness */
    display: block;
    width: 1000px;
-   max-width: 100%;
+   /* max-width: 100%; */
    height: auto; 
 }
 
 .img-overlay-wrap svg {
   position: absolute;
-  top: 0;
-  left: 0;
+  top: 0px;
+  left: 0px;
 }
 
 .img-overlay-wrap .item {
   color: white;
   position: absolute;
   background-color: green;
+  color: white;
   cursor: move;
-  z-index: 10;
+  /* z-index: 10; */
   font-size: 8px;
   cursor: pointer;
 }
@@ -66,46 +67,51 @@ div.sw0 {
   }
 
 
-// thumbnail scroll
+/*  thumbnail scroll */
+
 .thumbnail-container {
     overflow-x:scroll;
-    // height: 175px;
+    /* // height: 175px; */
     width:100%;
-    padding: 0 0px;
-    // background-color: red;
+    padding: 0px 0px;
+    /* // background-color: red; */
 }
 
 .thumbnail-list {
     white-space:nowrap;
-    // margin: 0 0;
+    margin: 0px 0px;
+    display: inline-block;
+    padding: 0px 0px;
+    /*  background: red; */
 }
 
 .thumbnail-image {
     display: inline-block;
     padding:2px;
     max-height: 100px;
-    // height:100;
-    // width:160;
+    /*  height:100px; */
+    /* width:160px; */
 }
 
 .thumbnail-list li {
    display: inline-block;
 }
 .thumbnail-list li div {
-   // background-color: green;
+   /* background-color: green; */
    display: inline-block;
-   max-width:160;
+   max-width:160px;
 }
 .thumbnail-list li div p {
-    margin: 0 0;
+    margin: 0px 0px;
     white-space: normal;
+    /* height: 160px; */
 }
 
-.thumbnail-filter {
+.xthumbnail-filter {
     position: absolute;
     left: 1px;
     top: 1px;
-    padding:6 6;
+    padding:6px 6px;
     background-color: red;
 }
 
@@ -119,13 +125,13 @@ var ongoingTouches = [];
 
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_txt");
-    txt.value = el.innerText;
+    txt.value = get_item_label(el);
 }
 
 function save_item_details() {
     var txt = document.getElementById("edit_item_txt");
     if (selectedElement != undefined) {
-        selectedElement.innerText = txt.value;
+        set_item_label(selectedElement, txt.value);
         SaveName(selectedElement);
     }
 }
@@ -200,7 +206,7 @@ function processJSON(err, reply_data) {
         var data = reply_data["MapObjects"];
         next_poll_horizon = reply_data["NextPollHorizon"];
         current_map_uuid = reply_data["MapUUID"];
-        console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
+        // console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
 
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
@@ -261,11 +267,11 @@ function SavePosition(node) {
 function SaveName(node) {
     var api_url = api_root + "v1/mapobjects/name_description/put/json";
     var data = new Object();
-    data["Name"] = node.innerText;
+    data["Name"] = get_item_label(node);
     data["Description"] = "FIXME-SAVED";
     data["MapObjectUUID"] = node.uuid;
     node.f7n.saving++;
-    console.debug("Saving name: " + node.uuid + " name: " + node.innerText);
+    console.debug("Saving name: " + node.uuid + " name: " + data["Name"]);
     var arr = new Array();
     arr[0] = data;
     putJSON(api_url, arr, function(err, res) {
@@ -525,8 +531,27 @@ function add_item_jso(jso) {
     var textnode = document.createTextNode(label);
     textnode.id = el_id + "_label";
     node.appendChild(textnode);
+    var baggage = document.createElement("div");
+    // baggage.innerHTML = "<img src='static/layer_3_switch.png'></img>";
+    baggage.innerHTML = "Attention";
+    // baggage.style.position = "absolute";
+    // baggage.style.top = "15px";
+    // baggage.style.left = "0px";
+    baggage.style.background = "red";
+    node.appendChild(baggage);
     cnv.appendChild(node);
     dragElement(node)
+}
+
+function set_item_label(node, label) {
+    console.debug("Setting item label to " + label);
+    node.replaceChild(document.createTextNode(label), node.childNodes[0]);
+}
+
+function get_item_label(node) {
+    var label = node.childNodes[0].nodeValue;
+    console.debug("Node label: " + label);
+    return (label);
 }
 
 function update_item_jso(node, jso) {
@@ -540,9 +565,45 @@ function update_item_jso(node, jso) {
             node.style.left = jso["MapX"] + "px";
         }
         var label = jso["Name"];
-        node.innerText = label;
+        set_item_label(node, label);
     }
 }
+
+function HasText(el, q) {
+    var haystack = el.innerHTML;
+    var haystack_lower = haystack.toLowerCase();
+    var q_lower = q.toLowerCase();
+    if (q == q_lower) {
+        return (haystack_lower.indexOf(q_lower) !== -1);
+    } else {
+        return (haystack.indexOf(q) !== -1);
+    }
+
+    return found;
+}
+
+function QuickSearchHandler(e) {
+    // console.log("keyup event detected! coming from this element:", e.target);
+    var q = e.target.value;
+    var t = document.getElementById('page_thumbnails'); // .childNodes[1];
+    console.log("Value: ", q);
+    console.log("child node count: ", t.childNodes.length);
+    for (var i = 2; i < t.childNodes.length; i++) {
+        console.log("Child ", i, " : ", t.childNodes[i].nodeName);
+        var el = t.childNodes[i];
+        // console.log("node: ", el); console.log("disp: ", el.style.display);
+        if (el.nodeName == "LI") {
+            if (HasText(el.childNodes[0].childNodes[0], q)) {
+                el.style.visibility = "visible";
+                el.style.display = "";
+            } else {
+                el.style.visibility = "hidden";
+                el.style.display = "none";
+            }
+        }
+    }
+}
+
 /* beautify ignore:start */
 
 </script>
@@ -550,23 +611,26 @@ function update_item_jso(node, jso) {
 </head>
 <body>
 
-  <div class="thumbnail-filter">
-          <input type="text" value="search here"/>
-          <input type="button" value="Click here"/>
-  </div>
 
 
 <div class="thumbnail-container">
-   <ul class="thumbnail-list">
+    
+   <ul class="thumbnail-list" id="page_thumbnails">
+              <li><div><p>&nbsp;</p><img height="100px" width="1px" class="thumbnail-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+AMAAQIA/mGM61QAAAAASUVORK5CYII="></div></li>
               <li><div><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 2 asdasd</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
-              <li><div><p>Page 3  asddsadsa d fj hfasdf ahd kjafhdsafasdf df </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+              <li><div><p>Page 3  asddsadsadf </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 4</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 5</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 6</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 7</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
    </ul>
 </div>
+  <div class="thumbnail-filter" id="search_thumbnails">
+  Find page:
+          <input type="text" id="quickSearch" value="search here"/>
+          <input type="button" value="Click here"/>
+  </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
 		  <img class="map" src="static/out-21.ppm.png"/>
 		  <!--
@@ -590,9 +654,14 @@ function update_item_jso(node, jso) {
 // dragElement(document.getElementById("sw_0"));
 // dragElement(document.getElementById("sw_1"));
 dragElement(document.getElementById("control_panel"));
+dragElement(document.getElementById("search_thumbnails"));
 document.getElementById("new_item_add").onclick=add_item;
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
+       var e = document.getElementById('quickSearch');
+       e.oninput = QuickSearchHandler;
+       e.onpropertychange = e.oninput; // for IE8
+
         JsonPollCycle();
     }
 }
