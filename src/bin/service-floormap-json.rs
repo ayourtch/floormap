@@ -218,6 +218,7 @@ fn main() {
         Ok(resp)
     }
     fn api_http_put_map_object_xy(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_mapobject_xy;
         use std::str::FromStr;
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -244,6 +245,7 @@ fn main() {
         }
     }
     fn api_http_put_mapobject_name_description(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_mapobject_name_description;
         use std::str::FromStr;
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -266,6 +268,7 @@ fn main() {
     }
 
     fn api_http_put_new_mapobject(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_insert_new_mapobject;
         use std::str::FromStr;
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();

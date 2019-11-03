@@ -41,6 +41,7 @@ pub mod flextimestamp;
 pub mod flexuuid;
 pub mod models;
 pub mod schema;
+pub mod db;
 use flexuuid::FlexUuid;
 
 #[macro_use]
