@@ -198,3 +198,11 @@ define_db_get_by_ref!(
     MapObjectUUID,
     FlexUuid
 );
+
+define_db_get_by_ref!(
+    db_get_floormap,
+    FloorMap,
+    FloorMaps,
+    FloorMapUUID,
+    FlexUuid
+);
