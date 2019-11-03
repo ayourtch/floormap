@@ -212,6 +212,10 @@ function get_floorplan_src(uuid) {
     return ("images/floorplans/" + uuid);
 }
 
+function get_floorplan_thumbnail_src(uuid) {
+    return ("images/floorplans/thumbnails/" + uuid);
+}
+
 function set_current_map(uuid) {
     var el = document.getElementById("map");
     el.src = get_floorplan_src(uuid);
@@ -670,7 +674,7 @@ function add_map_jso(jso) {
     node_label.appendChild(textnode);
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image")
-    node_img.src = get_floorplan_src(node.uuid);
+    node_img.src = get_floorplan_thumbnail_src(node.uuid);
 
     node.appendChild(node_label);
     node.appendChild(node_img);
@@ -747,7 +751,7 @@ function QuickSearchHandler(e) {
           <input type="button" value="Click here"/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
-		  <img id="map" class="map" src="static/out-21.ppm.png"/>
+		  <img id="map" class="map" src=""/>
 		  <!--
 		  <div id="sw_0" class="item" style="top: 0px; left: 0px">c3750-1</div>
 		  <div id="sw_1" class="item" style="top: 20px; left: 0px">S0052</div>

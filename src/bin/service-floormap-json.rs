@@ -149,6 +149,11 @@ fn main() {
         http_get_floorplan_image,
         "floorplan image page",
     );
+    router.get(
+        "/images/floorplans/thumbnails/:floorplan_uuid",
+        http_get_floorplan_thumbnail_image,
+        "floorplan image thumbnails page",
+    );
     router.get("/", root_page, "root_page");
 
     fn insert_new_service() {
@@ -311,6 +316,51 @@ fn main() {
         let floor = floor.unwrap();
 
         let mut f = File::open(&floor.FloorPlanFileName).unwrap();
+        let mut buffer = Vec::new();
+
+        f.read_to_end(&mut buffer).unwrap();
+
+        let mut resp = Response::with((status::Ok, buffer));
+        resp.headers.set(ContentType::png());
+        resp.headers.set(Connection::close());
+        Ok(resp)
+    }
+
+    fn http_get_floorplan_thumbnail_image(req: &mut Request) -> IronResult<Response> {
+        use floormap::flextimestamp::FlexTimestamp;
+        use floormap::flexuuid::FlexUuid;
+        use iron::headers::{Connection, ContentType};
+        use std::fs::File;
+
+        use std::str::FromStr;
+        let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
+        let map_uuid = Uuid::from_str(map_str).unwrap();
+        let flex_uuid = FlexUuid::from_str(map_str).unwrap();
+
+        let ref query_uuid = req
+            .extensions
+            .get::<Router>()
+            .unwrap()
+            .find("floorplan_uuid")
+            .map_or(flex_uuid.clone(), |s| {
+                FlexUuid::from_str(&s).unwrap_or(flex_uuid.clone())
+            });
+
+        let floor = db_get_floormap(&query_uuid);
+        println!("Got floormap: {:?}", &floor);
+        if floor.is_err() {
+            let payload = format!(
+                "Floor plan with uuid {} not found: {:?}",
+                &query_uuid, &floor
+            );
+            let mut resp = Response::with((status::NotFound, payload));
+            return Ok(resp);
+        }
+        let floor = floor.unwrap();
+        let filename = format!("{}-thumb.png", &floor.FloorPlanFileName);
+        println!("Filename: {}", &filename);
+
+        let mut f = File::open(&filename).unwrap();
         let mut buffer = Vec::new();
 
         f.read_to_end(&mut buffer).unwrap();

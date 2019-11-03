@@ -1,0 +1,20 @@
+#!/bin/bash
+set -eu
+CURR_TS=$(date '+%s')
+PDF_FILE=$1
+TIMESTAMP="${2:-${CURR_TS}}"
+IMAGE_ROOT_DIR="/var/a3s/http/floor-plan-images"
+TARGET_DIR="${IMAGE_ROOT_DIR}/${TIMESTAMP}"
+
+sudo -u www-data mkdir "${TARGET_DIR}"
+sudo -u www-data mkdir "${TARGET_DIR}/images"
+echo "Target dir is: ${TARGET_DIR}"
+echo "Copying the PDF file to target dir..."
+sudo -u www-data cp "${PDF_FILE}" "${TARGET_DIR}/source.pdf"
+echo "${PDF_FILE}" | sudo -u www-data tee "${TARGET_DIR}/source.txt"
+echo "Converting the pdf to ppm..."
+sudo -u www-data pdftoppm -png "${TARGET_DIR}/source.pdf" "${TARGET_DIR}/images/page"
+sudo -u www-data find  "${TARGET_DIR}/images" -type f -exec convert {} -resize 400x400 {}-thumb.png \;
+# echo "Converting the ppm to png..."
+# sudo -u www-data find "${TARGET_DIR}" -name '*.ppm' -print -exec convert {} {}.png \;
+

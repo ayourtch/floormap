@@ -25,15 +25,6 @@ CREATE TABLE FloorMaps (
 	UpdatedAt datetime NOT NULL
 );
 
-INSERT INTO "FloorMaps" VALUES(
-	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
-	0,
-	'Test Floor',
-	'Pre-created basic test floor',
-	'/var/a3s/http/floor-plan-images/1572806818/images/page-01.png',
-	'2017-02-24 16:20:49.983'
-);
-
 CREATE TABLE MapObjects (
 	MapObjectUUID VARCHAR(32) NOT NULL PRIMARY KEY,
 	Deleted BOOLEAN NOT NULL,
@@ -49,27 +40,6 @@ CREATE TABLE MapObjects (
 	MapY INT NOT NULL,
 	UpdatedAt datetime NOT NULL
 );
-
-INSERT INTO "MapObjects" VALUES (
-	'4b06c4b4-fb3a-11e9-af57-fb611161d50b', 0, NULL, NULL,
-	0, NULL, NULL,
-	'Test object 1',
-	'First test object',
-	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
-	10,10, '2017-02-24 16:20:49.983'
-);
-
-INSERT INTO "MapObjects" VALUES (
-	'7392f6f0-fb3a-11e9-b567-633aa008f004', 0, NULL, NULL,
-	0, NULL, NULL,
-	'Test object 2',
-	'second test object',
-	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
-	20,20, '2017-02-24 16:20:49.983'
-);
-
-
-
 
 
 CREATE TABLE Jobs (
