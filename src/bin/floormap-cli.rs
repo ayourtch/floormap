@@ -43,6 +43,7 @@ fn main() {
 
     if let Some(matches) = matches.subcommand_matches("import-floor-plan") {
         use std::path::Path;
+        use floormap::db::db_insert_new_floormap;
 
         let dirname = matches.value_of("input").unwrap();
         println!("Importing floor plan from {}", &dirname);
@@ -54,13 +55,16 @@ fn main() {
             if !path.exists() {
                 break;
             }
+            let page_name = format!("Page {:02}", page_nr);
+            db_insert_new_floormap(&page_name, &page_name, &pathname);
+
             page_nr = page_nr + 1;
         }
         let page_count = page_nr -1;
         if page_count == 0 {
             panic!("No pages found of format 'page-N.png'");
         }
-        println!("Found {} pages", page_count);
+        println!("imported {} pages", page_count);
         
     }
 }

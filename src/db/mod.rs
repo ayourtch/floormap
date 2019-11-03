@@ -13,6 +13,28 @@ use flextimestamp::FlexTimestamp;
 use flexuuid::FlexUuid;
 use uuid::Uuid;
 
+pub fn db_insert_new_floormap(
+    new_name: &str,
+    new_description: &str,
+    new_filename: &str,
+) -> FlexUuid {
+    use self::diesel::prelude::*;
+    use schema::FloorMaps::dsl::*;
+
+    let new_item = FloorMap {
+        Name: new_name.to_string(),
+        Description: new_description.to_string(),
+        FloorPlanFileName: new_filename.to_string(),
+        ..Default::default()
+    };
+
+    let db = get_db();
+    let rows_inserted = diesel::insert_into(FloorMaps)
+        .values(&new_item)
+        .execute(db.conn());
+    new_item.FloorMapUUID
+}
+
 pub fn db_insert_new_mapobject(
     mapfloor_uuid: &FlexUuid,
     new_name: &str,

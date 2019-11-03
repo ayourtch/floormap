@@ -13,6 +13,7 @@ table! {
         Deleted -> Bool,
         Name -> Text,
         Description -> Text,
+        FloorPlanFileName -> Text,
     }
 }
 

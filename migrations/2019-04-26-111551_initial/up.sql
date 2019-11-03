@@ -20,14 +20,16 @@ CREATE TABLE FloorMaps (
 	FloorMapUUID VARCHAR(32) NOT NULL PRIMARY KEY,
 	Deleted BOOLEAN NOT NULL,
 	Name VARCHAR NOT NULL,
-	Description VARCHAR NOT NULL
+	Description VARCHAR NOT NULL,
+	FloorPlanFileName VARCHAR NOT NULL
 );
 
 INSERT INTO "FloorMaps" VALUES(
 	'1e79ba6e-fb3a-11e9-b124-03c84357f69a',
 	0,
 	'Test Floor',
-	'Pre-created basic test floor'
+	'Pre-created basic test floor',
+	'/var/a3s/http/floor-plan-images/1572806818/images/'
 );
 
 CREATE TABLE MapObjects (

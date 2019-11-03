@@ -28,6 +28,7 @@ pub struct FloorMap {
     pub Deleted: bool,
     pub Name: String,
     pub Description: String,
+    pub FloorPlanFileName: String,
 }
 
 #[serde(default)]
