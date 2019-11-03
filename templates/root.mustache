@@ -208,6 +208,15 @@ var api_root = document.baseURI + "/api/";
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 
+function get_floorplan_src(uuid) {
+    return ("images/floorplans/" + uuid);
+}
+
+function set_current_map(uuid) {
+    var el = document.getElementById("map");
+    el.src = get_floorplan_src(uuid);
+}
+
 function processJSON(err, reply_data) {
     if (err !== null) {
         alert('Something went wrong: ' + err);
@@ -220,6 +229,7 @@ function processJSON(err, reply_data) {
             var jse = floors_data[i];
             if (current_map_uuid == null) {
                 current_map_uuid = jse["FloorMapUUID"];
+                set_current_map(current_map_uuid);
             }
             var el_id = get_map_id(jse);
             var el = document.getElementById(el_id);
@@ -660,11 +670,15 @@ function add_map_jso(jso) {
     node_label.appendChild(textnode);
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image")
-    node_img.src = "images/floorplans/" + node.uuid;
+    node_img.src = get_floorplan_src(node.uuid);
 
     node.appendChild(node_label);
     node.appendChild(node_img);
     li_node.appendChild(node);
+    node.onclick =
+        function(e) {
+            set_current_map(node.uuid);
+        };
     cnv.appendChild(li_node);
 }
 
