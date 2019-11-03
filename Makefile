@@ -18,9 +18,9 @@ rustfmt:
 	find src -name '*.rs' -exec rustfmt {} \;
 
 sqlite:
-	cargo build --features floorplan_sqlite 
+	cargo build --features floormap_sqlite
 clippy-sqlite:
-	cargo clippy --features floorplan_sqlite 
+	cargo clippy --features floormap_sqlite
 js-beautify:
 	js-beautify -r templates/root.mustache
 cute: rustfmt js-beautify

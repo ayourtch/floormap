@@ -20,11 +20,11 @@ use iron::status;
 extern crate diesel;
 
 #[macro_use]
-extern crate floorplan;
+extern crate floormap;
 
-use self::floorplan::apiv1::*;
-use self::floorplan::models::*;
-use self::floorplan::*;
+use self::floormap::apiv1::*;
+use self::floormap::models::*;
+use self::floormap::*;
 
 use self::diesel::prelude::*;
 
@@ -76,7 +76,7 @@ macro_rules! render_response {
 }
 
 fn root_page(req: &mut Request) -> IronResult<Response> {
-    use floorplan::template::get_page_mapbuilder;
+    use floormap::template::get_page_mapbuilder;
     use iron::headers::ContentType;
     use urlencoded::UrlEncodedQuery;
 
@@ -93,7 +93,7 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
 
     // let auth_user = LoginSessionState::new("", None);
 
-    let template = match floorplan::template::maybe_compile_template("root") {
+    let template = match floormap::template::maybe_compile_template("root") {
         Ok(t) => t,
         Err(e) => {
             return Ok(Response::with((
@@ -116,7 +116,7 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
 }
 
 fn main() {
-    use floorplan::flextimestamp::FlexTimestamp;
+    use floormap::flextimestamp::FlexTimestamp;
     let mut router = Router::new();
 
     use mount::Mount;
@@ -183,8 +183,8 @@ fn main() {
     }
 
     fn api_http_get_map_objects_for_map(req: &mut Request) -> IronResult<Response> {
-        use floorplan::flextimestamp::FlexTimestamp;
-        use floorplan::flexuuid::FlexUuid;
+        use floormap::flextimestamp::FlexTimestamp;
+        use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
 
         use std::str::FromStr;

@@ -1,5 +1,5 @@
 [package]
-name = "floorplan"
+name = "floormap"
 version = "0.1.0"
 authors = ["ubuntu"]
 edition = "2018"
@@ -11,8 +11,8 @@ edition = "2018"
 # default = ["sqlite"]
 
 # can have sqlite or postgresql backends
-floorplan_sqlite = []
-floorplan_postgres = []
+floormap_sqlite = []
+floormap_postgres = []
 
 [dependencies]
 

@@ -64,22 +64,22 @@ pub fn postgres_establish_connection() -> PgConnection {
     PgConnection::establish(&database_url).expect(&format!("Error connecting to {}", database_url))
 }
 
-#[cfg(feature = "floorplan_postgres")]
+#[cfg(feature = "floormap_postgres")]
 #[allow(non_camel_case_types)]
 type DB_CONN_TYPE = PgConnection;
-#[cfg(feature = "floorplan_postgres")]
+#[cfg(feature = "floormap_postgres")]
 pub const DB_TYPE_NAME: &str = "Postgres";
-#[cfg(feature = "floorplan_postgres")]
+#[cfg(feature = "floormap_postgres")]
 pub fn uncached_establish_connection() -> DB_CONN_TYPE {
     postgres_establish_connection()
 }
 
-#[cfg(feature = "floorplan_sqlite")]
+#[cfg(feature = "floormap_sqlite")]
 #[allow(non_camel_case_types)]
 type DB_CONN_TYPE = SqliteConnection;
-#[cfg(feature = "floorplan_sqlite")]
+#[cfg(feature = "floormap_sqlite")]
 pub const DB_TYPE_NAME: &str = "Sqlite";
-#[cfg(feature = "floorplan_sqlite")]
+#[cfg(feature = "floormap_sqlite")]
 pub fn uncached_establish_connection() -> DB_CONN_TYPE {
     sqlite3_establish_connection()
 }
