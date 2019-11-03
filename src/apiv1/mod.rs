@@ -26,9 +26,16 @@ pub struct ApiV1ServiceRecord {
 type ApiV1MapObject = MapObject;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorMap {
+    pub FloorMapUUID: FlexUuid,
+    pub Name: String,
+    pub Description: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
     pub NextPollHorizon: i64,
-    pub MapUUID: FlexUuid,
+    pub FloorMaps: Vec<ApiV1FloorMap>,
     pub MapObjects: Vec<ApiV1MapObject>,
 }
 
@@ -79,29 +86,45 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     new_results
 }
 
-pub fn api_get_map_objects_for_map(
-    map_uuid: &FlexUuid,
-    since: &FlexTimestamp,
-) -> ApiV1GetMapObjectsResponse {
-    use super::schema::MapObjects::dsl::*;
-
+pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse {
     let db = get_db();
     let next_ts = flextimestamp::FlexTimestamp::now().timestamp();
-    let results = MapObjects
-        // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
-        .filter(UpdatedAt.ge(since).and(ParentMapUUID.eq(map_uuid)))
-        .limit(2000)
-        .load::<MapObject>(db.conn())
-        .expect("Error loading services");
+
+    let results = {
+        use super::schema::MapObjects::dsl::*;
+        MapObjects
+            // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<MapObject>(db.conn())
+            .expect("Error loading mapobjects")
+    };
+    let floormaps = {
+        use super::schema::FloorMaps::dsl::*;
+        FloorMaps
+            // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<FloorMap>(db.conn())
+            .expect("Error loading floormaps")
+    };
 
     let new_results: Vec<ApiV1MapObject> = results
         .into_iter()
         .map(|x| ApiV1MapObject { ..x })
         .collect();
+
+    let new_floormaps = floormaps
+        .into_iter()
+        .map(|x| ApiV1FloorMap {
+            FloorMapUUID: x.FloorMapUUID,
+            Name: x.Name,
+            Description: x.Description,
+        })
+        .collect();
     ApiV1GetMapObjectsResponse {
         NextPollHorizon: next_ts,
-        MapUUID: map_uuid.clone(),
+        FloorMaps: new_floormaps,
         MapObjects: new_results,
     }
 }
-

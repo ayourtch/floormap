@@ -21,7 +21,8 @@ CREATE TABLE FloorMaps (
 	Deleted BOOLEAN NOT NULL,
 	Name VARCHAR NOT NULL,
 	Description VARCHAR NOT NULL,
-	FloorPlanFileName VARCHAR NOT NULL
+	FloorPlanFileName VARCHAR NOT NULL,
+	UpdatedAt datetime NOT NULL
 );
 
 INSERT INTO "FloorMaps" VALUES(
@@ -29,7 +30,8 @@ INSERT INTO "FloorMaps" VALUES(
 	0,
 	'Test Floor',
 	'Pre-created basic test floor',
-	'/var/a3s/http/floor-plan-images/1572806818/images/'
+	'/var/a3s/http/floor-plan-images/1572806818/images/page-01.png',
+	'2017-02-24 16:20:49.983'
 );
 
 CREATE TABLE MapObjects (

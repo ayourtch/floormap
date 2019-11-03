@@ -14,6 +14,7 @@ table! {
         Name -> Text,
         Description -> Text,
         FloorPlanFileName -> Text,
+        UpdatedAt -> Timestamp,
     }
 }
 

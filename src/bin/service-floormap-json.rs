@@ -125,13 +125,8 @@ fn main() {
 
     router.get("/services", api_http_get_services_json, "get the services");
     router.get(
-        "/api/v1/mapobjects/get/jsonX",
-        api_http_get_map_objects_for_map,
-        "mapobjects-for-map",
-    );
-    router.get(
-        "/api/v1/mapobjects/get/json/:query_map/:query_timestamp",
-        api_http_get_map_objects_for_map,
+        "/api/v1/mapobjects/get/json/:query_timestamp",
+        api_http_get_map_objects,
         "mapobjects-for-map with argument",
     );
     router.put(
@@ -149,7 +144,11 @@ fn main() {
         api_http_put_new_mapobject,
         "make new mapobject",
     );
-    router.get("/images/floorplans/:floorplan_uuid", http_get_floorplan_image, "floorplan image page");
+    router.get(
+        "/images/floorplans/:floorplan_uuid",
+        http_get_floorplan_image,
+        "floorplan image page",
+    );
     router.get("/", root_page, "root_page");
 
     fn insert_new_service() {
@@ -183,25 +182,13 @@ fn main() {
         Ok(Response::with((status::Ok, payload)))
     }
 
-    fn api_http_get_map_objects_for_map(req: &mut Request) -> IronResult<Response> {
+    fn api_http_get_map_objects(req: &mut Request) -> IronResult<Response> {
         use floormap::flextimestamp::FlexTimestamp;
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
 
         use std::str::FromStr;
-        let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
-        let map_uuid = Uuid::from_str(map_str).unwrap();
-        let flex_uuid = FlexUuid::from_str(map_str).unwrap();
 
-        let ref query_map = req
-            .extensions
-            .get::<Router>()
-            .unwrap()
-            .find("query_map")
-            .map_or(flex_uuid.clone(), |s| {
-                FlexUuid::from_str(&s).unwrap_or(flex_uuid.clone())
-            });
-        // .map_or(format!(""), |s| format!("{:?}", &s));
         let ref query_ts = req
             .extensions
             .get::<Router>()
@@ -210,9 +197,9 @@ fn main() {
             .map_or(FlexTimestamp::from_timestamp(0), |s| {
                 FlexTimestamp::from_timestamp(s.parse::<i64>().unwrap_or(0))
             });
-        println!("on map: {:?} from start: {:?}", query_map, &query_ts);
+        println!("from start: {:?}", &query_ts);
 
-        let new_results = api_get_map_objects_for_map(&query_map, &query_ts);
+        let new_results = api_get_map_objects(&query_ts);
         let payload = serde_json::to_string(&new_results).unwrap();
         let mut resp = Response::with((status::Ok, payload));
         resp.headers.set(Connection::close());
@@ -314,9 +301,12 @@ fn main() {
         let floor = db_get_floormap(&query_uuid);
         println!("Got floormap: {:?}", &floor);
         if floor.is_err() {
-            let payload = format!("Floor plan with uuid {} not found: {:?}", &query_uuid, &floor);
+            let payload = format!(
+                "Floor plan with uuid {} not found: {:?}",
+                &query_uuid, &floor
+            );
             let mut resp = Response::with((status::NotFound, payload));
-            return Ok(resp)
+            return Ok(resp);
         }
         let floor = floor.unwrap();
 

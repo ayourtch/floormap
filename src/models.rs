@@ -29,6 +29,7 @@ pub struct FloorMap {
     pub Name: String,
     pub Description: String,
     pub FloorPlanFileName: String,
+    pub UpdatedAt: FlexTimestamp,
 }
 
 #[serde(default)]

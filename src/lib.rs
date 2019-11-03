@@ -37,11 +37,11 @@ use std::env;
 use std::io::{Error, ErrorKind};
 
 pub mod apiv1;
+pub mod db;
 pub mod flextimestamp;
 pub mod flexuuid;
 pub mod models;
 pub mod schema;
-pub mod db;
 use flexuuid::FlexUuid;
 
 #[macro_use]
@@ -199,10 +199,4 @@ define_db_get_by_ref!(
     FlexUuid
 );
 
-define_db_get_by_ref!(
-    db_get_floormap,
-    FloorMap,
-    FloorMaps,
-    FloorMapUUID,
-    FlexUuid
-);
+define_db_get_by_ref!(db_get_floormap, FloorMap, FloorMaps, FloorMapUUID, FlexUuid);

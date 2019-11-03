@@ -199,6 +199,11 @@ function get_item_id(jse) {
     return el_id;
 }
 
+function get_map_id(jse) {
+    var el_id = "map_" + jse["FloorMapUUID"].replace(/-/gi, "_");
+    return el_id;
+}
+
 var api_root = document.baseURI + "/api/";
 var next_poll_horizon = 0;
 var current_map_uuid = null;
@@ -209,19 +214,39 @@ function processJSON(err, reply_data) {
     } else {
         // alert('Your data: ' + data.length);
         var data = reply_data["MapObjects"];
+        var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
-        current_map_uuid = reply_data["MapUUID"];
-        // console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
+        for (var i = 0; i < floors_data.length; i++) {
+            var jse = floors_data[i];
+            if (current_map_uuid == null) {
+                current_map_uuid = jse["FloorMapUUID"];
+            }
+            var el_id = get_map_id(jse);
+            var el = document.getElementById(el_id);
+            if (el != null) {
+                update_map_jso(el, jse)
+            } else {
+                if (!jse["Deleted"]) {
+                    add_map_jso(jse)
+                }
+            }
+        }
+        console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
 
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
-            var el_id = get_item_id(jse);
-            var el = document.getElementById(el_id);
-            if (el != null) {
-                update_item_jso(el, jse)
+            if (jse.ParentMapUUID != current_map_uuid) {
+                /* FIXME: update the hidden map objects in other layers */
             } else {
-                if (!jse["Deleted"]) {
-                    add_item_jso(jse)
+
+                var el_id = get_item_id(jse);
+                var el = document.getElementById(el_id);
+                if (el != null) {
+                    update_item_jso(el, jse)
+                } else {
+                    if (!jse["Deleted"]) {
+                        add_item_jso(jse)
+                    }
                 }
             }
         }
@@ -231,7 +256,7 @@ function processJSON(err, reply_data) {
 
 
 function JsonPollCycle() {
-    var api_url = api_root + "v1/mapobjects/get/json" + "/" + current_map_uuid + "/" + next_poll_horizon;
+    var api_url = api_root + "v1/mapobjects/get/json" + "/" + next_poll_horizon;
     getJSON(api_url, processJSON);
 }
 
@@ -602,6 +627,47 @@ function update_item_jso(node, jso) {
     }
 }
 
+function set_map_label(node, label) {
+    /* FIXME: no-op for now */
+}
+
+function update_map_jso(node, jso) {
+    console.debug("Updating " + node.uuid);
+    if (jso["Deleted"]) {
+        node.outerHTML = "";
+    } else {
+        var label = jso["Name"];
+        set_map_label(node, label);
+    }
+}
+
+function add_map_jso(jso) {
+    /*
+     <li><div id='page_1'><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+    */
+    var cnv = document.getElementById("page_thumbnails");
+    var li_node = document.createElement("li");
+    var node = document.createElement("div");
+    var el_id = get_map_id(jso);
+    node.id = el_id;
+    // node.f7n = {};
+    node.uuid = jso["FloorMapUUID"];
+    var label = jso["Name"];
+
+    var node_label = document.createElement("p");
+
+    var textnode = document.createTextNode(label);
+    node_label.appendChild(textnode);
+    var node_img = document.createElement("img");
+    node_img.classList.add("thumbnail-image")
+    node_img.src = "images/floorplans/" + node.uuid;
+
+    node.appendChild(node_label);
+    node.appendChild(node_img);
+    li_node.appendChild(node);
+    cnv.appendChild(li_node);
+}
+
 function HasText(el, q) {
     var haystack = el.innerHTML;
     var haystack_lower = haystack.toLowerCase();
@@ -650,6 +716,7 @@ function QuickSearchHandler(e) {
     
    <ul class="thumbnail-list" id="page_thumbnails">
               <li><div><p>&nbsp;</p><img height="100px" width="1px" class="thumbnail-image" src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+AMAAQIA/mGM61QAAAAASUVORK5CYII="></div></li>
+              <!--
               <li><div id='page_1'><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div id='page_2'><p>Page 2 asdasd</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div id='page_3'><p>Page 3  asddsadsadf </p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
@@ -657,6 +724,7 @@ function QuickSearchHandler(e) {
               <li><div><p>Page 5</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 6</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
               <li><div><p>Page 7</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
+-->
    </ul>
 </div>
   <div class="thumbnail-filter" id="search_thumbnails">
@@ -689,9 +757,11 @@ function QuickSearchHandler(e) {
 dragElement(document.getElementById("control_panel"));
 dragElement(document.getElementById("search_thumbnails"));
 document.getElementById("new_item_add").onclick=add_item;
+/*
 document.getElementById("page_1").onclick= function(e) {
   alert(e);
 };
+*/
 document.getElementById("map").onclick= function(e) {
   alert(e);
 };
