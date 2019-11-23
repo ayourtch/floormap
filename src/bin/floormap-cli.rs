@@ -2,6 +2,38 @@ extern crate clap;
 use clap::{App, Arg, SubCommand};
 
 use floormap;
+use floormap::flextimestamp::*;
+
+fn import_pages_from(dirname: &str) {
+    use floormap::db::db_insert_new_floormap;
+    use std::path::Path;
+
+    println!("Importing floor plan from {}", &dirname);
+    let dirname = format!("{}/images", &dirname);
+    let mut page_nr = 1;
+    loop {
+        let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
+        let path = std::path::Path::new(&pathname);
+        if !path.exists() {
+            break;
+        }
+        let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
+        // println!("Checking path {}", &pathname);
+        let path = Path::new(&pathname);
+        if !path.exists() {
+            break;
+        }
+        let page_name = format!("Page {:02}", page_nr);
+        db_insert_new_floormap(&page_name, &page_name, &pathname);
+
+        page_nr = page_nr + 1;
+    }
+    let page_count = page_nr - 1;
+    if page_count == 0 {
+        panic!("No pages found of format 'page-N.png'");
+    }
+    println!("imported {} pages", page_count);
+}
 
 fn main() {
     let matches = App::new("FloorMap CLI")
@@ -33,7 +65,7 @@ fn main() {
                 .arg(
                     Arg::with_name("input")
                         .short("i")
-                        .required(true)
+                        // .required(true)
                         .value_name("DIR")
                         .help("input directory with files"),
                 ),
@@ -42,28 +74,45 @@ fn main() {
         .get_matches();
 
     if let Some(matches) = matches.subcommand_matches("import-floor-plan") {
-        use floormap::db::db_insert_new_floormap;
-        use std::path::Path;
+        // use std::path::Path;
 
-        let dirname = matches.value_of("input").unwrap();
-        println!("Importing floor plan from {}", &dirname);
-        let mut page_nr = 1;
-        loop {
-            let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
-            // println!("Checking path {}", &pathname);
-            let path = Path::new(&pathname);
-            if !path.exists() {
-                break;
+        if let Some(dirname) = matches.value_of("input") {
+            import_pages_from(dirname);
+        } else {
+            // List the import directories...
+            let base_dir = "/var/a3s/http/floor-plan-images";
+
+            println!("Available imports:");
+            for entry in std::fs::read_dir(base_dir).unwrap() {
+                let entry = entry.unwrap();
+                let path = entry.path();
+                let subdir_name = path
+                    .file_name()
+                    .ok_or("No filename")
+                    .unwrap()
+                    .to_string_lossy();
+                if let Ok(unix_ts) = subdir_name.parse::<i64>() {
+                    let ts = FlexTimestamp::from_timestamp(unix_ts);
+                    let dirname = format!("{}/{}/images", &base_dir, &subdir_name);
+                    let mut page_nr = 1;
+                    loop {
+                        let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
+                        let path = std::path::Path::new(&pathname);
+                        if !path.exists() {
+                            break;
+                        }
+                        let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
+                        let path = std::path::Path::new(&pathname);
+                        if !path.exists() {
+                            break;
+                        }
+                        page_nr = page_nr + 1;
+                    }
+                    if page_nr > 1 {
+                        println!("{}/{}: {:?}", &base_dir, &subdir_name, &ts);
+                    }
+                }
             }
-            let page_name = format!("Page {:02}", page_nr);
-            db_insert_new_floormap(&page_name, &page_name, &pathname);
-
-            page_nr = page_nr + 1;
         }
-        let page_count = page_nr - 1;
-        if page_count == 0 {
-            panic!("No pages found of format 'page-N.png'");
-        }
-        println!("imported {} pages", page_count);
     }
 }
