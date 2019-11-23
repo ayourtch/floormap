@@ -129,12 +129,12 @@ var selectedElement = undefined;
 var ongoingTouches = [];
 
 function load_item_details(el) {
-    var txt = document.getElementById("edit_item_txt");
+    var txt = document.getElementById("edit_item_name");
     txt.value = get_item_label(el);
 }
 
-function save_item_details() {
-    var txt = document.getElementById("edit_item_txt");
+function save_item_details(editor_element_id) {
+    var txt = document.getElementById(editor_element_id);
     if (selectedElement != undefined) {
         set_item_label(selectedElement, txt.value);
         SaveName(selectedElement);
@@ -151,12 +151,12 @@ function setSelectedElement(elmnt) {
         elmnt.classList.add("sw1");
         selectedElement = elmnt;
         load_item_details(elmnt);
-        document.getElementById("new_item_details").classList.add("hidden_pane");
-        document.getElementById("existing_item_details").classList.remove("hidden_pane");
+        // document.getElementById("new_item_details").classList.add("hidden_pane");
+        // document.getElementById("existing_item_details").classList.remove("hidden_pane");
     } else {
         if (selectedElement != undefined) {
-            document.getElementById("existing_item_details").classList.add("hidden_pane");
-            document.getElementById("new_item_details").classList.remove("hidden_pane");
+            // document.getElementById("existing_item_details").classList.add("hidden_pane");
+            // document.getElementById("new_item_details").classList.remove("hidden_pane");
             selectedElement = undefined;
         }
     }
@@ -204,7 +204,8 @@ function get_map_id(jse) {
     return el_id;
 }
 
-var api_root = document.baseURI + "/api/";
+// var api_root = document.baseURI + "/api/";
+var api_root = document.location.protocol + "//" + document.location.host + document.location.pathname + "/api/";
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 
@@ -217,8 +218,18 @@ function get_floorplan_thumbnail_src(uuid) {
 }
 
 function set_current_map(uuid) {
+    current_map_uuid = uuid;
+    document.location.hash = current_map_uuid;
     var el = document.getElementById("map");
     el.src = get_floorplan_src(uuid);
+}
+
+function maybe_set_current_map() {
+    if (current_map_uuid == null) {
+        if (document.location.hash != "") {
+            set_current_map(document.location.hash.substr(1));
+        }
+    }
 }
 
 function processJSON(err, reply_data) {
@@ -226,14 +237,18 @@ function processJSON(err, reply_data) {
         alert('Something went wrong: ' + err);
     } else {
         // alert('Your data: ' + data.length);
+        if (reply_data == null) {
+            console.debug("Reply data was null...");
+            return;
+        }
+        maybe_set_current_map();
         var data = reply_data["MapObjects"];
         var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
         for (var i = 0; i < floors_data.length; i++) {
             var jse = floors_data[i];
             if (current_map_uuid == null) {
-                current_map_uuid = jse["FloorMapUUID"];
-                set_current_map(current_map_uuid);
+                set_current_map(jse["FloorMapUUID"]);
             }
             var el_id = get_map_id(jse);
             var el = document.getElementById(el_id);
@@ -271,6 +286,7 @@ function processJSON(err, reply_data) {
 
 function JsonPollCycle() {
     var api_url = api_root + "v1/mapobjects/get/json" + "/" + next_poll_horizon;
+    console.debug("Polling: " + api_url);
     getJSON(api_url, processJSON);
 }
 
@@ -586,6 +602,21 @@ function add_item(e) {
     });
 }
 
+function add_new_item(input_field_id) {
+    var api_url = api_root + "v1/mapobjects/new/put/json";
+    var o = new Object();
+    o["Name"] = document.getElementById(input_field_id).value;
+    o["MapX"] = 100;
+    o["MapY"] = next_y;
+    o["ParentMapUUID"] = current_map_uuid;
+    next_y = next_y + 20;
+    next_number = next_number + 1;
+    putJSON(api_url, o, function(err, d) {
+        console.debug("err: " + err);
+        console.debug("Made new node: " + d);
+    });
+}
+
 function add_item_jso(jso) {
     var cnv = document.getElementById("floor_canvas");
     var node = document.createElement("div");
@@ -746,35 +777,40 @@ function QuickSearchHandler(e) {
    </ul>
 </div>
   <div class="thumbnail-filter" id="search_thumbnails">
+  <hr size=1 noshade/>
   Find page:
-          <input type="text" id="quickSearch" value="search here"/>
+          <input type="text" id="quickSearch" value=""/>
           <input type="button" value="Click here"/>
+  Add new item:
+          <input id="new_item_name" type="text" value="New Item" class="textedit"/>
+          <input id="new_item_add_fixed" type="button" value="add"/>
+  Edit item:
+          <input id="edit_item_name" type="text" value="" class="textedit"/>
+          <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name')"/>
+  <hr size=1 noshade/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
 		  <img id="map" class="map" src=""/>
 		  <!--
 		  <div id="sw_0" class="item" style="top: 0px; left: 0px">c3750-1</div>
 		  <div id="sw_1" class="item" style="top: 20px; left: 0px">S0052</div>
-		  -->
 		  <div id="control_panel" class="panel">
 		  	  <div id="new_item_details">
 				  <div class="draggable">Add new draggable item</div>
 			          <input id="new_item" type="text" value="New Item" class="textedit"/>
 			  	  <input id="new_item_add" type="button" value="add"/>
-		  	  </div>
-			  <div id="existing_item_details" class="hidden_pane">
-				  <div class="draggable">Edit details</div>
-			          <input id="edit_item_txt" type="text" value="" class="textedit"/>
-			  	  <input id="edit_item_save" type="button" value="save" onclick="save_item_details()"/>
 			  </div>
 		  </div>
+		  -->
 		</div>
 	<script>
 // dragElement(document.getElementById("sw_0"));
 // dragElement(document.getElementById("sw_1"));
-dragElement(document.getElementById("control_panel"));
-dragElement(document.getElementById("search_thumbnails"));
-document.getElementById("new_item_add").onclick=add_item;
+// dragElement(document.getElementById("control_panel"));
+// dragElement(document.getElementById("search_thumbnails"));
+// document.getElementById("new_item_add").onclick=add_item;
+// document.getElementById("new_item_add").onclick=function(e) { add_new_item("new_item"); };
+document.getElementById("new_item_add_fixed").onclick=function(e) { add_new_item("new_item_name"); };
 /*
 document.getElementById("page_1").onclick= function(e) {
   alert(e);
