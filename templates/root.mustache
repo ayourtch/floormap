@@ -127,6 +127,7 @@ box-shadow: inset 0 0 0 25px #53a7ea;
 
 var selectedElement = undefined;
 var ongoingTouches = [];
+var page_images_cache = [];
 
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_name");
@@ -720,6 +721,10 @@ function add_map_jso(jso) {
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image")
     node_img.src = get_floorplan_thumbnail_src(node.uuid);
+
+    var node_full_img = new Image();
+    node_full_img.src = get_floorplan_src(node.uuid);
+    page_images_cache.push(node_full_img);
 
     node.appendChild(node_label);
     node.appendChild(node_img);
