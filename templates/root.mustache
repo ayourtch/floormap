@@ -230,6 +230,9 @@ function get_floormap_thumbnail_src(uuid) {
 }
 
 function get_map_from_uuid(uuid) {
+    if (uuid == null || uuid == undefined) {
+        return null;
+    }
     var el_id = get_map_id_from_uuid(current_map_uuid);
     var el = document.getElementById(el_id);
     return el;
@@ -250,9 +253,14 @@ function set_current_map(uuid) {
             el.scrollIntoView();
         }
     }
-    document.location.hash = current_map_uuid;
-    var el = document.getElementById("map");
-    el.src = get_floormap_src(uuid);
+    if (uuid != undefined) {
+        document.location.hash = current_map_uuid;
+        var el = document.getElementById("map");
+        el.src = get_floormap_src(uuid);
+    } else {
+        var el = document.getElementById("map");
+        el.src = "static/layer_3_switch.png";
+    }
 
     var elts = document.getElementsByClassName("item");
 
@@ -262,18 +270,11 @@ function set_current_map(uuid) {
 
 }
 
-function maybe_set_current_map() {
-    if (current_map_uuid == null) {
-        if (document.location.hash != "") {
-            // set_current_map(document.location.hash.substr(1));
-            current_map_uuid = document.location.hash.substr(1);
-        }
-    }
-}
 
 function processJSON(err, reply_data) {
     if (err !== null) {
-        alert('Something went wrong: ' + err);
+        // alert('Something went wrong: ' + err);
+        setTimeout(JsonPollCycle, 10000);
     } else {
         // alert('Your data: ' + data.length);
         if (reply_data == null) {
@@ -281,10 +282,18 @@ function processJSON(err, reply_data) {
             return;
         }
         var new_default_floormap_uuid = undefined;
-        maybe_set_current_map();
+        var need_reset_current_map = false;
+        if (current_map_uuid == null) {
+            if (document.location.hash != "") {
+                current_map_uuid = document.location.hash.substr(1);
+                need_reset_current_map = true;
+            }
+        }
         var data = reply_data["MapObjects"];
         var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
+        console.debug("floors_data len: " + floors_data.length);
+        console.debug("objects_data len: " + data.length);
         for (var i = 0; i < floors_data.length; i++) {
             var jse = floors_data[i];
             if (new_default_floormap_uuid == undefined) {
@@ -317,18 +326,23 @@ function processJSON(err, reply_data) {
                 }
             }
         }
-        var curr_map_el = get_map_from_uuid(current_map_uuid);
-
-        if (curr_map_el != null) {
-            curr_map_el.scrollIntoView();
-        } else {
+        if (get_map_from_uuid(current_map_uuid) == null) {
             if (new_default_floormap_uuid != undefined) {
-                set_current_map(new_default_floormap_uuid);
+                current_map_uuid = new_default_floormap_uuid;
+                need_reset_current_map = true;
+            } else {
+                current_map_uuid = undefined;
+                need_reset_current_map;
             }
         }
-        if (el != null) {
-            setTimeout(JsonPollCycle, 1000);
+        if (need_reset_current_map) {
+            set_current_map(current_map_uuid);
+            var elt = get_map_from_uuid(current_map_uuid);
+            if (elt != null) {
+                elt.scrollIntoView();
+            }
         }
+        setTimeout(JsonPollCycle, 1000);
     }
 }
 
@@ -738,10 +752,12 @@ function set_map_label(node, label) {
 }
 
 function update_map_jso(node, jso) {
-    console.debug("Updating " + node.uuid);
+
     if (jso["Deleted"]) {
         node.outerHTML = "";
+        console.debug("Deleting map " + node.uuid);
     } else {
+        console.debug("Updating map " + node.uuid + " : " + jso["Deleted"]);
         var label = jso["Name"];
         set_map_label(node, label);
         if (node.uuid == current_map_uuid) {
@@ -786,6 +802,7 @@ function add_map_jso(jso) {
         function(e) {
             set_current_map(node.uuid);
         };
+    console.debug("Adding map " + node.uuid);
     cnv.appendChild(li_node);
 }
 

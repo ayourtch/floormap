@@ -30,6 +30,7 @@ pub struct ApiV1FloorMap {
     pub FloorMapUUID: FlexUuid,
     pub Name: String,
     pub Description: String,
+    pub Deleted: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -120,6 +121,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             FloorMapUUID: x.FloorMapUUID,
             Name: x.Name,
             Description: x.Description,
+            Deleted: x.Deleted,
         })
         .collect();
     ApiV1GetMapObjectsResponse {
