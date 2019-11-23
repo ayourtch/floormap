@@ -101,7 +101,13 @@ div.sw0 {
    display: inline-block;
    max-width:160px;
 }
+/*
 .thumbnail-list li div:hover {
+box-shadow: inset 0 0 0 25px #53a7ea;
+}
+*/
+
+.thumbnail-list li .selected-thumbnail {
 box-shadow: inset 0 0 0 25px #53a7ea;
 }
 
@@ -200,8 +206,13 @@ function get_item_id(jse) {
     return el_id;
 }
 
+function get_map_id_from_uuid(uuid) {
+    var el_id = "map_" + uuid.replace(/-/gi, "_");
+    return el_id;
+}
+
 function get_map_id(jse) {
-    var el_id = "map_" + jse["FloorMapUUID"].replace(/-/gi, "_");
+    var el_id = get_map_id_from_uuid(jse["FloorMapUUID"]);
     return el_id;
 }
 
@@ -219,7 +230,21 @@ function get_floormap_thumbnail_src(uuid) {
 }
 
 function set_current_map(uuid) {
+    if (current_map_uuid != undefined) {
+        var el_id = get_map_id_from_uuid(current_map_uuid);
+        var el = document.getElementById(el_id);
+        if (el != null) {
+            el.classList.remove("selected-thumbnail");
+        }
+    }
     current_map_uuid = uuid;
+    if (current_map_uuid != undefined) {
+        var el_id = get_map_id_from_uuid(current_map_uuid);
+        var el = document.getElementById(el_id);
+        if (el != null) {
+            el.classList.add("selected-thumbnail");
+        }
+    }
     document.location.hash = current_map_uuid;
     var el = document.getElementById("map");
     el.src = get_floormap_src(uuid);
@@ -698,6 +723,9 @@ function update_map_jso(node, jso) {
     } else {
         var label = jso["Name"];
         set_map_label(node, label);
+        if (node.uuid == current_map_uuid) {
+            node.classList.add("selected-thumbnail");
+        }
     }
 }
 
@@ -719,7 +747,7 @@ function add_map_jso(jso) {
     var textnode = document.createTextNode(label);
     node_label.appendChild(textnode);
     var node_img = document.createElement("img");
-    node_img.classList.add("thumbnail-image")
+    node_img.classList.add("thumbnail-image");
     node_img.src = get_floormap_thumbnail_src(node.uuid);
     node_img.title = jso["Description"];
 
@@ -729,6 +757,9 @@ function add_map_jso(jso) {
 
     node.appendChild(node_label);
     node.appendChild(node_img);
+    if (node.uuid == current_map_uuid) {
+        node.classList.add("selected-thumbnail");
+    }
     li_node.appendChild(node);
     node.onclick =
         function(e) {
