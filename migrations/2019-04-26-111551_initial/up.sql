@@ -32,6 +32,7 @@ CREATE TABLE FloorMaps (
 	Deleted BOOLEAN NOT NULL,
 	Name VARCHAR NOT NULL,
 	Description VARCHAR NOT NULL,
+	FullText VARCHAR NOT NULL,
 	ParentFloorPlanUUID VARCHAR(32) NOT NULL,
 	FloorPlanFileName VARCHAR NOT NULL,
 	UpdatedAt datetime NOT NULL

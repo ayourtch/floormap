@@ -721,6 +721,7 @@ function add_map_jso(jso) {
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image")
     node_img.src = get_floormap_thumbnail_src(node.uuid);
+    node_img.title = jso["Description"];
 
     var node_full_img = new Image();
     node_full_img.src = get_floormap_src(node.uuid);
@@ -749,18 +750,43 @@ function HasText(el, q) {
     return found;
 }
 
+function TextHasText(text, q) {
+    var haystack = text;
+    var haystack_lower = haystack.toLowerCase();
+    var q_lower = q.toLowerCase();
+    if (q == q_lower) {
+        return (haystack_lower.indexOf(q_lower) !== -1);
+    } else {
+        return (haystack.indexOf(q) !== -1);
+    }
+
+    return found;
+}
+
 function QuickSearchHandler(e) {
     // console.log("keyup event detected! coming from this element:", e.target);
     var q = e.target.value;
     var t = document.getElementById('page_thumbnails'); // .childNodes[1];
-    console.log("Value: ", q);
-    console.log("child node count: ", t.childNodes.length);
+    // console.log("Value: ", q);
+    // console.log("child node count: ", t.childNodes.length);
     for (var i = 2; i < t.childNodes.length; i++) {
-        console.log("Child ", i, " : ", t.childNodes[i].nodeName);
+        // console.log("Child ", i, " : ", t.childNodes[i].nodeName);
         var el = t.childNodes[i];
         // console.log("node: ", el); console.log("disp: ", el.style.display);
         if (el.nodeName == "LI") {
+            var found = false;
             if (HasText(el.childNodes[0].childNodes[0], q)) {
+                found = true;
+            } else {
+                var mimg = el.childNodes[0].childNodes[1];
+                if (mimg != undefined && mimg.nodeName == "IMG") {
+                    var txt = mimg.getAttribute("title");
+                    if (TextHasText(txt, q)) {
+                        found = true;
+                    }
+                }
+            }
+            if (found) {
                 el.style.visibility = "visible";
                 el.style.display = "";
             } else {
@@ -798,8 +824,8 @@ function QuickSearchHandler(e) {
   <div class="thumbnail-filter" id="search_thumbnails">
   <hr size=1 noshade/>
   Find page:
-          <input type="text" id="quickSearch" value=""/>
-          <input type="button" value="Click here"/>
+          <input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
+          <input type="button" value="Search"/>
   Add new item:
           <input id="new_item_name" type="text" value="New Item" class="textedit"/>
           <input id="new_item_add_fixed" type="button" value="add"/>

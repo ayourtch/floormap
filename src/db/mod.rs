@@ -40,6 +40,7 @@ pub fn db_insert_new_floorplan(
 pub fn db_insert_new_floormap(
     new_name: &str,
     new_description: &str,
+    new_full_text: &str,
     new_filename: &str,
     new_parent: &FlexUuid,
 ) -> FlexUuid {
@@ -49,6 +50,7 @@ pub fn db_insert_new_floormap(
     let new_item = FloorMap {
         Name: new_name.to_string(),
         Description: new_description.to_string(),
+        FullText: new_full_text.to_string(),
         FloorPlanFileName: new_filename.to_string(),
         ParentFloorPlanUUID: new_parent.clone(),
         ..Default::default()

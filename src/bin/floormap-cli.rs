@@ -16,6 +16,27 @@ fn import_pages_from(dirname: &str) {
     let description = format!("imported via cli at {:?}", now);
     let plan_uuid = db_insert_new_floorplan("floorplan", &description, &dirname, None);
     loop {
+        let mut description = format!("");
+        let mut full_text = format!("");
+        let pathname = format!("{}/page-{}.txt", &dirname, page_nr);
+        let path = std::path::Path::new(&pathname);
+        if path.exists() {
+            use std::fs::File;
+            use std::io::prelude::*;
+            let mut file = File::open(path).unwrap();
+            let mut contents = String::new();
+            if let Ok(res) = file.read_to_string(&mut contents) {
+                description = contents
+                    .lines()
+                    .next()
+                    .clone()
+                    .map(|x| x.clone().trim())
+                    .unwrap_or("")
+                    .to_string();
+                full_text = contents;
+            }
+        }
+        let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
         let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
         let path = std::path::Path::new(&pathname);
         if !path.exists() {
@@ -28,7 +49,7 @@ fn import_pages_from(dirname: &str) {
             break;
         }
         let page_name = format!("Page {:02}", page_nr);
-        db_insert_new_floormap(&page_name, &page_name, &pathname, &plan_uuid);
+        db_insert_new_floormap(&page_name, &description, &full_text, &pathname, &plan_uuid);
 
         page_nr = page_nr + 1;
     }

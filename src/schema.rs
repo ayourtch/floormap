@@ -13,6 +13,7 @@ table! {
         Deleted -> Bool,
         Name -> Text,
         Description -> Text,
+        FullText -> Text,
         ParentFloorPlanUUID -> Text,
         FloorPlanFileName -> Text,
         UpdatedAt -> Timestamp,

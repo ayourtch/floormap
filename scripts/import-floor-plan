@@ -15,6 +15,10 @@ echo "${PDF_FILE}" | sudo -u www-data tee "${TARGET_DIR}/source.txt"
 echo "Converting the pdf to ppm..."
 sudo -u www-data pdftoppm -png "${TARGET_DIR}/source.pdf" "${TARGET_DIR}/images/page"
 sudo -u www-data find  "${TARGET_DIR}/images" -type f -exec convert {} -resize 400x400 {}-thumb.png \;
+echo "Extracting the text from pdf pages..."
+sudo -u www-data gs -sDEVICE=txtwrite -sOutputFile="${TARGET_DIR}/images/page-%d.txt" -dNOPAUSE -dBATCH "${TARGET_DIR}/source.pdf"
+echo "Removing extra spaces from txt files..."
+sudo -u www-data find "${TARGET_DIR}/images" -name '*.txt' -exec sed -i -e 's/  \+/ /g' {} \;
 # echo "Converting the ppm to png..."
 # sudo -u www-data find "${TARGET_DIR}" -name '*.ppm' -print -exec convert {} {}.png \;
 
