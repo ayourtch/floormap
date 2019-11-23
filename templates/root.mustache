@@ -229,18 +229,22 @@ function get_floormap_thumbnail_src(uuid) {
     return ("images/floormaps/thumbnails/" + uuid);
 }
 
+function get_map_from_uuid(uuid) {
+    var el_id = get_map_id_from_uuid(current_map_uuid);
+    var el = document.getElementById(el_id);
+    return el;
+}
+
 function set_current_map(uuid) {
     if (current_map_uuid != undefined) {
-        var el_id = get_map_id_from_uuid(current_map_uuid);
-        var el = document.getElementById(el_id);
+        var el = get_map_from_uuid(current_map_uuid);
         if (el != null) {
             el.classList.remove("selected-thumbnail");
         }
     }
     current_map_uuid = uuid;
     if (current_map_uuid != undefined) {
-        var el_id = get_map_id_from_uuid(current_map_uuid);
-        var el = document.getElementById(el_id);
+        var el = get_map_from_uuid(current_map_uuid);
         if (el != null) {
             el.classList.add("selected-thumbnail");
         }
@@ -260,7 +264,8 @@ function set_current_map(uuid) {
 function maybe_set_current_map() {
     if (current_map_uuid == null) {
         if (document.location.hash != "") {
-            set_current_map(document.location.hash.substr(1));
+            // set_current_map(document.location.hash.substr(1));
+            current_map_uuid = document.location.hash.substr(1);
         }
     }
 }
@@ -274,12 +279,16 @@ function processJSON(err, reply_data) {
             console.debug("Reply data was null...");
             return;
         }
+        var new_default_floormap_uuid = undefined;
         maybe_set_current_map();
         var data = reply_data["MapObjects"];
         var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
         for (var i = 0; i < floors_data.length; i++) {
             var jse = floors_data[i];
+            if (new_default_floormap_uuid == undefined) {
+                new_default_floormap_uuid = jse["FloorMapUUID"];
+            }
             if (current_map_uuid == null) {
                 set_current_map(jse["FloorMapUUID"]);
             }
@@ -307,7 +316,14 @@ function processJSON(err, reply_data) {
                 }
             }
         }
-        setTimeout(JsonPollCycle, 1000);
+        if (get_map_from_uuid(current_map_uuid) == null) {
+            if (new_default_floormap_uuid != undefined) {
+                set_current_map(new_default_floormap_uuid);
+            }
+        }
+        if (el != null) {
+            setTimeout(JsonPollCycle, 1000);
+        }
     }
 }
 
