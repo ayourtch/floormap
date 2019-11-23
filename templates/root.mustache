@@ -210,19 +210,19 @@ var api_root = document.location.protocol + "//" + document.location.host + docu
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 
-function get_floorplan_src(uuid) {
-    return ("images/floorplans/" + uuid);
+function get_floormap_src(uuid) {
+    return ("images/floormaps/" + uuid);
 }
 
-function get_floorplan_thumbnail_src(uuid) {
-    return ("images/floorplans/thumbnails/" + uuid);
+function get_floormap_thumbnail_src(uuid) {
+    return ("images/floormaps/thumbnails/" + uuid);
 }
 
 function set_current_map(uuid) {
     current_map_uuid = uuid;
     document.location.hash = current_map_uuid;
     var el = document.getElementById("map");
-    el.src = get_floorplan_src(uuid);
+    el.src = get_floormap_src(uuid);
 
     var elts = document.getElementsByClassName("item");
 
@@ -720,10 +720,10 @@ function add_map_jso(jso) {
     node_label.appendChild(textnode);
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image")
-    node_img.src = get_floorplan_thumbnail_src(node.uuid);
+    node_img.src = get_floormap_thumbnail_src(node.uuid);
 
     var node_full_img = new Image();
-    node_full_img.src = get_floorplan_src(node.uuid);
+    node_full_img.src = get_floormap_src(node.uuid);
     page_images_cache.push(node_full_img);
 
     node.appendChild(node_label);

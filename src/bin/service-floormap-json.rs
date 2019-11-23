@@ -145,14 +145,14 @@ fn main() {
         "make new mapobject",
     );
     router.get(
-        "/images/floorplans/:floorplan_uuid",
-        http_get_floorplan_image,
-        "floorplan image page",
+        "/images/floormaps/:floormap_uuid",
+        http_get_floormap_image,
+        "floormap image page",
     );
     router.get(
-        "/images/floorplans/thumbnails/:floorplan_uuid",
-        http_get_floorplan_thumbnail_image,
-        "floorplan image thumbnails page",
+        "/images/floormaps/thumbnails/:floormap_uuid",
+        http_get_floormap_thumbnail_image,
+        "floormap image thumbnails page",
     );
     router.get("/", root_page, "root_page");
 
@@ -283,7 +283,7 @@ fn main() {
         }
     }
 
-    fn http_get_floorplan_image(req: &mut Request) -> IronResult<Response> {
+    fn http_get_floormap_image(req: &mut Request) -> IronResult<Response> {
         use floormap::flextimestamp::FlexTimestamp;
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
@@ -298,7 +298,7 @@ fn main() {
             .extensions
             .get::<Router>()
             .unwrap()
-            .find("floorplan_uuid")
+            .find("floormap_uuid")
             .map_or(flex_uuid.clone(), |s| {
                 FlexUuid::from_str(&s).unwrap_or(flex_uuid.clone())
             });
@@ -326,7 +326,7 @@ fn main() {
         Ok(resp)
     }
 
-    fn http_get_floorplan_thumbnail_image(req: &mut Request) -> IronResult<Response> {
+    fn http_get_floormap_thumbnail_image(req: &mut Request) -> IronResult<Response> {
         use floormap::flextimestamp::FlexTimestamp;
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
@@ -341,7 +341,7 @@ fn main() {
             .extensions
             .get::<Router>()
             .unwrap()
-            .find("floorplan_uuid")
+            .find("floormap_uuid")
             .map_or(flex_uuid.clone(), |s| {
                 FlexUuid::from_str(&s).unwrap_or(flex_uuid.clone())
             });
