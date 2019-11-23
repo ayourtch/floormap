@@ -247,6 +247,7 @@ function set_current_map(uuid) {
         var el = get_map_from_uuid(current_map_uuid);
         if (el != null) {
             el.classList.add("selected-thumbnail");
+            el.scrollIntoView();
         }
     }
     document.location.hash = current_map_uuid;
@@ -316,7 +317,11 @@ function processJSON(err, reply_data) {
                 }
             }
         }
-        if (get_map_from_uuid(current_map_uuid) == null) {
+        var curr_map_el = get_map_from_uuid(current_map_uuid);
+
+        if (curr_map_el != null) {
+            curr_map_el.scrollIntoView();
+        } else {
             if (new_default_floormap_uuid != undefined) {
                 set_current_map(new_default_floormap_uuid);
             }
@@ -841,6 +846,11 @@ function QuickSearchHandler(e) {
                 el.style.display = "none";
             }
         }
+    }
+
+    var el = get_map_from_uuid(current_map_uuid);
+    if (el != null) {
+        el.scrollIntoView();
     }
 }
 
