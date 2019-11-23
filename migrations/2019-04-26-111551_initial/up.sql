@@ -54,7 +54,6 @@ CREATE TABLE MapObjects (
 	UpdatedAt datetime NOT NULL
 );
 
-
 CREATE TABLE Jobs (
 	RecordUUID VARCHAR(32) NOT NULL PRIMARY KEY,
 	JobGrouName VARCHAR NOT NULL,

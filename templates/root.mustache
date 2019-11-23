@@ -220,6 +220,7 @@ function get_map_id(jse) {
 var api_root = document.location.protocol + "//" + document.location.host + document.location.pathname + "/api/";
 var next_poll_horizon = 0;
 var current_map_uuid = null;
+var current_set_map_uuid = null;
 
 function get_floormap_src(uuid) {
     return ("images/floormaps/" + uuid);
@@ -239,6 +240,12 @@ function get_map_from_uuid(uuid) {
 }
 
 function set_current_map(uuid) {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        if (el != null) {
+            el.classList.remove("selected-thumbnail");
+        }
+    }
     if (current_map_uuid != undefined) {
         var el = get_map_from_uuid(current_map_uuid);
         if (el != null) {
@@ -246,6 +253,7 @@ function set_current_map(uuid) {
         }
     }
     current_map_uuid = uuid;
+    current_set_map_uuid = uuid;
     if (current_map_uuid != undefined) {
         var el = get_map_from_uuid(current_map_uuid);
         if (el != null) {
@@ -282,11 +290,13 @@ function processJSON(err, reply_data) {
             return;
         }
         var new_default_floormap_uuid = undefined;
-        var need_reset_current_map = false;
         if (current_map_uuid == null) {
             if (document.location.hash != "") {
                 current_map_uuid = document.location.hash.substr(1);
-                need_reset_current_map = true;
+            }
+        } else {
+            if (document.location.hash != "#" + current_map_uuid) {
+                current_map_uuid = document.location.hash.substr(1);
             }
         }
         var data = reply_data["MapObjects"];
@@ -329,13 +339,11 @@ function processJSON(err, reply_data) {
         if (get_map_from_uuid(current_map_uuid) == null) {
             if (new_default_floormap_uuid != undefined) {
                 current_map_uuid = new_default_floormap_uuid;
-                need_reset_current_map = true;
             } else {
                 current_map_uuid = undefined;
-                need_reset_current_map;
             }
         }
-        if (need_reset_current_map) {
+        if (current_map_uuid != current_set_map_uuid) {
             set_current_map(current_map_uuid);
             var elt = get_map_from_uuid(current_map_uuid);
             if (elt != null) {
