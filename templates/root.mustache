@@ -222,6 +222,13 @@ function set_current_map(uuid) {
     document.location.hash = current_map_uuid;
     var el = document.getElementById("map");
     el.src = get_floorplan_src(uuid);
+
+    var elts = document.getElementsByClassName("item");
+
+    for (var i = 0; i < elts.length; i++) {
+        set_item_visibility(elts[i]);
+    }
+
 }
 
 function maybe_set_current_map() {
@@ -264,18 +271,13 @@ function processJSON(err, reply_data) {
 
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
-            if (jse.ParentMapUUID != current_map_uuid) {
-                /* FIXME: update the hidden map objects in other layers */
+            var el_id = get_item_id(jse);
+            var el = document.getElementById(el_id);
+            if (el != null) {
+                update_item_jso(el, jse)
             } else {
-
-                var el_id = get_item_id(jse);
-                var el = document.getElementById(el_id);
-                if (el != null) {
-                    update_item_jso(el, jse)
-                } else {
-                    if (!jse["Deleted"]) {
-                        add_item_jso(jse)
-                    }
+                if (!jse["Deleted"]) {
+                    add_item_jso(jse)
                 }
             }
         }
@@ -617,6 +619,14 @@ function add_new_item(input_field_id) {
     });
 }
 
+function set_item_visibility(node) {
+    if (node.parent_map_uuid == current_map_uuid) {
+        node.style.visibility = "visible";
+    } else {
+        node.style.visibility = "hidden";
+    }
+}
+
 function add_item_jso(jso) {
     var cnv = document.getElementById("floor_canvas");
     var node = document.createElement("div");
@@ -630,6 +640,7 @@ function add_item_jso(jso) {
     node.f7n.dragging = 0;
     node.f7n.saving = 0;
     node.uuid = jso["MapObjectUUID"];
+    node.parent_map_uuid = jso["ParentMapUUID"];
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
     textnode.id = el_id + "_label";
@@ -642,6 +653,7 @@ function add_item_jso(jso) {
     // baggage.style.left = "0px";
     baggage.style.background = "red";
     node.appendChild(baggage);
+    set_item_visibility(node);
     cnv.appendChild(node);
     dragElement(node)
 }
@@ -669,6 +681,8 @@ function update_item_jso(node, jso) {
         }
         var label = jso["Name"];
         set_item_label(node, label);
+        node.parent_map_uuid = jso["ParentMapUUID"];
+        set_item_visibility(node);
     }
 }
 
