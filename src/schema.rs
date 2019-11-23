@@ -13,7 +13,21 @@ table! {
         Deleted -> Bool,
         Name -> Text,
         Description -> Text,
+        ParentFloorPlanUUID -> Text,
         FloorPlanFileName -> Text,
+        UpdatedAt -> Timestamp,
+    }
+}
+
+table! {
+    FloorPlans (FloorPlanUUID) {
+        FloorPlanUUID -> Text,
+        Deleted -> Bool,
+        Name -> Text,
+        Description -> Text,
+        ParentFloorPlanUUID -> Nullable<Text>,
+        FloorPlanPath -> Text,
+        CreatedAt -> Timestamp,
         UpdatedAt -> Timestamp,
     }
 }
@@ -69,4 +83,4 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(Comments, FloorMaps, Jobs, MapObjects, Services,);
+allow_tables_to_appear_in_same_query!(Comments, FloorMaps, FloorPlans, Jobs, MapObjects, Services,);

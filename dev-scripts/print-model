@@ -5,7 +5,7 @@ diesel print-schema --database-url db/floor.sqlite3 | sed -e 's#^}##g' \
 	-e 's#^        #        pub #g' \
 	-e 's# -> Integer#: i32#g' -e 's# -> Nullable<Integer>#: Option<i32>#' \
 	-e 's# -> Bool#: bool#g' -e 's# -> Nullable<Bool>#: Option<bool>#' \
-	-e 's#UUID -> Text#UUID: FlexUuid#g' -e 's#UUID -> Nullable<Text>#UUID: Option<FlexUuid#' \
+	-e 's#UUID -> Text#UUID: FlexUuid#g' -e 's#UUID -> Nullable<Text>#UUID: Option<FlexUuid>#' \
 	-e 's# -> Text#: String#g' -e 's# -> Nullable<Text>#: Option<String>#' \
 	-e 's# -> Timestamp#: FlexTimestamp#g' -e 's# -> Nullable<Timestamp>#: Option<FlexTimestamp>#' \
 	-e 's#s {$# {#' \

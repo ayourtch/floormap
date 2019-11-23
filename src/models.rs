@@ -28,7 +28,22 @@ pub struct FloorMap {
     pub Deleted: bool,
     pub Name: String,
     pub Description: String,
+    pub ParentFloorPlanUUID: FlexUuid,
     pub FloorPlanFileName: String,
+    pub UpdatedAt: FlexTimestamp,
+}
+
+#[serde(default)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[table_name = "FloorPlans"]
+pub struct FloorPlan {
+    pub FloorPlanUUID: FlexUuid,
+    pub Deleted: bool,
+    pub Name: String,
+    pub Description: String,
+    pub ParentFloorPlanUUID: Option<FlexUuid>,
+    pub FloorPlanPath: String,
+    pub CreatedAt: FlexTimestamp,
     pub UpdatedAt: FlexTimestamp,
 }
 

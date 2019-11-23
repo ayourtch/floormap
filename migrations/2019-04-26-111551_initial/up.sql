@@ -16,11 +16,23 @@ CREATE TABLE Services (
 	ServiceLabel VARCHAR NOT NULL
 );
 
+CREATE TABLE FloorPlans (
+	FloorPlanUUID VARCHAR(32) NOT NULL PRIMARY KEY,
+	Deleted BOOLEAN NOT NULL,
+	Name VARCHAR NOT NULL,
+	Description VARCHAR NOT NULL,
+	ParentFloorPlanUUID VARCHAR(32),
+	FloorPlanPath VARCHAR NOT NULL,
+	CreatedAt datetime NOT NULL,
+	UpdatedAt datetime NOT NULL
+);
+
 CREATE TABLE FloorMaps (
 	FloorMapUUID VARCHAR(32) NOT NULL PRIMARY KEY,
 	Deleted BOOLEAN NOT NULL,
 	Name VARCHAR NOT NULL,
 	Description VARCHAR NOT NULL,
+	ParentFloorPlanUUID VARCHAR(32) NOT NULL,
 	FloorPlanFileName VARCHAR NOT NULL,
 	UpdatedAt datetime NOT NULL
 );

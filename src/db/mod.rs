@@ -12,10 +12,36 @@ use flextimestamp::FlexTimestamp;
 use flexuuid::FlexUuid;
 use uuid::Uuid;
 
+pub fn db_insert_new_floorplan(
+    new_name: &str,
+    new_description: &str,
+    new_path: &str,
+    new_parent: Option<&FlexUuid>,
+) -> FlexUuid {
+    use self::diesel::prelude::*;
+    use schema::FloorPlans::dsl::*;
+
+    let new_item = FloorPlan {
+        Name: new_name.to_string(),
+        Description: new_description.to_string(),
+        FloorPlanPath: new_path.to_string(),
+        ParentFloorPlanUUID: new_parent.map(|x| x.clone()),
+        CreatedAt: FlexTimestamp::now(),
+        ..Default::default()
+    };
+
+    let db = get_db();
+    let rows_inserted = diesel::insert_into(FloorPlans)
+        .values(&new_item)
+        .execute(db.conn());
+    new_item.FloorPlanUUID
+}
+
 pub fn db_insert_new_floormap(
     new_name: &str,
     new_description: &str,
     new_filename: &str,
+    new_parent: &FlexUuid,
 ) -> FlexUuid {
     use self::diesel::prelude::*;
     use schema::FloorMaps::dsl::*;
@@ -24,6 +50,7 @@ pub fn db_insert_new_floormap(
         Name: new_name.to_string(),
         Description: new_description.to_string(),
         FloorPlanFileName: new_filename.to_string(),
+        ParentFloorPlanUUID: new_parent.clone(),
         ..Default::default()
     };
 

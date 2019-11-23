@@ -6,11 +6,15 @@ use floormap::flextimestamp::*;
 
 fn import_pages_from(dirname: &str) {
     use floormap::db::db_insert_new_floormap;
+    use floormap::db::db_insert_new_floorplan;
     use std::path::Path;
 
     println!("Importing floor plan from {}", &dirname);
     let dirname = format!("{}/images", &dirname);
     let mut page_nr = 1;
+    let now = FlexTimestamp::now();
+    let description = format!("imported via cli at {:?}", now);
+    let plan_uuid = db_insert_new_floorplan("floorplan", &description, &dirname, None);
     loop {
         let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
         let path = std::path::Path::new(&pathname);
@@ -24,7 +28,7 @@ fn import_pages_from(dirname: &str) {
             break;
         }
         let page_name = format!("Page {:02}", page_nr);
-        db_insert_new_floormap(&page_name, &page_name, &pathname);
+        db_insert_new_floormap(&page_name, &page_name, &pathname, &plan_uuid);
 
         page_nr = page_nr + 1;
     }
