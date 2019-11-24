@@ -3,9 +3,7 @@ install-rust:
 	sudo apt-get install -y make build-essential git jsbeautifier
 	curl https://sh.rustup.rs -sSf | sh -s -- -y
 	sudo apt-get install -y libssl-dev pkg-config moreutils libpq-dev libsqlite3-dev
-	source ~/.cargo/env && cargo install diesel_cli --no-default-features --features postgres,sqlite
-	mkdir db
-	source ~/.cargo/env
+	. ~/.cargo/env && cargo install diesel_cli --no-default-features --features postgres,sqlite
 	echo To finish Rust installation, please logout and login back
 db/floor.sqlite3:
 	diesel setup --database-url db/floor.sqlite3
