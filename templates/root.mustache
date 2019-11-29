@@ -221,6 +221,7 @@ var api_root = document.location.protocol + "//" + document.location.host + docu
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 var current_set_map_uuid = null;
+var current_quick_search = "";
 
 function get_floormap_src(uuid) {
     return ("images/floormaps/" + uuid);
@@ -237,6 +238,16 @@ function get_map_from_uuid(uuid) {
     var el_id = get_map_id_from_uuid(uuid);
     var el = document.getElementById(el_id);
     return el;
+}
+
+function set_map_items_visibility() {
+
+    var elts = document.getElementsByClassName("item");
+
+    for (var i = 0; i < elts.length; i++) {
+        set_item_visibility(elts[i]);
+    }
+
 }
 
 function set_current_map(uuid) {
@@ -269,13 +280,7 @@ function set_current_map(uuid) {
         var el = document.getElementById("map");
         el.src = "static/layer_3_switch.png";
     }
-
-    var elts = document.getElementsByClassName("item");
-
-    for (var i = 0; i < elts.length; i++) {
-        set_item_visibility(elts[i]);
-    }
-
+    set_map_items_visibility();
 }
 
 
@@ -721,6 +726,16 @@ function add_new_item(input_field_id) {
 function set_item_visibility(node) {
     if (node.parent_map_uuid == current_map_uuid) {
         node.style.visibility = "visible";
+        var lbl = node.childNodes[0];
+        if (lbl != null) {
+            if ((current_quick_search != "") && TextHasText(lbl.data, current_quick_search)) {
+                node.style["font-weight"] = 'bold';
+                node.style.color = "yellow";
+            } else {
+                node.style["font-weight"] = 'normal';
+                node.style.color = "white";
+            }
+        }
     } else {
         node.style.visibility = "hidden";
     }
@@ -880,6 +895,7 @@ function TextHasText(text, q) {
 function QuickSearchHandler(e) {
     // console.log("keyup event detected! coming from this element:", e.target);
     var q = e.target.value;
+    current_quick_search = q;
     var t = document.getElementById('page_thumbnails'); // .childNodes[1];
     // console.log("Value: ", q);
     // console.log("child node count: ", t.childNodes.length);
@@ -917,6 +933,7 @@ function QuickSearchHandler(e) {
     if (el != null) {
         el.scrollIntoView();
     }
+    set_map_items_visibility();
 }
 
 /* beautify ignore:start */
