@@ -234,7 +234,7 @@ function get_map_from_uuid(uuid) {
     if (uuid == null || uuid == undefined) {
         return null;
     }
-    var el_id = get_map_id_from_uuid(current_map_uuid);
+    var el_id = get_map_id_from_uuid(uuid);
     var el = document.getElementById(el_id);
     return el;
 }
@@ -302,8 +302,8 @@ function processJSON(err, reply_data) {
         var data = reply_data["MapObjects"];
         var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
-        console.debug("floors_data len: " + floors_data.length);
-        console.debug("objects_data len: " + data.length);
+        // console.debug("floors_data len: " + floors_data.length);
+        // console.debug("objects_data len: " + data.length);
         for (var i = 0; i < floors_data.length; i++) {
             var jse = floors_data[i];
             if (new_default_floormap_uuid == undefined) {
@@ -322,7 +322,7 @@ function processJSON(err, reply_data) {
                 }
             }
         }
-        console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
+        // console.debug("Next poll for map " + current_map_uuid + " : " + next_poll_horizon);
 
         for (var i = 0; i < data.length; i++) {
             var jse = data[i];
@@ -357,7 +357,7 @@ function processJSON(err, reply_data) {
 
 function JsonPollCycle() {
     var api_url = api_root + "v1/mapobjects/get/json" + "/" + next_poll_horizon;
-    console.debug("Polling: " + api_url);
+    // console.debug("Polling: " + api_url);
     getJSON(api_url, processJSON);
 }
 
@@ -673,6 +673,35 @@ function add_item(e) {
     });
 }
 
+function add_item_to_quicksearch(node, label) {
+    var map_uuid = node.parent_map_uuid;
+    var map = get_map_from_uuid(map_uuid);
+    if (map != null) {
+        // alert(map.quickSearchObjects[node.uuid]);
+        map.quickSearchObjects[node.uuid] = "|" + label + "|";
+        if (map.quickSearchString == undefined) {
+            map.quickSearchString = "|" + label + "|";
+        } else {
+            map.quickSearchString = map.quickSearchString + "|" + label + "|";
+        }
+        console.debug("Adding quick search object: " + node.uuid + " to map " + map_uuid + " as '" + label + "'");
+        console.debug("string: " + map.quickSearchString);
+    } else {
+        console.debug("Map is null - " + map_uuid);
+    }
+}
+
+function del_item_from_quicksearch(node) {
+    var map_uuid = node.parent_map_uuid;
+    var map = get_map_from_uuid(map_uuid);
+    if (map != null) {
+        // alert(map.quickSearchObjects[node.uuid]);
+        label_plus = map.quickSearchObjects[node.uuid];
+        map.quickSearchString = map.quickSearchString.replace(label_plus, "");
+        map.quickSearchObjects.delete(node.uuid);
+    }
+}
+
 function add_new_item(input_field_id) {
     var api_url = api_root + "v1/mapobjects/new/put/json";
     var o = new Object();
@@ -687,6 +716,7 @@ function add_new_item(input_field_id) {
         console.debug("Made new node: " + d);
     });
 }
+
 
 function set_item_visibility(node) {
     if (node.parent_map_uuid == current_map_uuid) {
@@ -723,13 +753,17 @@ function add_item_jso(jso) {
     baggage.style.background = "red";
     // node.appendChild(baggage);
     set_item_visibility(node);
+    add_item_to_quicksearch(node, label);
+    // console.debug("Add item " + node.uuid + " parent map " + node.parent_map_uuid);
     cnv.appendChild(node);
     dragElement(node)
 }
 
 function set_item_label(node, label) {
     console.debug("Setting item label to " + label);
+    del_item_from_quicksearch(node);
     node.replaceChild(document.createTextNode(label), node.childNodes[0]);
+    add_item_to_quicksearch(node, label);
 }
 
 function get_item_label(node) {
@@ -742,6 +776,7 @@ function update_item_jso(node, jso) {
     var cnv = document.getElementById("floor_canvas");
     console.debug("Updating " + node.uuid + " X: " + jso["MapX"] + " Y: " + jso["MapY"]);
     if (jso["Deleted"]) {
+        del_item_from_quicksearch(node);
         node.outerHTML = "";
     } else {
         if (node.f7n.dragging + node.f7n.saving == 0) {
@@ -800,6 +835,8 @@ function add_map_jso(jso) {
     node_full_img.src = get_floormap_src(node.uuid);
     page_images_cache.push(node_full_img);
 
+    node.quickSearchObjects = {};
+    node.quickSearchString = "";
     node.appendChild(node_label);
     node.appendChild(node_img);
     if (node.uuid == current_map_uuid) {
@@ -810,7 +847,7 @@ function add_map_jso(jso) {
         function(e) {
             set_current_map(node.uuid);
         };
-    console.debug("Adding map " + node.uuid);
+    // console.debug("Adding map " + node.uuid);
     cnv.appendChild(li_node);
 }
 
@@ -854,6 +891,8 @@ function QuickSearchHandler(e) {
             var found = false;
             if (HasText(el.childNodes[0].childNodes[0], q)) {
                 found = true;
+            } else if (TextHasText(el.childNodes[0].quickSearchString, q)) {
+                found = true;
             } else {
                 var mimg = el.childNodes[0].childNodes[1];
                 if (mimg != undefined && mimg.nodeName == "IMG") {
@@ -863,6 +902,7 @@ function QuickSearchHandler(e) {
                     }
                 }
             }
+            console.debug(el.childNodes[0].quickSearchString);
             if (found) {
                 el.style.visibility = "visible";
                 el.style.display = "";
