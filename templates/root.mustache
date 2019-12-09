@@ -572,8 +572,6 @@ function dragElement(elmnt) {
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
             if (selectedElement != elmnt) {
                 setSelectedElement(elmnt)
-            } else {
-                setSelectedElement(undefined)
             }
         }
 
@@ -612,8 +610,6 @@ function dragElement(elmnt) {
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
             if (selectedElement != elmnt) {
                 setSelectedElement(elmnt)
-            } else {
-                setSelectedElement(undefined)
             }
         }
         // get the mouse cursor position at startup:
