@@ -48,6 +48,11 @@ pub struct ApiV1MapObjectSetXYRecord {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1MapObjectDeleteRecord {
+    pub MapObjectUUID: flexuuid::FlexUuid,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1MapObjectSetNameDescriptionRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
     pub Name: String,

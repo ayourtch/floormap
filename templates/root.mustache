@@ -148,6 +148,13 @@ function save_item_details(editor_element_id) {
     }
 }
 
+function delete_active_item() {
+    if (selectedElement != undefined) {
+        DeleteItem(selectedElement);
+        setSelectedElement(undefined);
+    }
+}
+
 function adjust_item_label_size(delta) {
     if (selectedElement != undefined) {
         var sz = selectedElement.labelsize;
@@ -424,6 +431,23 @@ function SavePosition(node) {
     });
 }
 
+function DeleteItem(node) {
+    var api_url = api_root + "v1/mapobjects/delete/put/json";
+    var data = new Object();
+    data["MapObjectUUID"] = node.uuid;
+    total_saving++;
+    node.style.cursor = 'wait';
+    document.body.style.cursor = 'wait';
+    var arr = new Array();
+    arr[0] = data;
+    putJSON(api_url, arr, function(err, res) {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+    });
+}
+
 function SaveName(node) {
     var api_url = api_root + "v1/mapobjects/name_description/put/json";
     var data = new Object();
@@ -466,8 +490,10 @@ function noop(e) {
 function document_keydown(e) {
     if (e.keyCode == 8) {
         // backspace
+        delete_active_item();
     } else if (e.keyCode == 46) {
         // delete
+        delete_active_item();
     } else if (e.keyCode == 61) {
         // plus
         adjust_item_label_size(+1);

@@ -135,6 +135,11 @@ fn main() {
         "set mapobjects-for-map",
     );
     router.put(
+        "/api/v1/mapobjects/delete/put/json",
+        api_http_put_mapobject_delete,
+        "set mapobjects-for-map deleted",
+    );
+    router.put(
         "/api/v1/mapobjects/name_description/put/json",
         api_http_put_mapobject_name_description,
         "set mapobjects-for-map name",
@@ -228,6 +233,28 @@ fn main() {
                 let new_results = api_get_map_objects_for_map(&map_uuid, &FlexTimestamp::now());
                 let payload = serde_json::to_string(&new_results).unwrap();
                 */
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+    fn api_http_put_mapobject_delete(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_mapobject_deleted;
+        use std::str::FromStr;
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1MapObjectDeleteRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    db_set_mapobject_deleted(&o.MapObjectUUID, true).unwrap();
+                }
 
                 Ok(Response::with((status::Ok, payload)))
             }
