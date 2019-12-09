@@ -450,6 +450,23 @@ function noop(e) {
     e.preventDefault();
 }
 
+function document_keydown(e) {
+    if (e.keyCode == 8) {
+        // backspace
+    } else if (e.keyCode == 46) {
+        // delete
+    } else if (e.keyCode == 61) {
+        // plus
+        if (selectedElement != undefined) {
+            console.log("element:" + selectedElement.style.fontSize); // .style.font.size);
+            selectedElement.style.fontSize = "20px";
+        }
+    } else if (e.keyCode == 173) {
+        // minus
+    }
+    console.log("Logging event: " + e.keyCode);
+}
+
 function dragElement(elmnt) {
     var pos1 = 0,
         pos2 = 0,
@@ -1009,7 +1026,9 @@ document.onreadystatechange = function () {
        e.oninput = QuickSearchHandler;
        e.onpropertychange = e.oninput; // for IE8
 
-        JsonPollCycle();
+       document.addEventListener('keydown', document_keydown, false);
+
+       JsonPollCycle();
     }
 }
 </script>
