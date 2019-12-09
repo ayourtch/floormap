@@ -546,14 +546,14 @@ function document_keydown(e) {
     } else if (e.keyCode == 46) {
         // delete
         delete_active_item();
-    } else if (e.keyCode == 61) {
+    } else if (e.key == '+') {
         // plus
         adjust_item_label_size(+1);
-    } else if (e.keyCode == 173) {
+    } else if (e.key == '-') {
         // minus
         adjust_item_label_size(-1);
     }
-    console.log("Logging event: " + e.keyCode);
+    console.log("Logging event: " + e.key);
 }
 
 function dragElement(elmnt) {
