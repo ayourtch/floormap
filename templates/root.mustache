@@ -861,12 +861,13 @@ function set_item_arrow(node, x, y) {
     if (y == undefined) {
         y = 0;
     }
-    arrow_id = node.id + "_svg";
+    var arrow_id = node.id + "_svg";
     var arrow = document.getElementById(arrow_id);
     if (arrow != null) {
-        arrow.innerHTML = '<path   d="M 0 0 L ' + x + ' ' + y + '" fill="none" stroke="#f00"></path>' +
-            '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#f00" stroke="none"></circle>';
-        console.log(arrow.innerHTML);
+        arrow.innerHTML = '<svg  style="position:absolute; left:0px;top:0px; width:100%; height:auto;overflow:visible; z-index: -10;">' +
+            '<path   d="M 0 0 L ' + x + ' ' + y + '" fill="none" stroke="#f00"></path>' +
+            '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#f00" stroke="none"></circle></svg>';
+        console.log(arrow.outerHTML);
     }
     node.arrow_x = x;
     node.arrow_y = y;
@@ -900,10 +901,8 @@ function add_item_jso(jso) {
     // baggage.style.left = "0px";
     baggage.style.background = "red";
     // node.appendChild(baggage);
-    // var arrow = document.createElement("SVG");
-    var arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    var arrow = document.createElement("DIV");
     arrow.id = el_id + "_svg";
-    arrow.style = "position:absolute; left:0px;top:0px; width:0px; height:0px;overflow:visible; z-index: -10;";
     node.appendChild(arrow);
     set_item_visibility(node);
     set_item_labelsize(node, node.labelsize);
@@ -950,6 +949,7 @@ function update_item_jso(node, jso) {
         set_item_labelsize(node, jso["LabelSize"]);
         node.parent_map_uuid = jso["ParentMapUUID"];
         set_item_visibility(node);
+        set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
     }
 }
 
