@@ -95,8 +95,44 @@ fn main() {
                         .help("input directory with files"),
                 ),
         )
+        .subcommand(
+            SubCommand::with_name("export-database")
+                .about("export the database to file")
+                .arg(
+                    Arg::with_name("output")
+                        .short("o")
+                        .required(true)
+                        .value_name("FILE")
+                        .help("output file name"),
+                ),
+        )
+        .subcommand(
+            SubCommand::with_name("import-database")
+                .about("import the database from file")
+                .arg(
+                    Arg::with_name("input")
+                        .short("i")
+                        .required(true)
+                        .value_name("FILE")
+                        .help("input file name"),
+                ),
+        )
         .subcommand(SubCommand::with_name("export-assets").about("export the assets to stdout"))
         .get_matches();
+
+    if let Some(matches) = matches.subcommand_matches("export-database") {
+        use std::fs::File;
+        use std::io::prelude::*;
+        let filename = matches.value_of("output").unwrap();
+        let j = floormap::db::db_get_json();
+        let mut file = File::create(filename).unwrap();
+        file.write_all(j.as_bytes());
+    }
+    if let Some(matches) = matches.subcommand_matches("import-database") {
+        let filename = matches.value_of("input").unwrap();
+        let js = std::fs::read_to_string(filename).unwrap();
+        floormap::db::db_put_json(&js);
+    }
 
     if let Some(matches) = matches.subcommand_matches("import-floor-plan") {
         // use std::path::Path;

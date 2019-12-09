@@ -12,6 +12,82 @@ use flextimestamp::FlexTimestamp;
 use flexuuid::FlexUuid;
 use uuid::Uuid;
 
+#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+pub struct DbExport {
+    pub FloorPlans: Vec<FloorPlan>,
+    pub FloorMaps: Vec<FloorMap>,
+    pub MapObjects: Vec<MapObject>,
+}
+
+pub fn db_put_json(data: &str) {
+    let db = get_db();
+    let bk: DbExport = serde_json::from_str(data).unwrap();
+    {
+        use self::diesel::prelude::*;
+        use schema::FloorPlans::dsl::*;
+
+        for d in &bk.FloorPlans {
+            let rows_inserted = diesel::insert_into(FloorPlans).values(d).execute(db.conn());
+        }
+    }
+    {
+        use self::diesel::prelude::*;
+        use schema::FloorMaps::dsl::*;
+
+        for d in &bk.FloorMaps {
+            let rows_inserted = diesel::insert_into(FloorMaps).values(d).execute(db.conn());
+        }
+    }
+    {
+        use self::diesel::prelude::*;
+        use schema::MapObjects::dsl::*;
+
+        for d in &bk.MapObjects {
+            let rows_inserted = diesel::insert_into(MapObjects).values(d).execute(db.conn());
+        }
+    }
+}
+
+pub fn db_get_json() -> String {
+    let db = get_db();
+    let result_floor_plans = {
+        use super::schema::FloorPlans::dsl::*;
+        FloorPlans
+            .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            // .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<FloorPlan>(db.conn())
+            .expect("Error loading floorplan")
+    };
+    let result_floor_maps = {
+        use super::schema::FloorMaps::dsl::*;
+        FloorMaps
+            .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            // .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<FloorMap>(db.conn())
+            .expect("Error loading floormaps")
+    };
+    let result_map_objects = {
+        use super::schema::MapObjects::dsl::*;
+        MapObjects
+            .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            // .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<MapObject>(db.conn())
+            .expect("Error loading mapobjects")
+    };
+    let results = DbExport {
+        FloorPlans: result_floor_plans,
+        FloorMaps: result_floor_maps,
+        MapObjects: result_map_objects,
+    };
+
+    let j = serde_json::to_string_pretty(&results).unwrap();
+    j
+}
+
 pub fn db_insert_new_floorplan(
     new_name: &str,
     new_description: &str,
