@@ -488,6 +488,10 @@ function noop(e) {
 }
 
 function document_keydown(e) {
+    /* if there is an element with the focus, do not do anything */
+    if (document.activeElement != document.body) {
+        return;
+    }
     if (e.keyCode == 8) {
         // backspace
         delete_active_item();
