@@ -52,6 +52,7 @@ pub struct ApiV1MapObjectSetNameDescriptionRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
     pub Name: String,
     pub Description: String,
+    pub LabelSize: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

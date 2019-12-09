@@ -84,6 +84,7 @@ pub struct MapObject {
     pub LockedBy: Option<String>,
     pub LockedAt: Option<FlexTimestamp>,
     pub Name: String,
+    pub LabelSize: i32,
     pub Description: String,
     pub ParentMapUUID: FlexUuid,
     pub MapX: i32,

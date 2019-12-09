@@ -47,6 +47,7 @@ CREATE TABLE MapObjects (
 	LockedBy VARCHAR,
 	LockedAt datetime,
 	Name VARCHAR NOT NULL,
+	LabelSize INT NOT NULL,
 	Description VARCHAR NOT NULL,
 	ParentMapUUID VARCHAR(32) NOT NULL,
 	MapX INT NOT NULL,

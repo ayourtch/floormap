@@ -238,6 +238,7 @@ fn main() {
         }
     }
     fn api_http_put_mapobject_name_description(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_mapobject_labelsize;
         use floormap::db::db_set_mapobject_name_description;
         use std::str::FromStr;
         let mut payload = String::new();
@@ -250,6 +251,7 @@ fn main() {
                 for o in cr {
                     db_set_mapobject_name_description(&o.MapObjectUUID, &o.Name, &o.Description)
                         .unwrap();
+                    db_set_mapobject_labelsize(&o.MapObjectUUID, o.LabelSize).unwrap();
                 }
                 Ok(Response::with((status::Ok, payload)))
             }

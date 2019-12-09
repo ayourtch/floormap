@@ -66,6 +66,7 @@ table! {
         LockedBy -> Nullable<Text>,
         LockedAt -> Nullable<Timestamp>,
         Name -> Text,
+        LabelSize -> Integer,
         Description -> Text,
         ParentMapUUID -> Text,
         MapX -> Integer,
