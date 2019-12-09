@@ -134,6 +134,7 @@ box-shadow: inset 0 0 0 25px #53a7ea;
 var selectedElement = undefined;
 var ongoingTouches = [];
 var page_images_cache = [];
+var defaultLabelSize = 0;
 
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_name");
@@ -162,6 +163,7 @@ function adjust_item_label_size(delta) {
         set_item_labelsize(selectedElement, sz + delta);
         */
         selectedElement.labelsize = sz + delta;
+        defaultLabelSize = selectedElement.labelsize;
         SaveName(selectedElement);
 
     }
@@ -497,6 +499,10 @@ function noop(e) {
 
 function document_onclick(e) {
     // alert(e);
+    if (document.activeElement != document.body) {
+        document.body.focus();
+        return;
+    }
     var cnv = document.getElementById("floor_canvas");
     var cnv_rect = cnv.getBoundingClientRect();
     var node = selectedElement;
@@ -657,6 +663,9 @@ function dragElement(elmnt) {
             if (selectedElement != elmnt) {
                 setSelectedElement(elmnt)
             }
+            if (document.activeElement != document.body) {
+                document.activeElement.blur();
+            }
         }
 
         for (var i = 0; i < touches.length; i++) {
@@ -694,6 +703,9 @@ function dragElement(elmnt) {
         if (event.target.classList.contains('draggable') && event.target.classList.contains('item')) {
             if (selectedElement != elmnt) {
                 setSelectedElement(elmnt)
+            }
+            if (document.activeElement != document.body) {
+                document.activeElement.blur();
             }
         }
         // get the mouse cursor position at startup:
@@ -797,6 +809,7 @@ function add_new_item(input_field_id) {
     o["Name"] = document.getElementById(input_field_id).value;
     o["MapX"] = 100;
     o["MapY"] = next_y;
+    o["LabelSize"] = defaultLabelSize;
     o["ParentMapUUID"] = current_map_uuid;
     next_y = next_y + 20;
     next_number = next_number + 1;

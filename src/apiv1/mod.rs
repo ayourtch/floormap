@@ -67,6 +67,7 @@ pub struct ApiV1NewMapObjectRecord {
     pub Name: String,
     pub MapX: i32,
     pub MapY: i32,
+    pub LabelSize: i32,
     pub ParentMapUUID: FlexUuid,
 }
 
