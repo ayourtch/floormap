@@ -702,8 +702,12 @@ function del_item_from_quicksearch(node) {
     if (map != null) {
         // alert(map.quickSearchObjects[node.uuid]);
         label_plus = map.quickSearchObjects[node.uuid];
-        map.quickSearchString = map.quickSearchString.replace(label_plus, "");
-        map.quickSearchObjects.delete(node.uuid);
+        if (label_plus != null && map.quickSearchString != null) {
+            map.quickSearchString = map.quickSearchString.replace(label_plus, "");
+        }
+        if (map.quickSearchObjects != null && map.quickSearchObjects.delete != null) {
+            map.quickSearchObjects.delete(node.uuid);
+        }
     }
 }
 
