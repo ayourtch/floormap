@@ -45,6 +45,8 @@ pub struct ApiV1MapObjectSetXYRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
     pub MapX: i32,
     pub MapY: i32,
+    pub ArrowX: i32,
+    pub ArrowY: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]

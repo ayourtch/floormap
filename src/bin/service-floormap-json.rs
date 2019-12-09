@@ -216,6 +216,7 @@ fn main() {
         Ok(resp)
     }
     fn api_http_put_map_object_xy(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_mapobject_arrow_xy;
         use floormap::db::db_set_mapobject_xy;
         use std::str::FromStr;
         let mut payload = String::new();
@@ -227,6 +228,7 @@ fn main() {
                 println!("CR: {:?}", &cr);
                 for o in cr {
                     db_set_mapobject_xy(&o.MapObjectUUID, o.MapX, o.MapY, "web").unwrap();
+                    db_set_mapobject_arrow_xy(&o.MapObjectUUID, o.ArrowX, o.ArrowY, "web").unwrap();
                 }
                 /*
                 let map_uuid = Uuid::from_str("4b06c4b4-fb3a-11e9-af57-fb611161d50b").unwrap();

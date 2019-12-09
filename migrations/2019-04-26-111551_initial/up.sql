@@ -52,6 +52,8 @@ CREATE TABLE MapObjects (
 	ParentMapUUID VARCHAR(32) NOT NULL,
 	MapX INT NOT NULL,
 	MapY INT NOT NULL,
+	ArrowX INT NOT NULL,
+	ArrowY INT NOT NULL,
 	UpdatedAt datetime NOT NULL
 );
 

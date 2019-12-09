@@ -71,6 +71,8 @@ table! {
         ParentMapUUID -> Text,
         MapX -> Integer,
         MapY -> Integer,
+        ArrowX -> Integer,
+        ArrowY -> Integer,
         UpdatedAt -> Timestamp,
     }
 }

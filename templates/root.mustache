@@ -21,7 +21,7 @@
    height: auto; 
 }
 
-.img-overlay-wrap svg {
+.img-overlay-wrap svg.whatever {
   position: absolute;
   top: 0px;
   left: 0px;
@@ -389,6 +389,12 @@ function check_save(data) {}
 
 var total_saving = 0;
 
+function MoveNode(node, x, y) {
+    node.style.left = x + "px";
+    node.style.top = y + "px";
+    SavePosition(node);
+}
+
 function SavePosition(node) {
     var api_url = api_root + "v1/mapobjects/xy/put/json";
     var cnv = document.getElementById("floor_canvas");
@@ -410,6 +416,8 @@ function SavePosition(node) {
     }
     data["MapX"] = MapX;
     data["MapY"] = MapY;
+    data["ArrowX"] = node.arrow_x;
+    data["ArrowY"] = node.arrow_y;
     data["MapObjectUUID"] = node.uuid;
     var arr = new Array();
     arr[0] = data;
@@ -485,6 +493,24 @@ function DragEnd(node) {
 
 function noop(e) {
     e.preventDefault();
+}
+
+function document_onclick(e) {
+    // alert(e);
+    var cnv = document.getElementById("floor_canvas");
+    var cnv_rect = cnv.getBoundingClientRect();
+    var node = selectedElement;
+    if (node != undefined) {
+        var rect = node.getBoundingClientRect();
+        var data = new Object();
+        /* apparently with varoius zooms the left/top may be fractional! */
+        var MapX = Math.round(e.clientX - rect.left);
+        var MapY = Math.round(e.clientY - rect.top);
+        set_item_arrow(node, MapX, MapY);
+        // MoveNode(node, MapX, MapY);
+        SavePosition(node);
+    }
+    console.log("X/Y:" + e + " : " + e.clientX + " : " + e.clientY);
 }
 
 function document_keydown(e) {
@@ -799,6 +825,24 @@ function set_item_visibility(node) {
     }
 }
 
+function set_item_arrow(node, x, y) {
+    if (x == undefined) {
+        x = 0;
+    }
+    if (y == undefined) {
+        y = 0;
+    }
+    arrow_id = node.id + "_svg";
+    var arrow = document.getElementById(arrow_id);
+    if (arrow != null) {
+        arrow.innerHTML = '<path   d="M 0 0 L ' + x + ' ' + y + '" fill="none" stroke="#f00"></path>' +
+            '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#f00" stroke="none"></circle>';
+        console.log(arrow.innerHTML);
+    }
+    node.arrow_x = x;
+    node.arrow_y = y;
+}
+
 function add_item_jso(jso) {
     var cnv = document.getElementById("floor_canvas");
     var node = document.createElement("div");
@@ -814,6 +858,7 @@ function add_item_jso(jso) {
     node.uuid = jso["MapObjectUUID"];
     node.parent_map_uuid = jso["ParentMapUUID"];
     node.labelsize = jso["LabelSize"];
+
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
     textnode.id = el_id + "_label";
@@ -826,11 +871,17 @@ function add_item_jso(jso) {
     // baggage.style.left = "0px";
     baggage.style.background = "red";
     // node.appendChild(baggage);
+    // var arrow = document.createElement("SVG");
+    var arrow = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    arrow.id = el_id + "_svg";
+    arrow.style = "position:absolute; left:0px;top:0px; width:0px; height:0px;overflow:visible; z-index: -10;";
+    node.appendChild(arrow);
     set_item_visibility(node);
     set_item_labelsize(node, node.labelsize);
     add_item_to_quicksearch(node, label);
     // console.debug("Add item " + node.uuid + " parent map " + node.parent_map_uuid);
     cnv.appendChild(node);
+    set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
     dragElement(node)
 }
 
@@ -1069,7 +1120,7 @@ document.getElementById("page_1").onclick= function(e) {
 };
 */
 document.getElementById("map").onclick= function(e) {
-  alert(e);
+  document_onclick(e);
 };
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
