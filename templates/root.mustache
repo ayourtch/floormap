@@ -8,6 +8,18 @@
 	<head>
 <style>
 
+@media print {
+.thumbnail-container { display: none; }
+.thumbnail-list { display: none; }
+.thumbnail-image { display: none; }
+.thumbnail-list li { display: none; }
+.thumbnail-list li div { display: none; }
+.thumbnail-list li div:hover { display: none; }
+.thumbnail-list li .selected-thumbnail { display: none; }
+.thumbnail-list li div p { display: none; }
+.thumbnail-filter { display: none; }
+}
+
 .img-overlay-wrap {
   position: relative;
   display: inline-block; /* <= shrinks container to image size  */
@@ -16,7 +28,7 @@
 
 .img-overlay-wrap img.map { /* <= optional, for responsiveness */
    display: block;
-   width: 1000px;
+   width: 1400px;
    /* max-width: 100%; */
    height: auto; 
 }
@@ -30,12 +42,16 @@
 .img-overlay-wrap .item {
   color: white;
   position: absolute;
-  background-color: green;
-  color: white;
+  background-color: green !important;
+  color: white !important;
   cursor: move;
   z-index: 10;
   font-size: 8px;
   cursor: pointer;
+  border-radius: 5px;
+  /* force color for printing */
+  -webkit-print-color-adjust: exact;
+  color-adjust: exact;
 }
 
 div.sw1 {
