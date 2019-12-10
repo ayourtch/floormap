@@ -23,8 +23,8 @@ div.sw0 { border: solid 1px black; }
 }
 
 @media screen {
-div.sw1 { border: solid 4px #f00; }
-div.sw0 { border: solid 1px green; }
+div.sw1 { border: solid 1px #f00; color: red; }
+div.sw0 { border: solid 1px green; color: white; }
 }
 
 .img-overlay-wrap {
@@ -47,10 +47,8 @@ div.sw0 { border: solid 1px green; }
 }
 
 .img-overlay-wrap .item {
-  color: white;
   position: absolute;
   background-color: green !important;
-  color: white !important;
   cursor: move;
   z-index: 10;
   font-size: 8px;
@@ -854,10 +852,8 @@ function set_item_visibility(node) {
         if (lbl != null) {
             if ((current_quick_search != "") && TextHasText(lbl.data, current_quick_search)) {
                 node.style["font-weight"] = 'bold';
-                node.style.color = "yellow";
             } else {
                 node.style["font-weight"] = 'normal';
-                node.style.color = "white";
             }
         }
     } else {
