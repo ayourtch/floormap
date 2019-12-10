@@ -18,6 +18,13 @@
 .thumbnail-list li .selected-thumbnail { display: none; }
 .thumbnail-list li div p { display: none; }
 .thumbnail-filter { display: none; }
+div.sw1 { border: solid 1px black; }
+div.sw0 { border: solid 1px black; }
+}
+
+@media screen {
+div.sw1 { border: solid 4px #f00; }
+div.sw0 { border: solid 1px green; }
 }
 
 .img-overlay-wrap {
@@ -48,19 +55,12 @@
   z-index: 10;
   font-size: 8px;
   cursor: pointer;
-  border-radius: 5px;
+  border-radius: 8px;
   /* force color for printing */
   -webkit-print-color-adjust: exact;
   color-adjust: exact;
 }
 
-div.sw1 {
-  border: solid 1px #c00;
-}
-
-div.sw0 {
-  border: solid 1px green;
-}
 
 .draggable {
          cursor: pointer;
@@ -141,6 +141,7 @@ box-shadow: inset 0 0 0 25px #53a7ea;
     padding:6px 6px;
     background-color: red;
 }
+
 
 </style>
 	<script>
