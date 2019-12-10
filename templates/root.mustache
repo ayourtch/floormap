@@ -18,13 +18,13 @@
 .thumbnail-list li .selected-thumbnail { display: none; }
 .thumbnail-list li div p { display: none; }
 .thumbnail-filter { display: none; }
-div.sw1 { border: solid 1px black; }
-div.sw0 { border: solid 1px black; }
+div.sw1 { border: solid 1px black; padding: 0px 5px 0px 5px; }
+div.sw0 { border: solid 1px black; padding: 0px 5px 0px 5px; }
 }
 
 @media screen {
-div.sw1 { border: solid 1px #f00; color: red; }
-div.sw0 { border: solid 1px green; color: black; }
+div.sw1 { border: solid 1px #f00; color: red; padding: 0px 5px 0px 5px; }
+div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
 }
 
 .img-overlay-wrap {
@@ -48,7 +48,7 @@ div.sw0 { border: solid 1px green; color: black; }
 
 .img-overlay-wrap .item {
   position: absolute;
-  background-color: green !important;
+  background-color: white !important;
   cursor: move;
   z-index: 10;
   font-size: 8px;
@@ -1037,6 +1037,9 @@ function set_item_arrow(node, x, y) {
             '<path   d="M 0 0 L ' + (x - dx) + ' ' + (y - dy) + '" fill="none" stroke="#f00"></path>' +
             '<circle cx="' + (x - dx) + '" cy="' + (y - dy) + '" r="3" fill="#f00" stroke="none"></circle></svg>';
         // console.log(arrow.outerHTML);
+        if (x == 0 && y == 0) {
+            arrow.style.visibility = 'hidden';
+        }
     }
     node.arrow_x = x;
     node.arrow_y = y;
@@ -1295,13 +1298,11 @@ function QuickSearchHandler(e) {
 </div>
   <div class="thumbnail-filter" id="search_thumbnails">
   <hr size=1 noshade/>
-  Find page:
-          <input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
-          <input type="button" value="Search"/>
-  Add new item:
+  Find:<input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
+  Add:
           <input id="new_item_name" type="text" value="New Item" class="textedit" size="6"/>
           <input id="new_item_add_fixed" type="button" value="add"/>
-  Edit item:
+  Edit:
           <input id="edit_item_name" type="text" value="" class="textedit" size=6/>
           <input id="edit_item_desc" type="text" value="" class="textedit" size=15/>
           <select id="edit_item_type">
