@@ -540,6 +540,12 @@ function document_keydown(e) {
     if (document.activeElement != document.body) {
         return;
     }
+    if (e.getModifierState("Alt")) {
+        return;
+    }
+    if (e.getModifierState("Control")) {
+        return;
+    }
     if (e.keyCode == 8) {
         // backspace
         delete_active_item();
