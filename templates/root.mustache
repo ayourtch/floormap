@@ -506,7 +506,18 @@ function DragEnd(node) {
     if (node.f7n) {
         SavePosition(node);
     }
+    canvas_activate();
 }
+
+function canvas_activate() {
+    document.getElementById("floor_canvas").onmousedown = function(e) {
+        document_onclick(e);
+    };
+}
+
+function canvas_deactivate() {
+    document.getElementById("floor_canvas").onmousedown = null;
+};
 
 function noop(e) {
     e.preventDefault();
@@ -551,6 +562,12 @@ function document_keydown(e) {
     } else if (e.keyCode == 46) {
         // delete
         delete_active_item();
+    } else if (e.key == '0') {
+        if (selectedElement != undefined) {
+            var node = selectedElement;
+            set_item_arrow(node, 0, 0);
+            SavePosition(node);
+        }
     } else if (e.key == '+') {
         // plus
         adjust_item_label_size(+1);
@@ -607,6 +624,7 @@ function dragElement(elmnt) {
 
     function handleEnd(evt) {
         evt.preventDefault();
+        evt.stopPropagation();
         var touches = evt.changedTouches;
 
         for (var i = 0; i < touches.length; i++) {
@@ -634,6 +652,7 @@ function dragElement(elmnt) {
 
     function handleCancel(evt) {
         evt.preventDefault();
+        evt.stopPropagation();
         var touches = evt.changedTouches;
 
         for (var i = 0; i < touches.length; i++) {
@@ -652,6 +671,7 @@ function dragElement(elmnt) {
 
     function handleMove(evt) {
         evt.preventDefault();
+        evt.stopPropagation();
         var touches = evt.changedTouches;
         // document.getElementById("new_item").value = "move touches: " + touches[0].pageX + " " + touches[0].pageY; 
 
@@ -668,6 +688,7 @@ function dragElement(elmnt) {
                 // set the element's new position:
                 elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
                 elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+                redraw_item_arrow(elmnt);
                 if (elmnt.f7n) {
                     elmnt.f7n.dragging = 1;
                 }
@@ -739,6 +760,7 @@ function dragElement(elmnt) {
         document.onmouseup = closeDragElement;
         // call a function whenever the cursor moves:
         document.onmousemove = elementDrag;
+        canvas_deactivate();
         if (elmnt.f7n) {
             elmnt.f7n.dragging = 0;
         }
@@ -747,6 +769,7 @@ function dragElement(elmnt) {
     function elementDrag(e) {
         e = e || window.event;
         e.preventDefault();
+        e.stopPropagation();
         // calculate the new cursor position:
         pos1 = pos3 - e.clientX;
         pos2 = pos4 - e.clientY;
@@ -755,17 +778,20 @@ function dragElement(elmnt) {
         // set the element's new position:
         elmnt.style.top = (elmnt.offsetTop - pos2) + "px";
         elmnt.style.left = (elmnt.offsetLeft - pos1) + "px";
+        redraw_item_arrow(elmnt);
         if (elmnt.f7n) {
             elmnt.f7n.moved = true;
             elmnt.f7n.dragging = 1;
         }
     }
 
-    function closeDragElement() {
+    function closeDragElement(e) {
         // stop moving when mouse button is released:
         // if (elmnt.f7n.dragging) {
         DragEnd(elmnt);
         //}
+        e.stopPropagation();
+        e.preventDefault();
         document.onmouseup = null;
         document.onmousemove = null;
         if (elmnt.f7n) {
@@ -859,6 +885,11 @@ function set_item_visibility(node) {
     } else {
         node.style.visibility = "hidden";
     }
+    redraw_item_arrow(node);
+}
+
+function redraw_item_arrow(node) {
+    set_item_arrow(node, node.arrow_x, node.arrow_y);
 }
 
 function set_item_arrow(node, x, y) {
@@ -870,10 +901,19 @@ function set_item_arrow(node, x, y) {
     }
     var arrow_id = node.id + "_svg";
     var arrow = document.getElementById(arrow_id);
+    var rect = node.getBoundingClientRect();
+    var cnv = document.getElementById("floor_canvas");
+    var cnv_rect = cnv.getBoundingClientRect();
+    var tx = Math.round(rect.left - cnv_rect.left);
+    var ty = Math.round(rect.top - cnv_rect.top);
+    var dx = Math.round(rect.width / 2);
+    var dy = Math.round(rect.height / 2);
+
     if (arrow != null) {
-        arrow.innerHTML = '<svg  style="position:absolute; left:0px;top:0px; width:0.01%; height:0.01%;overflow:visible; z-index: -10;">' +
-            '<path   d="M 0 0 L ' + x + ' ' + y + '" fill="none" stroke="#f00"></path>' +
-            '<circle cx="' + x + '" cy="' + y + '" r="3" fill="#f00" stroke="none"></circle></svg>';
+        arrow.style.visibility = node.style.visibility;
+        arrow.innerHTML = '<svg  style="position:absolute; left:' + (tx + dx) + 'px;top:' + (ty + dy) + 'px; width:auto; height:auto; overflow:visible;">' +
+            '<path   d="M 0 0 L ' + (x - dx) + ' ' + (y - dy) + '" fill="none" stroke="#f00"></path>' +
+            '<circle cx="' + (x - dx) + '" cy="' + (y - dy) + '" r="3" fill="#f00" stroke="none"></circle></svg>';
         console.log(arrow.outerHTML);
     }
     node.arrow_x = x;
@@ -908,9 +948,10 @@ function add_item_jso(jso) {
     // baggage.style.left = "0px";
     baggage.style.background = "red";
     // node.appendChild(baggage);
-    var arrow = document.createElement("DIV");
+    var arrow = document.createElement("span");
     arrow.id = el_id + "_svg";
-    node.appendChild(arrow);
+    arrow.style = "z-index: -10;"
+    cnv.appendChild(arrow);
     set_item_visibility(node);
     set_item_labelsize(node, node.labelsize);
     add_item_to_quicksearch(node, label);
@@ -1155,14 +1196,14 @@ document.getElementById("page_1").onclick= function(e) {
   alert(e);
 };
 */
-document.getElementById("map").onclick= function(e) {
-  document_onclick(e);
-};
+
+
 document.onreadystatechange = function () {
     if (document.readyState == "complete") {
        var e = document.getElementById('quickSearch');
        e.oninput = QuickSearchHandler;
        e.onpropertychange = e.oninput; // for IE8
+       canvas_activate();
 
        document.addEventListener('keydown', document_keydown, false);
 
