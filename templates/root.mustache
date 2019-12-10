@@ -154,12 +154,16 @@ var defaultLabelSize = 0;
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_name");
     txt.value = get_item_label(el);
+    var txt = document.getElementById("edit_item_desc");
+    txt.value = get_item_description(el);
 }
 
-function save_item_details(editor_element_id) {
+function save_item_details(editor_element_id, desc_element_id) {
     var txt = document.getElementById(editor_element_id);
     if (selectedElement != undefined) {
         set_item_label(selectedElement, txt.value);
+        var txt2 = document.getElementById(desc_element_id);
+        set_item_description(selectedElement, txt2.value);
         SaveName(selectedElement);
     }
 }
@@ -477,7 +481,7 @@ function SaveName(node) {
     var api_url = api_root + "v1/mapobjects/name_description/put/json";
     var data = new Object();
     data["Name"] = get_item_label(node);
-    data["Description"] = "FIXME-SAVED";
+    data["Description"] = get_item_description(node);
     data["MapObjectUUID"] = node.uuid;
     data["LabelSize"] = node.labelsize;
     node.f7n.saving++;
@@ -858,6 +862,7 @@ function add_new_item(input_field_id) {
     var api_url = api_root + "v1/mapobjects/new/put/json";
     var o = new Object();
     o["Name"] = document.getElementById(input_field_id).value;
+    o["Description"] = "FIXME-description";
     o["MapX"] = 100;
     o["MapY"] = next_y;
     o["LabelSize"] = defaultLabelSize;
@@ -868,6 +873,22 @@ function add_new_item(input_field_id) {
         console.debug("err: " + err);
         console.debug("Made new node: " + d);
     });
+}
+
+
+function apply_item_style(node) {
+    var desc = node.description;
+    if (desc != undefined) {
+        var attrs = desc.match(/~([^~]+)~/i);
+        if (attrs != null) {
+            var i;
+            var pair_strings = attrs[1].split(";");
+            for (i = 0; i < pair_strings.length; i++) {
+                var pp = pair_strings[i].split(":");
+                node.style.setProperty(pp[0], pp[1], "important");
+            }
+        }
+    }
 }
 
 
@@ -882,6 +903,7 @@ function set_item_visibility(node) {
                 node.style["font-weight"] = 'normal';
             }
         }
+        apply_item_style(node);
     } else {
         node.style.visibility = "hidden";
     }
@@ -941,6 +963,7 @@ function add_item_jso(jso) {
     node.uuid = jso["MapObjectUUID"];
     node.parent_map_uuid = jso["ParentMapUUID"];
     node.labelsize = jso["LabelSize"];
+    node.description = jso["Description"];
 
     var label = jso["Name"];
     var textnode = document.createTextNode(label);
@@ -987,6 +1010,16 @@ function get_item_label(node) {
     return (label);
 }
 
+function get_item_description(node) {
+    var desc = node.description || "";
+    return desc;
+}
+
+function set_item_description(node, txt) {
+    node.description = txt;
+    apply_item_style(node);
+}
+
 function update_item_jso(node, jso) {
     var cnv = document.getElementById("floor_canvas");
     console.debug("Updating " + node.uuid + " X: " + jso["MapX"] + " Y: " + jso["MapY"]);
@@ -1001,6 +1034,7 @@ function update_item_jso(node, jso) {
         }
         var label = jso["Name"];
         set_item_label(node, label);
+        set_item_description(node, jso["Description"]);
         set_item_labelsize(node, jso["LabelSize"]);
         node.parent_map_uuid = jso["ParentMapUUID"];
         set_item_visibility(node);
@@ -1172,8 +1206,9 @@ function QuickSearchHandler(e) {
           <input id="new_item_name" type="text" value="New Item" class="textedit"/>
           <input id="new_item_add_fixed" type="button" value="add"/>
   Edit item:
-          <input id="edit_item_name" type="text" value="" class="textedit"/>
-          <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name')"/>
+          <input id="edit_item_name" type="text" value="" class="textedit" size=10/>
+          <input id="edit_item_desc" type="text" value="" class="textedit" size=15/>
+          <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name', 'edit_item_desc')"/>
   <hr size=1 noshade/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">

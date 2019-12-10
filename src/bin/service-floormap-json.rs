@@ -301,8 +301,13 @@ fn main() {
         match cr_res {
             Ok(o) => {
                 println!("O: {:?}", &o);
-                let uuid =
-                    db_insert_new_mapobject(&o.ParentMapUUID, &o.Name, "FIXME", o.MapX, o.MapY);
+                let uuid = db_insert_new_mapobject(
+                    &o.ParentMapUUID,
+                    &o.Name,
+                    &o.Description,
+                    o.MapX,
+                    o.MapY,
+                );
                 floormap::db::db_set_mapobject_labelsize(&uuid, o.LabelSize).unwrap();
                 let payload = serde_json::to_string(&uuid).unwrap();
 
