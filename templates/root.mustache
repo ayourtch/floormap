@@ -888,6 +888,12 @@ function set_item_visibility(node) {
     redraw_item_arrow(node);
 }
 
+function del_item_accessories(node) {
+    var arrow_id = node.id + "_svg";
+    var arrow = document.getElementById(arrow_id);
+    arrow.outerHTML = "";
+}
+
 function redraw_item_arrow(node) {
     set_item_arrow(node, node.arrow_x, node.arrow_y);
 }
@@ -986,6 +992,7 @@ function update_item_jso(node, jso) {
     console.debug("Updating " + node.uuid + " X: " + jso["MapX"] + " Y: " + jso["MapY"]);
     if (jso["Deleted"]) {
         del_item_from_quicksearch(node);
+        del_item_accessories(node);
         node.outerHTML = "";
     } else {
         if (node.f7n.dragging + node.f7n.saving == 0) {
