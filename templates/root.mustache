@@ -24,7 +24,7 @@ div.sw0 { border: solid 1px black; }
 
 @media screen {
 div.sw1 { border: solid 1px #f00; color: red; }
-div.sw0 { border: solid 1px green; color: white; }
+div.sw0 { border: solid 1px green; color: black; }
 }
 
 .img-overlay-wrap {
@@ -150,12 +150,41 @@ var selectedElement = undefined;
 var ongoingTouches = [];
 var page_images_cache = [];
 var defaultLabelSize = 0;
+var defaultTypeObjectUUID = null;
+
+function load_item_type(el) {
+    var dd = document.getElementById("edit_item_type");
+    var i;
+    console.log("Item type: " + el.type_object_uuid);
+    if (el.type_object_uuid == null) {
+        dd.selectedIndex = 0;
+    }
+    for (i = 0; i < dd.length; i++) {
+        if (dd[i].value == el.type_object_uuid) {
+            dd.selectedIndex = i;
+        }
+    }
+}
 
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_name");
     txt.value = get_item_label(el);
     var txt = document.getElementById("edit_item_desc");
     txt.value = get_item_description(el);
+    load_item_type(el);
+}
+
+
+function save_item_type() {
+    if (selectedElement != undefined) {
+        var dd = document.getElementById("edit_item_type");
+        if (dd.selectedIndex == 0) {
+            selectedElement.type_object_uuid = null;
+        } else {
+            selectedElement.type_object_uuid = dd[dd.selectedIndex].value;
+        }
+        defaultTypeObjectUUID = selectedElement.type_object_uuid;
+    }
 }
 
 function save_item_details(editor_element_id, desc_element_id) {
@@ -164,7 +193,10 @@ function save_item_details(editor_element_id, desc_element_id) {
         set_item_label(selectedElement, txt.value);
         var txt2 = document.getElementById(desc_element_id);
         set_item_description(selectedElement, txt2.value);
+        save_item_type();
+
         SaveName(selectedElement);
+        set_map_items_visibility();
     }
 }
 
@@ -242,8 +274,17 @@ function putJSON(url, data, callback) {
 }
 
 function get_item_id(jse) {
-    var el_id = "item_" + jse["MapObjectUUID"].replace(/-/gi, "_");
+    return get_item_id_from_uuid(jse["MapObjectUUID"]);
+}
+
+function get_item_id_from_uuid(uuid) {
+    var el_id = "item_" + uuid.replace(/-/gi, "_");
     return el_id;
+}
+
+function get_item_from_uuid(uuid) {
+    var el_id = get_item_id_from_uuid(uuid);
+    return document.getElementById(el_id);
 }
 
 function get_map_id_from_uuid(uuid) {
@@ -286,6 +327,7 @@ function set_map_items_visibility() {
 
     for (var i = 0; i < elts.length; i++) {
         set_item_visibility(elts[i]);
+        apply_item_style(elts[i]);
     }
 
 }
@@ -483,12 +525,14 @@ function SaveName(node) {
     data["Name"] = get_item_label(node);
     data["Description"] = get_item_description(node);
     data["MapObjectUUID"] = node.uuid;
+    data["TypeObjectUUID"] = node.type_object_uuid;
     data["LabelSize"] = node.labelsize;
     node.f7n.saving++;
     total_saving++;
     node.style.cursor = 'wait';
     document.body.style.cursor = 'wait';
-    console.debug("Saving name: " + node.uuid + " name: " + data["Name"]);
+    console.log("Saving name: " + node.uuid + " name: " + data["Name"]);
+    console.log("Saving data: " + JSON.stringify(data));
     var arr = new Array();
     arr[0] = data;
     putJSON(api_url, arr, function(err, res) {
@@ -809,7 +853,7 @@ function dragElement(elmnt) {
 var next_y = 40;
 var next_number = 3;
 
-
+/*
 function add_item(e) {
     var api_url = api_root + "v1/mapobjects/new/put/json";
     var o = new Object();
@@ -817,6 +861,8 @@ function add_item(e) {
     o["MapX"] = 100;
     o["MapY"] = next_y;
     o["ParentMapUUID"] = current_map_uuid;
+    o["TypeObjectUUID"] = defaultTypeObjectUUID;
+    console.log("new node: " + JSON.stringify(o));
     next_y = next_y + 20;
     next_number = next_number + 1;
     putJSON(api_url, o, function(err, d) {
@@ -824,6 +870,7 @@ function add_item(e) {
         console.debug("Made new node: " + d);
     });
 }
+*/
 
 function add_item_to_quicksearch(node, label) {
     var map_uuid = node.parent_map_uuid;
@@ -867,6 +914,8 @@ function add_new_item(input_field_id) {
     o["MapY"] = next_y;
     o["LabelSize"] = defaultLabelSize;
     o["ParentMapUUID"] = current_map_uuid;
+    o["TypeObjectUUID"] = defaultTypeObjectUUID;
+    console.log("NEW ITEM: " + JSON.stringify(o));
     next_y = next_y + 20;
     next_number = next_number + 1;
     putJSON(api_url, o, function(err, d) {
@@ -875,17 +924,62 @@ function add_new_item(input_field_id) {
     });
 }
 
-
 function apply_item_style(node) {
-    var desc = node.description;
+    if (node.type_object_uuid != null && node.type_object_uuid != node.uuid) {
+        // console.log("ITEM " + get_item_label(node) + " Apply type " + node.type_object_uuid);
+        apply_item_style_from_type(node, node.type_object_uuid);
+    }
+    apply_item_style_from(node, node);
+}
+
+function apply_item_style_from_type(node, type_uuid) {
+    var type_node = get_item_from_uuid(type_uuid);
+    if (type_node.type_object_uuid != null && type_node.type_object_uuid != type_node.uuid) {
+        apply_item_style_from_type(node, type_node.type_object_uuid);
+    }
+    apply_item_style_from(node, type_node);
+}
+
+function apply_item_style_from(node, from_node) {
+    var desc = from_node.description;
     if (desc != undefined) {
         var attrs = desc.match(/~([^~]+)~/i);
         if (attrs != null) {
+            // console.log("Node: " + get_item_label(node) + " Applying style: " + attrs[1]);
             var i;
             var pair_strings = attrs[1].split(";");
             for (i = 0; i < pair_strings.length; i++) {
                 var pp = pair_strings[i].split(":");
-                node.style.setProperty(pp[0], pp[1], "important");
+                // console.log(node.id + " [" + i + "] PP: " + pp[0]);
+                if (pp[0] == "background-color") {
+                    node.style.setProperty(pp[0], pp[1], "important");
+                } else if (pp[0] == "color") {
+                    node.style.setProperty(pp[0], pp[1], "important");
+                } else if (pp[0] == "type") {
+                    if (pp[1] == "type" && node == from_node) {
+                        node.classList.add("type_type");
+                        var dd = document.getElementById("edit_item_type");
+                        if (dd != undefined) {
+                            var j;
+                            var found = -1;
+                            for (j = 0; j < dd.length; j++) {
+                                if (dd[j].value == from_node.uuid) {
+                                    found = j;
+                                }
+                            }
+                            if (found == -1) {
+                                var option = document.createElement("option");
+                                option.text = get_item_label(from_node);
+                                option.value = from_node.uuid;
+                                dd.add(option);
+                            } else {
+                                dd[found].text = get_item_label(from_node);
+                            }
+
+                        }
+
+                    }
+                }
             }
         }
     }
@@ -903,7 +997,7 @@ function set_item_visibility(node) {
                 node.style["font-weight"] = 'normal';
             }
         }
-        apply_item_style(node);
+        // apply_item_style(node);
     } else {
         node.style.visibility = "hidden";
     }
@@ -942,7 +1036,7 @@ function set_item_arrow(node, x, y) {
         arrow.innerHTML = '<svg  style="position:absolute; left:' + (tx + dx) + 'px;top:' + (ty + dy) + 'px; width:auto; height:auto; overflow:visible;">' +
             '<path   d="M 0 0 L ' + (x - dx) + ' ' + (y - dy) + '" fill="none" stroke="#f00"></path>' +
             '<circle cx="' + (x - dx) + '" cy="' + (y - dy) + '" r="3" fill="#f00" stroke="none"></circle></svg>';
-        console.log(arrow.outerHTML);
+        // console.log(arrow.outerHTML);
     }
     node.arrow_x = x;
     node.arrow_y = y;
@@ -961,6 +1055,7 @@ function add_item_jso(jso) {
     node.f7n.dragging = 0;
     node.f7n.saving = 0;
     node.uuid = jso["MapObjectUUID"];
+    node.type_object_uuid = jso["TypeObjectUUID"];
     node.parent_map_uuid = jso["ParentMapUUID"];
     node.labelsize = jso["LabelSize"];
     node.description = jso["Description"];
@@ -1034,6 +1129,7 @@ function update_item_jso(node, jso) {
         }
         var label = jso["Name"];
         set_item_label(node, label);
+        node.type_object_uuid = jso["TypeObjectUUID"];
         set_item_description(node, jso["Description"]);
         set_item_labelsize(node, jso["LabelSize"]);
         node.parent_map_uuid = jso["ParentMapUUID"];
@@ -1203,11 +1299,14 @@ function QuickSearchHandler(e) {
           <input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
           <input type="button" value="Search"/>
   Add new item:
-          <input id="new_item_name" type="text" value="New Item" class="textedit"/>
+          <input id="new_item_name" type="text" value="New Item" class="textedit" size="6"/>
           <input id="new_item_add_fixed" type="button" value="add"/>
   Edit item:
-          <input id="edit_item_name" type="text" value="" class="textedit" size=10/>
+          <input id="edit_item_name" type="text" value="" class="textedit" size=6/>
           <input id="edit_item_desc" type="text" value="" class="textedit" size=15/>
+          <select id="edit_item_type">
+          <option value=''>-</option>
+          </select>
           <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name', 'edit_item_desc')"/>
   <hr size=1 noshade/>
   </div>

@@ -57,6 +57,7 @@ pub struct ApiV1MapObjectDeleteRecord {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1MapObjectSetNameDescriptionRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,
+    pub TypeObjectUUID: Option<flexuuid::FlexUuid>,
     pub Name: String,
     pub Description: String,
     pub LabelSize: i32,
@@ -70,6 +71,7 @@ pub struct ApiV1NewMapObjectRecord {
     pub MapY: i32,
     pub LabelSize: i32,
     pub ParentMapUUID: FlexUuid,
+    pub TypeObjectUUID: Option<flexuuid::FlexUuid>,
 }
 
 pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {

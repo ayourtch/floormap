@@ -396,3 +396,51 @@ pub fn db_set_mapobject_labelsize(
         }
     }
 }
+
+pub fn db_set_mapobject_typeobjectuuid(
+    mapobject_uuid: &FlexUuid,
+    typeobject_uuid: Option<&FlexUuid>,
+) -> Result<bool, std::io::Error> {
+    use std::io::{Error, ErrorKind};
+    let res = db_get_mapobject(&mapobject_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!(
+                "port {} - error setting description: {:?}",
+                mapobject_uuid, e
+            );
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("map object {} - is locked", &mapobject_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+
+            use schema::MapObjects::dsl::*;
+            let db = get_db();
+            let now_ts = FlexTimestamp::now();
+            let updated_row_res = diesel::update(
+                MapObjects.filter(MapObjectUUID.eq(mapobject_uuid).and(Deleted.eq(false))),
+            )
+            .set((
+                TypeObjectUUID.eq(typeobject_uuid.map(|x| x.clone())),
+                UpdatedAt.eq(now_ts),
+            ))
+            .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!(
+                        "mapobject {} - error updating typeobject {:?}",
+                        mapobject_uuid, e
+                    );
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
+}

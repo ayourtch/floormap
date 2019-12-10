@@ -87,6 +87,7 @@ pub struct MapObject {
     pub LabelSize: i32,
     pub Description: String,
     pub ParentMapUUID: FlexUuid,
+    pub TypeObjectUUID: Option<FlexUuid>,
     pub MapX: i32,
     pub MapY: i32,
     pub ArrowX: i32,

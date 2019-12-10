@@ -69,6 +69,7 @@ table! {
         LabelSize -> Integer,
         Description -> Text,
         ParentMapUUID -> Text,
+        TypeObjectUUID -> Nullable<Text>,
         MapX -> Integer,
         MapY -> Integer,
         ArrowX -> Integer,

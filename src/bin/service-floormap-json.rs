@@ -207,7 +207,7 @@ fn main() {
             .map_or(FlexTimestamp::from_timestamp(0), |s| {
                 FlexTimestamp::from_timestamp(s.parse::<i64>().unwrap_or(0))
             });
-        println!("from start: {:?}", &query_ts);
+        // println!("from start: {:?}", &query_ts);
 
         let new_results = api_get_map_objects(&query_ts);
         let payload = serde_json::to_string(&new_results).unwrap();
@@ -269,6 +269,7 @@ fn main() {
     fn api_http_put_mapobject_name_description(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_mapobject_labelsize;
         use floormap::db::db_set_mapobject_name_description;
+        use floormap::db::db_set_mapobject_typeobjectuuid;
         use std::str::FromStr;
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -281,6 +282,8 @@ fn main() {
                     db_set_mapobject_name_description(&o.MapObjectUUID, &o.Name, &o.Description)
                         .unwrap();
                     db_set_mapobject_labelsize(&o.MapObjectUUID, o.LabelSize).unwrap();
+                    db_set_mapobject_typeobjectuuid(&o.MapObjectUUID, o.TypeObjectUUID.as_ref())
+                        .unwrap();
                 }
                 Ok(Response::with((status::Ok, payload)))
             }
@@ -309,6 +312,8 @@ fn main() {
                     o.MapY,
                 );
                 floormap::db::db_set_mapobject_labelsize(&uuid, o.LabelSize).unwrap();
+                floormap::db::db_set_mapobject_typeobjectuuid(&uuid, o.TypeObjectUUID.as_ref())
+                    .unwrap();
                 let payload = serde_json::to_string(&uuid).unwrap();
 
                 Ok(Response::with((status::Ok, payload)))
