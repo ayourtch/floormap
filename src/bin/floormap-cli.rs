@@ -1,4 +1,11 @@
 extern crate clap;
+extern crate csv;
+extern crate image;
+extern crate serde;
+extern crate zip;
+#[macro_use]
+extern crate serde_derive;
+
 use clap::{App, Arg, SubCommand};
 
 use floormap;
@@ -60,6 +67,100 @@ fn import_pages_from(dirname: &str) {
     println!("imported {} pages", page_count);
 }
 
+#[serde(default)]
+#[derive(Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+struct ExportMapObject {
+    pub Label: String,
+    pub PositionX: i32,
+    pub PositionY: i32,
+}
+
+fn export_cropped_floorplan(dir: &str) {
+    use floormap::apiv1::api_get_map_objects;
+    use floormap::*;
+    use image::{imageops, GenericImageView, ImageBuffer, RgbImage};
+    use serde::Serialize;
+    use std::convert::TryInto;
+    use std::fs;
+    use std::io;
+    use std::io::Write;
+
+    fs::create_dir_all(dir).unwrap();
+    let start_of_time = FlexTimestamp::from_timestamp(0);
+    let results = api_get_map_objects(&start_of_time);
+
+    let zip_file = std::fs::File::create(format!("/tmp/export.zip")).unwrap();
+    //let mut w = std::io::Cursor::new(zip_file);
+    let mut zip = zip::ZipWriter::new(zip_file);
+
+    for floor in &results.FloorMaps {
+        let mut has_objects = false;
+        for object in &results.MapObjects {
+            if object.ParentMapUUID == floor.FloorMapUUID {
+                has_objects = true;
+            }
+        }
+        let zip_options =
+            zip::write::FileOptions::default().compression_method(zip::CompressionMethod::Stored);
+        if has_objects {
+            zip.add_directory(&floor.Name, zip_options.clone());
+            let dir_floor = format!("{}/{}", &dir, &floor.Name);
+            fs::create_dir_all(&dir_floor).unwrap();
+            println!("==== {:?}", &floor);
+            let db = get_db();
+            let fm = db_get_floormap(&floor.FloorMapUUID).unwrap();
+
+            let mut img = image::open(&fm.FloorPlanFileName).unwrap();
+
+            let (mut clip_W, mut clip_H) = img.dimensions();
+            if fm.ClipWidth != 0 {
+                clip_W = fm.ClipWidth as u32;
+            }
+            if fm.ClipHeight != 0 {
+                clip_H = fm.ClipHeight as u32;
+            }
+            let clip_X = fm.ClipLeft.try_into().unwrap_or(0);
+            let clip_Y = fm.ClipTop.try_into().unwrap_or(0);
+
+            let mut subimg = image::imageops::crop(&mut img, clip_X, clip_Y, clip_W, clip_H);
+            let subimg_name = format!("{}/floor.png", &dir_floor);
+            subimg.to_image().save(&subimg_name).unwrap();
+
+            zip.start_file(&format!("{}/floor.png", &floor.Name), zip_options.clone());
+            zip.write(&std::fs::read(&subimg_name).unwrap());
+            let csv_file = std::fs::File::create(format!("{}/floor.csv", &dir_floor)).unwrap();
+            let mut wtr = csv::Writer::from_writer(csv_file);
+            let mut wtr2 = csv::Writer::from_writer(vec![]);
+            zip.start_file(&format!("{}/floor.csv", &floor.Name), zip_options.clone());
+            for o in &results.MapObjects {
+                if o.ParentMapUUID == floor.FloorMapUUID {
+                    let x = o.MapX + o.ArrowX - fm.ClipLeft;
+                    let y = o.MapY + o.ArrowY - fm.ClipTop;
+                    if x >= 0
+                        && y >= 0
+                        && x <= clip_W.try_into().unwrap()
+                        && y <= clip_H.try_into().unwrap()
+                    {
+                        let r = ExportMapObject {
+                            Label: o.Name.clone(),
+                            PositionX: x,
+                            PositionY: y,
+                        };
+                        wtr.serialize(&r).unwrap();
+                        wtr2.serialize(&r).unwrap();
+                    }
+                }
+            }
+            wtr.flush().unwrap();
+            wtr2.flush().unwrap();
+            // let csv_data = String::from_utf8(wtr2.into_inner().unwrap()).unwrap();
+            let csv_data = wtr2.into_inner().unwrap();
+            zip.write(&csv_data);
+        }
+    }
+    zip.finish();
+}
+
 fn main() {
     let matches = App::new("FloorMap CLI")
         .version("1.0")
@@ -107,6 +208,17 @@ fn main() {
                 ),
         )
         .subcommand(
+            SubCommand::with_name("export-cropped-floorplan")
+                .about("export the cropped floorplan")
+                .arg(
+                    Arg::with_name("output")
+                        .short("o")
+                        .required(true)
+                        .value_name("DIR")
+                        .help("output dir name"),
+                ),
+        )
+        .subcommand(
             SubCommand::with_name("import-database")
                 .about("import the database from file")
                 .arg(
@@ -120,6 +232,10 @@ fn main() {
         .subcommand(SubCommand::with_name("export-assets").about("export the assets to stdout"))
         .get_matches();
 
+    if let Some(matches) = matches.subcommand_matches("export-cropped-floorplan") {
+        let dirname = matches.value_of("output").unwrap();
+        export_cropped_floorplan(&dirname);
+    }
     if let Some(matches) = matches.subcommand_matches("export-database") {
         use std::fs::File;
         use std::io::prelude::*;
