@@ -16,6 +16,13 @@ table! {
         FullText -> Text,
         ParentFloorPlanUUID -> Text,
         FloorPlanFileName -> Text,
+        Locked -> Bool,
+        LockedBy -> Nullable<Text>,
+        LockedAt -> Nullable<Timestamp>,
+        ClipLeft -> Integer,
+        ClipTop -> Integer,
+        ClipWidth -> Integer,
+        ClipHeight -> Integer,
         UpdatedAt -> Timestamp,
     }
 }

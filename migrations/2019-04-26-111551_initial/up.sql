@@ -35,6 +35,13 @@ CREATE TABLE FloorMaps (
 	FullText VARCHAR NOT NULL,
 	ParentFloorPlanUUID VARCHAR(32) NOT NULL,
 	FloorPlanFileName VARCHAR NOT NULL,
+	Locked  BOOLEAN NOT NULL,
+	LockedBy VARCHAR,
+	LockedAt datetime,
+	ClipLeft INT NOT NULL,
+	ClipTop INT NOT NULL,
+	ClipWidth INT NOT NULL,
+	ClipHeight INT NOT NULL,
 	UpdatedAt datetime NOT NULL
 );
 

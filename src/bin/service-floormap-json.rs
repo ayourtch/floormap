@@ -154,6 +154,11 @@ fn main() {
         http_get_floormap_image,
         "floormap image page",
     );
+    router.put(
+        "/api/v1/floormaps/clip/put/json",
+        api_http_put_floormaps_clip,
+        "set clip for floormap",
+    );
     router.get(
         "/images/floormaps/thumbnails/:floormap_uuid",
         http_get_floormap_thumbnail_image,
@@ -235,6 +240,34 @@ fn main() {
                 let new_results = api_get_map_objects_for_map(&map_uuid, &FlexTimestamp::now());
                 let payload = serde_json::to_string(&new_results).unwrap();
                 */
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+    fn api_http_put_floormaps_clip(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_floormap_clip;
+        use std::str::FromStr;
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1FloorMapSetClipRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    db_set_floormap_clip(
+                        &o.FloorMapUUID,
+                        o.ClipLeft,
+                        o.ClipTop,
+                        o.ClipWidth,
+                        o.ClipHeight,
+                    );
+                }
 
                 Ok(Response::with((status::Ok, payload)))
             }

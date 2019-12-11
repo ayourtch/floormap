@@ -31,6 +31,13 @@ pub struct FloorMap {
     pub FullText: String,
     pub ParentFloorPlanUUID: FlexUuid,
     pub FloorPlanFileName: String,
+    pub Locked: bool,
+    pub LockedBy: Option<String>,
+    pub LockedAt: Option<FlexTimestamp>,
+    pub ClipLeft: i32,
+    pub ClipTop: i32,
+    pub ClipWidth: i32,
+    pub ClipHeight: i32,
     pub UpdatedAt: FlexTimestamp,
 }
 

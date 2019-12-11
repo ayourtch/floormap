@@ -31,6 +31,19 @@ pub struct ApiV1FloorMap {
     pub Name: String,
     pub Description: String,
     pub Deleted: bool,
+    pub ClipLeft: i32,
+    pub ClipTop: i32,
+    pub ClipWidth: i32,
+    pub ClipHeight: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorMapSetClipRecord {
+    pub FloorMapUUID: FlexUuid,
+    pub ClipLeft: i32,
+    pub ClipTop: i32,
+    pub ClipWidth: i32,
+    pub ClipHeight: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -134,6 +147,10 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             Name: x.Name,
             Description: x.Description,
             Deleted: x.Deleted,
+            ClipLeft: x.ClipLeft,
+            ClipTop: x.ClipTop,
+            ClipWidth: x.ClipWidth,
+            ClipHeight: x.ClipHeight,
         })
         .collect();
     ApiV1GetMapObjectsResponse {

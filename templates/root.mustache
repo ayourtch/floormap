@@ -20,6 +20,7 @@
 .thumbnail-filter { display: none; }
 div.sw1 { border: solid 1px black; padding: 0px 5px 0px 5px; }
 div.sw0 { border: solid 1px black; padding: 0px 5px 0px 5px; }
+svg.screen-only { visibility: hidden; }
 }
 
 @media screen {
@@ -151,6 +152,29 @@ var ongoingTouches = [];
 var page_images_cache = [];
 var defaultLabelSize = 0;
 var defaultTypeObjectUUID = null;
+
+var currentMouseX = null;
+var currentMouseY = null;
+var mouse_tracking_active = false;
+
+
+function onMouseUpdate(e) {
+    var cnv = document.getElementById("floor_canvas");
+    var cnv_rect = cnv.getBoundingClientRect();
+    var MapX = Math.round(e.clientX);
+    var MapY = Math.round(e.clientY);
+    currentMouseX = MapX;
+    currentMouseY = MapY;
+    console.debug(e.clientX, e.clientY);
+}
+
+function getMouseX() {
+    return currentMouseX;
+}
+
+function getMouseY() {
+    return currentMouseY;
+}
 
 function load_item_type(el) {
     var dd = document.getElementById("edit_item_type");
@@ -332,6 +356,48 @@ function set_map_items_visibility() {
 
 }
 
+function svg_crosshairs(color) {
+    var res = '<path   d="M -10 0 L 10 0" fill="none" stroke="' + color + '"></path>' +
+        '<path   d="M 0 -10 L 0 10" fill="none" stroke="' + color + '"></path>';
+    return res;
+}
+
+function set_map_svg() {
+    var svg_elt = document.getElementById("map_svg");
+
+    if (svg_elt != null) {
+        var svg = "";
+        console.log("Setting map SVG");
+
+        if (current_set_map_uuid != undefined) {
+            var el = get_map_from_uuid(current_set_map_uuid);
+            var cnv = document.getElementById("floor_canvas");
+            var cnv_rect = cnv.getBoundingClientRect();
+            var dx = 0; // cnv_rect.left;
+            var dy = 0; // cnv_rect.top;
+            var el = get_map_from_uuid(current_set_map_uuid);
+            var x1 = el.clip_left;
+            var y1 = el.clip_top;
+            var x2 = el.clip_left + el.clip_width;
+            var y2 = el.clip_top + el.clip_height;
+            svg = svg + '<svg  style="position:absolute; left:' + x1 + 'px;top:' + y1 + 'px; width:auto; height:auto; overflow:visible;">';
+            svg = svg + svg_crosshairs('#f00');
+            svg = svg + '</svg>';
+
+
+            svg = svg + '<svg  style="position:absolute; left:' + x2 + 'px;top:' + y2 + 'px; width:auto; height:auto; overflow:visible;">';
+            svg = svg + svg_crosshairs('#008');
+            svg = svg + '</svg>';
+
+            svg = svg + '<svg class="screen-only" style="position:absolute; left:' + x1 + 'px;top:' + y1 + 'px; width:auto; height:auto; overflow:visible;">';
+            svg = svg + '<path d="M 0 0 L ' + (x2 - x1) + ' 0 L ' + (x2 - x1) + ' ' + (y2 - y1) + ' L 0 ' + (y2 - y1) + ' L 0 0" fill="none" stroke-dasharray="8" stroke="#888"></path>';
+            svg = svg + '</svg>';
+        }
+        console.log("MAP SVG:" + svg);
+        svg_elt.innerHTML = svg;
+    }
+}
+
 function set_current_map(uuid) {
     if (current_set_map_uuid != undefined) {
         var el = get_map_from_uuid(current_set_map_uuid);
@@ -363,6 +429,7 @@ function set_current_map(uuid) {
         el.src = "static/layer_3_switch.png";
     }
     set_map_items_visibility();
+    set_map_svg();
 }
 
 
@@ -457,6 +524,27 @@ function MoveNode(node, x, y) {
     node.style.left = x + "px";
     node.style.top = y + "px";
     SavePosition(node);
+}
+
+function SaveMapClipArea(node) {
+    var api_url = api_root + "v1/floormaps/clip/put/json";
+    var data = new Object();
+    data["FloorMapUUID"] = node.uuid;
+    data["ClipLeft"] = node.clip_left;
+    data["ClipTop"] = node.clip_top;
+    data["ClipWidth"] = node.clip_width;
+    data["ClipHeight"] = node.clip_height;
+    var arr = new Array();
+    arr[0] = data;
+    total_saving++;
+    document.body.style.cursor = 'wait';
+    putJSON(api_url, arr, function() {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+        console.debug("Saved for " + node.uuid);
+    });
 }
 
 function SavePosition(node) {
@@ -559,9 +647,15 @@ function DragEnd(node) {
 }
 
 function canvas_activate() {
-    document.getElementById("floor_canvas").onmousedown = function(e) {
+    var cnv = document.getElementById("floor_canvas");
+    cnv.onmousedown = function(e) {
         document_onclick(e);
     };
+    if (!mouse_tracking_active) {
+        document.addEventListener('mousemove', onMouseUpdate, false);
+        document.addEventListener('mouseenter', onMouseUpdate, false);
+        mouse_tracking_active = true;
+    }
 }
 
 function canvas_deactivate() {
@@ -572,24 +666,99 @@ function noop(e) {
     e.preventDefault();
 }
 
+function set_active_item_arrow() {
+    // var cnv = document.getElementById("floor_canvas");
+    // var cnv_rect = cnv.getBoundingClientRect();
+    var node = selectedElement;
+    if (node != undefined) {
+        var rect = node.getBoundingClientRect();
+        /* apparently with varius zooms the left/top may be fractional! */
+        var X = Math.round(getMouseX() - rect.left);
+        var Y = Math.round(getMouseY() - rect.top);
+
+        set_item_arrow(node, X, Y);
+        console.log("Setting arrow to: " + X + ", " + Y);
+        SavePosition(node);
+    }
+}
+
+
+var lastClipLTX = 0;
+var lastClipLTY = 0;
+var lastClipRBX = 0;
+var lastClipRBY = 0;
+
+function set_clip_lefttop(X, Y) {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var cnv = document.getElementById("floor_canvas");
+        var cnv_rect = cnv.getBoundingClientRect();
+        el.clip_left = X;
+        el.clip_top = Y;
+        lastClipLTX = X;
+        lastClipLTY = Y;
+        console.log("Setting clip left-top: ", X, Y);
+    }
+}
+
+function set_clip_rightbottom(X, Y) {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var cnv = document.getElementById("floor_canvas");
+        var cnv_rect = cnv.getBoundingClientRect();
+        el.clip_width = X - el.clip_left;
+        el.clip_height = Y - el.clip_top;
+        lastClipRBX = X;
+        lastClipRBY = Y;
+        console.log("Setting clip width-height: ", el.clip_width, el.clip_height);
+    }
+}
+
+function set_clip_corner_from_last() {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        set_clip_lefttop(lastClipLTX, lastClipLTY);
+        set_clip_rightbottom(lastClipRBX, lastClipRBY);
+        SaveMapClipArea(el);
+    }
+}
+
+function set_clip_corner() {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var cnv = document.getElementById("floor_canvas");
+        var cnv_rect = cnv.getBoundingClientRect();
+        var X = getMouseX() - cnv_rect.left;
+        var Y = getMouseY() - cnv_rect.top;
+        if (X < el.clip_left || Y < el.clip_top) {
+            set_clip_lefttop(X, Y);
+        } else {
+            if (el.clip_width == 0 || el.clip_height == 0) {
+                set_clip_rightbottom(X, Y);
+            } else {
+                if (X == el.clip_left && Y == el.clip_top) {
+                    set_clip_lefttop(0, 0);
+                    set_clip_rightbottom(0, 0);
+                } else {
+                    var distA = (el.clip_left - X) * (el.clip_left - X) + (el.clip_top - Y) * (el.clip_top - Y);
+                    var distB = (el.clip_left + el.clip_width - X) * (el.clip_left + el.clip_width - X) + (el.clip_top + el.clip_height - Y) * (el.clip_top + el.clip_height - Y);
+                    if (distA < distB) {
+                        set_clip_lefttop(X, Y);
+                    } else {
+                        set_clip_rightbottom(X, Y);
+                    }
+                }
+            }
+        }
+        SaveMapClipArea(el);
+    }
+}
+
 function document_onclick(e) {
     // alert(e);
     if (document.activeElement != document.body) {
         document.body.focus();
         return;
-    }
-    var cnv = document.getElementById("floor_canvas");
-    var cnv_rect = cnv.getBoundingClientRect();
-    var node = selectedElement;
-    if (node != undefined) {
-        var rect = node.getBoundingClientRect();
-        var data = new Object();
-        /* apparently with varoius zooms the left/top may be fractional! */
-        var MapX = Math.round(e.clientX - rect.left);
-        var MapY = Math.round(e.clientY - rect.top);
-        set_item_arrow(node, MapX, MapY);
-        // MoveNode(node, MapX, MapY);
-        SavePosition(node);
     }
     console.log("X/Y:" + e + " : " + e.clientX + " : " + e.clientY);
 }
@@ -611,6 +780,14 @@ function document_keydown(e) {
     } else if (e.keyCode == 46) {
         // delete
         delete_active_item();
+    } else if (e.key == 'p') {
+        set_active_item_arrow();
+    } else if (e.key == 'C') {
+        set_clip_corner_from_last();
+        set_map_svg();
+    } else if (e.key == 'c') {
+        set_clip_corner();
+        set_map_svg();
     } else if (e.key == '0') {
         if (selectedElement != undefined) {
             var node = selectedElement;
@@ -1162,6 +1339,10 @@ function update_map_jso(node, jso) {
         console.debug("Updating map " + node.uuid + " : " + jso["Deleted"]);
         var label = jso["Name"];
         set_map_label(node, label);
+        node.clip_top = jso["ClipTop"];
+        node.clip_left = jso["ClipLeft"];
+        node.clip_width = jso["ClipWidth"];
+        node.clip_height = jso["ClipHeight"];
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
         }
@@ -1179,6 +1360,10 @@ function add_map_jso(jso) {
     node.id = el_id;
     // node.f7n = {};
     node.uuid = jso["FloorMapUUID"];
+    node.clip_top = jso["ClipTop"];
+    node.clip_left = jso["ClipLeft"];
+    node.clip_width = jso["ClipWidth"];
+    node.clip_height = jso["ClipHeight"];
     var label = jso["Name"];
 
     var node_label = document.createElement("p");
@@ -1321,6 +1506,7 @@ function QuickSearchHandler(e) {
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
 		  <img id="map" class="map" src=""/>
+                  <div id="map_svg"/>
 		  <!--
 		  <div id="sw_0" class="item" style="top: 0px; left: 0px">c3750-1</div>
 		  <div id="sw_1" class="item" style="top: 20px; left: 0px">S0052</div>
