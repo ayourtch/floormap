@@ -393,7 +393,6 @@ function set_map_svg() {
             svg = svg + '<path d="M 0 0 L ' + (x2 - x1) + ' 0 L ' + (x2 - x1) + ' ' + (y2 - y1) + ' L 0 ' + (y2 - y1) + ' L 0 0" fill="none" stroke-dasharray="8" stroke="#888"></path>';
             svg = svg + '</svg>';
         }
-        console.log("MAP SVG:" + svg);
         svg_elt.innerHTML = svg;
     }
 }
@@ -1346,6 +1345,7 @@ function update_map_jso(node, jso) {
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
         }
+        set_map_svg();
     }
 }
 
