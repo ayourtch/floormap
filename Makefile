@@ -29,6 +29,7 @@ clippy-sqlite:
 	cargo clippy --features floormap_sqlite
 js-beautify:
 	js-beautify -r templates/root.mustache
+	js-beautify -r templates/arrange.mustache
 cute: rustfmt js-beautify
 
 

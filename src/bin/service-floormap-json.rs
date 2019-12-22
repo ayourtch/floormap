@@ -96,6 +96,27 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
     render_response!(template, data, redirect_to)
 }
 
+fn arrange_page(req: &mut Request) -> IronResult<Response> {
+    use floormap::template::get_page_mapbuilder;
+    use iron::headers::ContentType;
+    use urlencoded::UrlEncodedQuery;
+
+    let template = floormap::template::maybe_compile_template("arrange");
+    if let Err(e) = template {
+        return Ok(Response::with((
+            status::Unauthorized,
+            format!("Error occured: {}", e),
+        )));
+    };
+    let template = template.unwrap();
+
+    let page_title = format!("arrange");
+    let mut data = get_page_mapbuilder(req, &page_title);
+    let redirect_to = "".to_string();
+
+    render_response!(template, data, redirect_to)
+}
+
 fn main() {
     use floormap::flextimestamp::FlexTimestamp;
     let mut router = Router::new();
@@ -146,6 +167,7 @@ fn main() {
         "floormap image thumbnails page",
     );
     router.get("/", root_page, "root_page");
+    router.get("/arrange.aspx", arrange_page, "arrange_page");
 
     fn insert_new_service() {
         use schema::Services::dsl::*;
