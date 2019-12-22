@@ -80,36 +80,17 @@ fn root_page(req: &mut Request) -> IronResult<Response> {
     use iron::headers::ContentType;
     use urlencoded::UrlEncodedQuery;
 
-    let return_url = match req.get_ref::<UrlEncodedQuery>() {
-        Ok(ref hashmap) => match (hashmap.get("ReturnUrl")) {
-            Some(a) => format!("{}", a[0]),
-            _ => format!("/"),
-        },
-        Err(ref e) => {
-            println!("{:?}", e);
-            format!("/")
-        }
+    let template = floormap::template::maybe_compile_template("root");
+    if let Err(e) = template {
+        return Ok(Response::with((
+            status::Unauthorized,
+            format!("Error occured: {}", e),
+        )));
     };
-
-    // let auth_user = LoginSessionState::new("", None);
-
-    let template = match floormap::template::maybe_compile_template("root") {
-        Ok(t) => t,
-        Err(e) => {
-            return Ok(Response::with((
-                status::Unauthorized,
-                format!("Error occured: {}", e),
-            )));
-        }
-    };
-
-    println!("Login page return URL: {}", &return_url);
+    let template = template.unwrap();
 
     let page_title = format!("root");
-
     let mut data = get_page_mapbuilder(req, &page_title);
-    data = data.insert_str("ReturnUrl", return_url.clone());
-
     let redirect_to = "".to_string();
 
     render_response!(template, data, redirect_to)
