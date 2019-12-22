@@ -1392,13 +1392,19 @@ function QuickSearchHandler(e) {
 		  -->
 		</div>
 	<script>
+/* beautify ignore:end */
+
 // dragElement(document.getElementById("sw_0"));
 // dragElement(document.getElementById("sw_1"));
 // dragElement(document.getElementById("control_panel"));
 // dragElement(document.getElementById("search_thumbnails"));
 // document.getElementById("new_item_add").onclick=add_item;
 // document.getElementById("new_item_add").onclick=function(e) { add_new_item("new_item"); };
-document.getElementById("new_item_add_fixed").onclick=function(e) { add_new_item("new_item_name"); };
+
+document.getElementById("new_item_add_fixed").onclick = function(e) {
+    add_new_item("new_item_name");
+};
+
 /*
 document.getElementById("page_1").onclick= function(e) {
   alert(e);
@@ -1406,18 +1412,20 @@ document.getElementById("page_1").onclick= function(e) {
 */
 
 
-document.onreadystatechange = function () {
+document.onreadystatechange = function() {
     if (document.readyState == "complete") {
-       var e = document.getElementById('quickSearch');
-       e.oninput = QuickSearchHandler;
-       e.onpropertychange = e.oninput; // for IE8
-       canvas_activate();
+        var e = document.getElementById('quickSearch');
+        e.oninput = QuickSearchHandler;
+        e.onpropertychange = e.oninput; // for IE8
+        canvas_activate();
 
-       document.addEventListener('keydown', document_keydown, false);
+        document.addEventListener('keydown', document_keydown, false);
 
-       JsonPollCycle();
+        JsonPollCycle();
     }
 }
+
+/* beautify ignore:start */
 </script>
 </body>
 </html>
