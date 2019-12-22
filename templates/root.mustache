@@ -165,7 +165,7 @@ function onMouseUpdate(e) {
     var MapY = Math.round(e.clientY);
     currentMouseX = MapX;
     currentMouseY = MapY;
-    console.debug(e.clientX, e.clientY);
+    // console.debug(e.clientX, e.clientY);
 }
 
 function getMouseX() {
@@ -322,7 +322,9 @@ function get_map_id(jse) {
 }
 
 // var api_root = document.baseURI + "/api/";
-var api_root = document.location.protocol + "//" + document.location.host + document.location.pathname + "/api/";
+var api_root = document.location.protocol + "//" + document.location.host + document.location.pathname.split("/").slice(0, -1).join("/") + "/api/";
+console.log("API root:" + api_root);
+console.log(document.location);
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 var current_set_map_uuid = null;
@@ -1111,10 +1113,14 @@ function apply_item_style(node) {
 
 function apply_item_style_from_type(node, type_uuid) {
     var type_node = get_item_from_uuid(type_uuid);
-    if (type_node.type_object_uuid != null && type_node.type_object_uuid != type_node.uuid) {
-        apply_item_style_from_type(node, type_node.type_object_uuid);
+    if (type_node == null) {
+        console.log("ERROR: could not find type node for uuid " + type_uuid + " on node " + node.title + " (uuid: " + node.uuid + ")");
+    } else {
+        if (type_node.type_object_uuid != null && type_node.type_object_uuid != type_node.uuid) {
+            apply_item_style_from_type(node, type_node.type_object_uuid);
+        }
+        apply_item_style_from(node, type_node);
     }
-    apply_item_style_from(node, type_node);
 }
 
 function apply_item_style_from(node, from_node) {
