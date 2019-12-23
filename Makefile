@@ -1,4 +1,9 @@
-default: export-maybe regen-db sqlite-cli import-maybe sqlite
+default: first-time-done export-maybe regen-db sqlite-cli import-maybe sqlite
+first: first-time regen-db sqlite
+first-time:
+	mkdir db
+	diesel migration run || rmdir db
+
 export-maybe:
 	if [ -f ./target/debug/floormap-cli ]; then if [ -f /tmp/floormap-export.json ]; then exit 1; else ./target/debug/floormap-cli export-database -o /tmp/floormap-export.json; fi; fi
 import-maybe:
@@ -28,8 +33,7 @@ sqlite:
 clippy-sqlite:
 	cargo clippy --features floormap_sqlite
 js-beautify:
-	js-beautify -r templates/root.mustache
-	js-beautify -r templates/arrange.mustache
+	find templates -name '*.mustache' -exec js-beautify -r {} \;
 cute: rustfmt js-beautify
 
 
