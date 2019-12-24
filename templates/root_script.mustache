@@ -177,6 +177,11 @@ function get_map_id(jse) {
     return el_id;
 }
 
+function get_map2_id(jse) {
+    var el_id = get_map2_id_from_uuid(jse["FloorMapUUID"]);
+    return el_id;
+}
+
 // var api_root = document.baseURI + "/api/";
 var api_root = document.location.protocol + "//" + document.location.host + document.location.pathname.split("/").slice(0, -1).join("/") + "/api/";
 console.log("API root:" + api_root);
@@ -408,6 +413,15 @@ function processJSON(err, reply_data) {
             } else {
                 if (!jse["Deleted"]) {
                     add_map_jso(jse)
+                }
+            }
+
+            var el_id = get_map2_id(jse);
+            var el = document.getElementById(el_id);
+            if (el != null) {
+                update_map2_jso(el, jse)
+            } else {
+                if (!jse["Deleted"]) {
                     add_map2_jso(jse)
                 }
             }
@@ -535,6 +549,22 @@ function DeleteItem(node) {
     data["MapObjectUUID"] = node.uuid;
     total_saving++;
     node.style.cursor = 'wait';
+    document.body.style.cursor = 'wait';
+    var arr = new Array();
+    arr[0] = data;
+    putJSON(api_url, arr, function(err, res) {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+    });
+}
+
+function DeleteFloorMapByUUID(uuid) {
+    var api_url = api_root + "v1/floormaps/delete/put/json";
+    var data = new Object();
+    data["FloorMapUUID"] = uuid;
+    total_saving++;
     document.body.style.cursor = 'wait';
     var arr = new Array();
     arr[0] = data;
@@ -1290,6 +1320,26 @@ function update_map_jso(node, jso) {
         node.clip_width = jso["ClipWidth"];
         node.clip_height = jso["ClipHeight"];
         if (node.uuid == current_map_uuid) {
+            node.classList.add("selected-thumbnail");
+        }
+        set_map_svg();
+    }
+}
+
+function update_map2_jso(node, jso) {
+
+    if (jso["Deleted"]) {
+        node.outerHTML = "";
+        console.debug("Deleting map2 " + node.uuid);
+    } else {
+        console.debug("Updating map2 " + node.uuid + " : " + jso["Deleted"]);
+        var label = jso["Name"];
+        set_map_label(node, label);
+        node.clip_top = jso["ClipTop"];
+        node.clip_left = jso["ClipLeft"];
+        node.clip_width = jso["ClipWidth"];
+        node.clip_height = jso["ClipHeight"];
+        if (node.uuid == current_map2_uuid) {
             node.classList.add("selected-thumbnail");
         }
         set_map_svg();
