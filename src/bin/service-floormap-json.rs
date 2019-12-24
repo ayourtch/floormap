@@ -366,7 +366,24 @@ fn main() {
                                 );
                             }
                         }
-                        ApiV1FloorMapCopyOperation::FloorMapInsertAfter => {}
+                        ApiV1FloorMapCopyOperation::FloorMapInsertAfter => {
+                            let dst = db_get_floormap(&o.DstFloorMapUUID);
+                            let src = db_get_floormap(&o.SrcFloorMapUUID);
+                            if src.is_ok() && dst.is_ok() {
+                                use floormap::db::db_insert_new_floormap;
+
+                                let src = src.unwrap();
+                                let dst = dst.unwrap();
+                                db_insert_new_floormap(
+                                    &src.Name,
+                                    &src.Description,
+                                    &src.FullText,
+                                    &src.FloorMapFileName,
+                                    &dst.ParentFloorPlanUUID,
+                                    dst.SortOrder + 1,
+                                );
+                            }
+                        }
                     }
                     // db_set_floormap_deleted(&o.FloorMapUUID, true).unwrap();
                 }
