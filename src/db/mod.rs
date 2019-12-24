@@ -113,6 +113,84 @@ pub fn db_insert_new_floorplan(
     new_item.FloorPlanUUID
 }
 
+pub fn db_set_floormap_file(
+    floormap_uuid: &FlexUuid,
+    floormap_filename: &str,
+) -> Result<bool, std::io::Error> {
+    let res = db_get_floormap(&floormap_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!(
+                "floormap {} - error setting floormap: {:?}",
+                floormap_uuid, e
+            );
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("map object {} - is locked", &floormap_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+            let plan_res = db_get_floorplan(&mo.ParentFloorPlanUUID);
+            if let Err(e) = plan_res {
+                let msg = format!(
+                    "floormap {} - error getting floorplan {}: {:?}",
+                    floormap_uuid, &mo.ParentFloorPlanUUID, e
+                );
+                return Err(Error::new(ErrorKind::NotFound, msg));
+            }
+            let floorplan = plan_res.unwrap();
+            let file_version = mo.FloorMapFileVersion + 1;
+            let dst_file_name = format!(
+                "{}/{}-{}.png",
+                &floorplan.FloorPlanPath, floormap_uuid, file_version
+            );
+            let copy_res = std::fs::copy(floormap_filename, &dst_file_name);
+            if let Err(e) = copy_res {
+                let msg = format!(
+                    "floormap {} - error copying file {} to {}: {:?}",
+                    floormap_uuid, floormap_filename, &dst_file_name, e
+                );
+                return Err(Error::new(ErrorKind::NotFound, msg));
+            }
+            let dst_thumb_file_name = format!(
+                "{}/{}-{}.png-thumb.png",
+                &floorplan.FloorPlanPath, floormap_uuid, file_version
+            );
+            let floormap_thumb_filename = format!("{}-thumb.png", floormap_filename);
+            let copy_res = std::fs::copy(&floormap_thumb_filename, &dst_thumb_file_name);
+            if let Err(e) = copy_res {
+                let msg = format!(
+                    "floormap {} - error copying file {} to {}: {:?}",
+                    floormap_uuid, floormap_thumb_filename, &dst_thumb_file_name, e
+                );
+                return Err(Error::new(ErrorKind::NotFound, msg));
+            }
+
+            use schema::FloorMaps::dsl::*;
+            let db = get_db();
+            let now_ts = FlexTimestamp::now();
+            let updated_row_res = diesel::update(FloorMaps.filter(FloorMapUUID.eq(floormap_uuid)))
+                .set((
+                    FloorMapFileName.eq(dst_file_name),
+                    FloorMapFileVersion.eq(file_version),
+                    UpdatedAt.eq(&now_ts),
+                ))
+                .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!("floormap {} - error updating XY: {:?}", floormap_uuid, e);
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
+}
+
 pub fn db_set_floormap_deleted(
     floormap_uuid: &FlexUuid,
     deleted: bool,

@@ -200,3 +200,10 @@ define_db_get_by_ref!(
 );
 
 define_db_get_by_ref!(db_get_floormap, FloorMap, FloorMaps, FloorMapUUID, FlexUuid);
+define_db_get_by_ref!(
+    db_get_floorplan,
+    FloorPlan,
+    FloorPlans,
+    FloorPlanUUID,
+    FlexUuid
+);

@@ -196,12 +196,21 @@ var current_set_map_uuid = null;
 var current_set_map2_uuid = null;
 var current_quick_search = "";
 
+function get_floormap_srcX(base, uuid) {
+    var el = get_map_from_uuid(current_map_uuid);
+    if (el != null && el.file_version != undefined) {
+        return (base + uuid + "?ver=" + el.file_version);
+    } else {
+        return (base + uuid);
+    }
+}
+
 function get_floormap_src(uuid) {
-    return ("images/floormaps/" + uuid);
+    return get_floormap_srcX("images/floormaps/", uuid);
 }
 
 function get_floormap_thumbnail_src(uuid) {
-    return ("images/floormaps/thumbnails/" + uuid);
+    return get_floormap_srcX("images/floormaps/thumbnails/", uuid);
 }
 
 function get_map_from_uuid(uuid) {
@@ -1363,6 +1372,7 @@ function map_node_update(node, jso) {
     node.clip_left = jso["ClipLeft"];
     node.clip_width = jso["ClipWidth"];
     node.clip_height = jso["ClipHeight"];
+    node.file_version = jso["FileVersion"];
 }
 
 function reinsert_node(canvas_id, node) {
@@ -1379,9 +1389,15 @@ function update_map_jso(node, jso) {
         console.debug("Deleting map " + node.uuid);
     } else {
         console.debug("Updating map " + node.uuid + " : " + jso["Deleted"]);
+        var old_file_version = node.file_version;
         map_node_update(node, jso);
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
+            /* FIXME
+             if (old_file_version != node.file_version) {
+		refresh_map_images(node.uuid);
+            }
+            */
         }
         if (node.sort_order != jso["SortOrder"]) {
             node.sort_order = jso["SortOrder"];
@@ -1420,6 +1436,7 @@ function create_map_node_from_jso(id_prefix, jso) {
     node.clip_left = jso["ClipLeft"];
     node.clip_width = jso["ClipWidth"];
     node.clip_height = jso["ClipHeight"];
+    node.file_version = jso["FileVersion"];
     node.sort_order = jso["SortOrder"];
     var label = jso["Name"];
 

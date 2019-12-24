@@ -347,7 +347,16 @@ fn main() {
                 println!("CR: {:?}", &cr);
                 for o in cr {
                     match o.Operation {
-                        ApiV1FloorMapCopyOperation::FloorMapOverwrite => {}
+                        ApiV1FloorMapCopyOperation::FloorMapOverwrite => {
+                            use floormap::db::db_set_floormap_file;
+                            let dst = db_get_floormap(&o.DstFloorMapUUID);
+                            let src = db_get_floormap(&o.SrcFloorMapUUID);
+                            if src.is_ok() && dst.is_ok() {
+                                let src = src.unwrap();
+                                let dst = dst.unwrap();
+                                db_set_floormap_file(&dst.FloorMapUUID, &src.FloorMapFileName);
+                            }
+                        }
                         ApiV1FloorMapCopyOperation::FloorMapInsertBefore => {
                             let dst = db_get_floormap(&o.DstFloorMapUUID);
                             let src = db_get_floormap(&o.SrcFloorMapUUID);
