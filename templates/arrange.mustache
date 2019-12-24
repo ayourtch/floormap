@@ -16,11 +16,27 @@
 {{> root_script }}
 
 
+/* beautify ignore:end */
+
 function delete_map_click() {
-  if (current_map_uuid != undefined) {
-     DeleteFloorMapByUUID(current_map_uuid);
-  }
+    if (current_map_uuid != undefined) {
+        DeleteFloorMapByUUID(current_map_uuid);
+    }
 }
+
+function sel_floorplan() {
+    var dd = document.getElementById("curr_floorplan");
+    var new_uuid = dd.options[dd.selectedIndex].value;
+    set_current_floorplan(new_uuid);
+}
+
+function sel_floorplan2() {
+    var dd = document.getElementById("curr_floorplan2");
+    var new_uuid = dd.options[dd.selectedIndex].value;
+    set_current_floorplan2(new_uuid);
+}
+
+/* beautify ignore:start */
 
 </script>
 
@@ -33,12 +49,14 @@ function delete_map_click() {
    </ul>
 </div>
 <div class="thumbnail-filter" id="search_thumbnails">
- <br/>
+<br/>
+</select>
 </div>
 <div class="img-overlay-wrap-small" id="floor_canvas">
   <img id="map" class="map" src=""/>
   <img id="map2compare" class="overlay_map blend" src=""/>
   <!-- <div id="map_svg"></div> -->
+  <select id="curr_floorplan" onchange="sel_floorplan()"></select>
 </div>
 <div class="arrange-controls">
 <input type="button" value="<-- replace --"></input><br/><br/>
@@ -49,6 +67,10 @@ function delete_map_click() {
 <div class="img-overlay-wrap-small" id="floor_canvas2">
   <img id="map2" class="map" src="static/grid_page.png"/>
   <!-- <div id="map_svg2"></div> -->
+  <select id="curr_floorplan2" onchange="sel_floorplan2()"></select>
+</div>
+<div class="thumbnail-filter" id="search_thumbnails2">
+  <br/>
 </div>
 <!--
 -->

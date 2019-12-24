@@ -187,6 +187,8 @@ var api_root = document.location.protocol + "//" + document.location.host + docu
 console.log("API root:" + api_root);
 console.log(document.location);
 var next_poll_horizon = 0;
+var current_floorplan_uuid = null;
+var current_floorplan2_uuid = null;
 var current_map_uuid = null;
 var current_map2_uuid = null;
 var compare_map2_active = false;
@@ -393,6 +395,32 @@ function processJSON(err, reply_data) {
                 new_default_floormap_uuid = document.location.hash.substr(1);
             }
         }
+        var floorplans_data = reply_data["FloorPlans"];
+        for (var i = 0; i < floorplans_data.length; i++) {
+            var jfe = floorplans_data[i];
+            if (current_floorplan_uuid == undefined) {
+                current_floorplan_uuid = jfe["FloorPlanUUID"];
+                console.log("Set current floorplan to " + current_floorplan_uuid);
+            }
+            if (current_floorplan2_uuid == undefined) {
+                current_floorplan2_uuid = jfe["FloorPlanUUID"];
+            }
+            var dd = document.getElementById("curr_floorplan");
+            if (dd != null) {
+                var option = document.createElement("option");
+                option.text = jfe["Name"] + " : " + jfe["Description"];
+                option.value = jfe["FloorPlanUUID"];
+                dd.add(option);
+            }
+            var dd = document.getElementById("curr_floorplan2");
+            if (dd != null) {
+                var option = document.createElement("option");
+                option.text = jfe["Name"] + " : " + jfe["Description"];
+                option.value = jfe["FloorPlanUUID"];
+                dd.add(option);
+            }
+        }
+
         var data = reply_data["MapObjects"];
         var floors_data = reply_data["FloorMaps"];
         next_poll_horizon = reply_data["NextPollHorizon"];
@@ -1308,22 +1336,29 @@ function set_map_label(node, label) {
     /* FIXME: no-op for now */
 }
 
-function update_map_jso(node, jso) {
-
-    if (jso["Deleted"]) {
-        if (node.uuid == current_map_uuid) {
-            var next_li_node = node.parentNode.nextSibling;
-            if (next_li_node != null) {
-                if (next_li_node.nodeName == "LI") {
-                    var next_node = next_li_node.childNodes[0];
-                    if (next_node != null) {
-                        set_current_map(next_node.uuid);
-                    }
+function select_next_mapX(curr_map_uuid, set_curr_map, node) {
+    if (node.uuid == curr_map_uuid) {
+        for (var next_li_node = node.parentNode.nextSibling; next_li_node != null; next_li_node = next_li_node.nextSibling) {
+            if (next_li_node.nodeName == "LI") {
+                var next_node = next_li_node.childNodes[0];
+                if (next_node != null && next_node.style.display != "none") {
+                    set_curr_map(next_node.uuid);
+                    break;
                 }
-            } else {
-                set_current_map(undefined);
+                if (next_node == null) {
+                    break;
+                }
             }
         }
+        if (next_li_node == null) {
+            set_curr_map(undefined);
+        }
+    }
+}
+
+function update_map_jso(node, jso) {
+    if (jso["Deleted"]) {
+        select_next_mapX(current_map_uuid, set_current_map, node);
         node.outerHTML = "";
         console.debug("Deleting map " + node.uuid);
     } else {
@@ -1342,21 +1377,8 @@ function update_map_jso(node, jso) {
 }
 
 function update_map2_jso(node, jso) {
-
     if (jso["Deleted"]) {
-        if (node.uuid == current_map2_uuid) {
-            var next_li_node = node.parentNode.nextSibling;
-            if (next_li_node != null) {
-                if (next_li_node.nodeName == "LI") {
-                    var next_node = next_li_node.childNodes[0];
-                    if (next_node != null) {
-                        set_current_map2(next_node.uuid);
-                    }
-                }
-            } else {
-                set_current_map2(undefined);
-            }
-        }
+        select_next_mapX(current_map2_uuid, set_current_map2, node);
         node.outerHTML = "";
         console.debug("Deleting map2 " + node.uuid);
     } else {
@@ -1370,7 +1392,6 @@ function update_map2_jso(node, jso) {
         if (node.uuid == current_map2_uuid) {
             node.classList.add("selected-thumbnail");
         }
-        set_map_svg();
     }
 }
 
@@ -1380,6 +1401,7 @@ function create_map_node_from_jso(id_prefix, jso) {
     node.id = el_id;
     // node.f7n = {};
     node.uuid = jso["FloorMapUUID"];
+    node.parent_uuid = jso["ParentFloorPlanUUID"];
     node.clip_top = jso["ClipTop"];
     node.clip_left = jso["ClipLeft"];
     node.clip_width = jso["ClipWidth"];
@@ -1433,6 +1455,18 @@ function insert_map_li_node(cnv, li_node) {
     }
 }
 
+function set_map_visibility(curr_floorplan_uuid, node) {
+    if (curr_floorplan_uuid != undefined) {
+        if (curr_floorplan_uuid == node.parent_uuid) {
+            node.style.display = "";
+        } else {
+            node.style.display = "none";
+        }
+    } else {
+        node.style.display = "none";
+    }
+}
+
 function add_map_jso(jso) {
     /*
      <li><div id='page_1'><p>Page 1</p><img class="thumbnail-image" src="static/out-21.ppm.png"></div></li>
@@ -1440,13 +1474,15 @@ function add_map_jso(jso) {
     var cnv = document.getElementById("page_thumbnails");
     var li_node = document.createElement("li");
     var node = create_map_node_from_jso("", jso);
+    node.classList.add("map1_floormap");
 
     li_node.appendChild(node);
     node.onclick =
         function(e) {
             set_current_map(node.uuid);
         };
-    // console.debug("Adding map " + node.uuid);
+    console.debug("Adding map " + node.uuid);
+    set_map_visibility(current_floorplan_uuid, node);
     insert_map_li_node(cnv, li_node);
 }
 
@@ -1460,6 +1496,7 @@ function add_map2_jso(jso) {
     }
     var li_node = document.createElement("li");
     var node = create_map_node_from_jso("map2_", jso);
+    node.classList.add("map2_floormap");
 
     li_node.appendChild(node);
     node.onclick =
@@ -1467,7 +1504,24 @@ function add_map2_jso(jso) {
             set_current_map2(node.uuid);
         };
     // console.debug("Adding map " + node.uuid);
+    set_map_visibility(current_floorplan2_uuid, node);
     insert_map_li_node(cnv, li_node);
+}
+
+function set_current_floorplan(uuid) {
+    var elts = document.getElementsByClassName("map1_floormap");
+    current_floorplan_uuid = uuid;
+    for (var i = 0; i < elts.length; i++) {
+        set_map_visibility(current_floorplan_uuid, elts[i]);
+    }
+}
+
+function set_current_floorplan2(uuid) {
+    var elts = document.getElementsByClassName("map2_floormap");
+    current_floorplan2_uuid = uuid;
+    for (var i = 0; i < elts.length; i++) {
+        set_map_visibility(current_floorplan2_uuid, elts[i]);
+    }
 }
 
 function HasText(el, q) {

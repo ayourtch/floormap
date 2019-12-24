@@ -31,11 +31,20 @@ pub struct ApiV1FloorMap {
     pub Name: String,
     pub Description: String,
     pub Deleted: bool,
+    pub ParentFloorPlanUUID: FlexUuid,
     pub SortOrder: i32,
     pub ClipLeft: i32,
     pub ClipTop: i32,
     pub ClipWidth: i32,
     pub ClipHeight: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorPlan {
+    pub FloorPlanUUID: FlexUuid,
+    pub Name: String,
+    pub Description: String,
+    pub Deleted: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -50,6 +59,7 @@ pub struct ApiV1FloorMapSetClipRecord {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
     pub NextPollHorizon: i64,
+    pub FloorPlans: Vec<ApiV1FloorPlan>,
     pub FloorMaps: Vec<ApiV1FloorMap>,
     pub MapObjects: Vec<ApiV1MapObject>,
 }
@@ -143,6 +153,17 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             .load::<FloorMap>(db.conn())
             .expect("Error loading floormaps")
     };
+    let floorplans = {
+        use super::schema::FloorPlans::dsl::*;
+        FloorPlans
+            // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            // .order(SortOrder.asc())
+            .order(UpdatedAt.asc())
+            .limit(20000)
+            .load::<FloorPlan>(db.conn())
+            .expect("Error loading floorplans")
+    };
 
     let new_results: Vec<ApiV1MapObject> = results
         .into_iter()
@@ -153,6 +174,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
         .into_iter()
         .map(|x| ApiV1FloorMap {
             FloorMapUUID: x.FloorMapUUID,
+            ParentFloorPlanUUID: x.ParentFloorPlanUUID,
             Name: x.Name,
             Description: x.Description,
             Deleted: x.Deleted,
@@ -163,8 +185,18 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             ClipHeight: x.ClipHeight,
         })
         .collect();
+    let new_floorplans = floorplans
+        .into_iter()
+        .map(|x| ApiV1FloorPlan {
+            FloorPlanUUID: x.FloorPlanUUID,
+            Name: x.Name,
+            Description: x.Description,
+            Deleted: x.Deleted,
+        })
+        .collect();
     ApiV1GetMapObjectsResponse {
         NextPollHorizon: next_ts,
+        FloorPlans: new_floorplans,
         FloorMaps: new_floormaps,
         MapObjects: new_results,
     }
