@@ -196,21 +196,39 @@ var current_set_map_uuid = null;
 var current_set_map2_uuid = null;
 var current_quick_search = "";
 
-function get_floormap_srcX(base, uuid) {
-    var el = get_map_from_uuid(current_map_uuid);
-    if (el != null && el.file_version != undefined) {
-        return (base + uuid + "?ver=" + el.file_version);
+function get_floormap_srcX_version(base, uuid, file_version) {
+    if (file_version != undefined) {
+        return (base + uuid + "/" + file_version);
     } else {
         return (base + uuid);
     }
 }
 
+function get_floormap_srcX(base, uuid) {
+    var el = get_map_from_uuid(uuid);
+    if (el != null && el.file_version != undefined) {
+        return get_floormap_srcX_version(base, uuid, el.file_version);
+    } else {
+        return get_floormap_srcX_version(base, uuid, undefined);
+    }
+}
+
 function get_floormap_src(uuid) {
-    return get_floormap_srcX("images/floormaps/", uuid);
+    var src = get_floormap_srcX("images/floormaps/", uuid);
+    console.log("get_floormap_srcRET: " + src);
+    return src;
 }
 
 function get_floormap_thumbnail_src(uuid) {
-    return get_floormap_srcX("images/floormaps/thumbnails/", uuid);
+    var src = get_floormap_srcX("images/floormaps/thumbnails/", uuid);
+    console.log("get_floormap_thumbnail_srcRET: " + src);
+    return src;
+}
+
+function get_floormap_thumbnail_src_version(uuid, version) {
+    var src = get_floormap_srcX_version("images/floormaps/thumbnails/", uuid, version);
+    console.log("get_floormap_thumbnail_srcRET: " + src);
+    return src;
 }
 
 function get_map_from_uuid(uuid) {
@@ -1468,12 +1486,9 @@ function create_map_node_from_jso(id_prefix, jso) {
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image");
     node_img.id = el_id + "_thumbnail";
-    node_img.src = get_floormap_thumbnail_src(node.uuid);
+    node_img.src = get_floormap_thumbnail_src_version(node.uuid, node.file_version);
     node_img.title = jso["Description"];
 
-    var node_full_img = new Image();
-    node_full_img.src = get_floormap_src(node.uuid);
-    page_images_cache.push(node_full_img);
 
     node.quickSearchObjects = {};
     node.quickSearchString = "";
@@ -1483,6 +1498,14 @@ function create_map_node_from_jso(id_prefix, jso) {
         node.classList.add("selected-thumbnail");
     }
     return node;
+}
+
+function cache_full_image(node) {
+    var node_full_img = new Image();
+    var img_src = get_floormap_src(node.uuid);
+    console.log("Pushing cache: " + img_src);
+    node_full_img.src = img_src;
+    page_images_cache.push(node_full_img);
 }
 
 function insert_map_li_node(cnv, li_node) {
@@ -1537,6 +1560,7 @@ function add_map_jso(jso) {
     console.debug("Adding map " + node.uuid);
     set_map_visibility(current_floorplan_uuid, node);
     insert_map_li_node(cnv, li_node);
+    cache_full_image(node);
 }
 
 function add_map2_jso(jso) {
@@ -1559,6 +1583,7 @@ function add_map2_jso(jso) {
     // console.debug("Adding map " + node.uuid);
     set_map_visibility(current_floorplan2_uuid, node);
     insert_map_li_node(cnv, li_node);
+    cache_full_image(node);
 }
 
 function set_current_floorplan(uuid) {

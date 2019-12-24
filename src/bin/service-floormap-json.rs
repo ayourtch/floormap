@@ -162,7 +162,7 @@ fn main() {
         "make new mapobject",
     );
     router.get(
-        "/images/floormaps/:floormap_uuid",
+        "/images/floormaps/:floormap_uuid/:version",
         http_get_floormap_image,
         "floormap image page",
     );
@@ -172,7 +172,7 @@ fn main() {
         "set clip for floormap",
     );
     router.get(
-        "/images/floormaps/thumbnails/:floormap_uuid",
+        "/images/floormaps/thumbnails/:floormap_uuid/:version",
         http_get_floormap_thumbnail_image,
         "floormap image thumbnails page",
     );
