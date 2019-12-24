@@ -1237,6 +1237,7 @@ function add_map_jso(jso) {
     node.clip_left = jso["ClipLeft"];
     node.clip_width = jso["ClipWidth"];
     node.clip_height = jso["ClipHeight"];
+    node.sort_order = jso["SortOrder"];
     var label = jso["Name"];
 
     var node_label = document.createElement("p");
@@ -1265,7 +1266,25 @@ function add_map_jso(jso) {
             set_current_map(node.uuid);
         };
     // console.debug("Adding map " + node.uuid);
-    cnv.appendChild(li_node);
+    var insertBeforeNode = null;
+    for (var i = 0; i < cnv.childNodes.length; i++) {
+        var lin = cnv.childNodes[i];
+        if (lin.nodeName == "LI" && lin.childNodes.length == 1) {
+            var anode = lin.childNodes[0];
+            if (anode.sort_order != undefined) {
+                if (anode.sort_order > node.sort_order) {
+                    insertBeforeNode = lin;
+                    break;
+                }
+            }
+        }
+
+    }
+    if (insertBeforeNode == null) {
+        cnv.appendChild(li_node);
+    } else {
+        cnv.insertBefore(li_node, insertBeforeNode);
+    }
 }
 
 function HasText(el, q) {
