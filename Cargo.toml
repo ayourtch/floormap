@@ -43,4 +43,6 @@ clap = "*"
 image = "*"
 csv = "1.1.*"
 zip = "*"
+multipart = "*"
+
 
