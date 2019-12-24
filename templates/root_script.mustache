@@ -201,6 +201,14 @@ function get_map_from_uuid(uuid) {
 function set_map_items_visibility() {
 
     var elts = document.getElementsByClassName("item");
+    var svg_elt = document.getElementById("map_svg");
+    if (svg_elt == null) {
+        /* not in map editing mode */
+        for (var i = 0; i < elts.length; i++) {
+            elts[i].style.display = "none";
+        }
+        return;
+    }
 
     for (var i = 0; i < elts.length; i++) {
         set_item_visibility(elts[i]);
@@ -251,6 +259,8 @@ function set_map_svg() {
 }
 
 function set_current_map(uuid) {
+    console.log(new Error().stack);
+    console.log("SET CURR MAP:" + uuid);
     if (current_set_map_uuid != undefined) {
         var el = get_map_from_uuid(current_set_map_uuid);
         if (el != null) {
@@ -298,11 +308,11 @@ function processJSON(err, reply_data) {
         var new_default_floormap_uuid = undefined;
         if (current_map_uuid == null) {
             if (document.location.hash != "") {
-                current_map_uuid = document.location.hash.substr(1);
+                new_default_floormap_uuid = document.location.hash.substr(1);
             }
         } else {
             if (document.location.hash != "#" + current_map_uuid) {
-                current_map_uuid = document.location.hash.substr(1);
+                new_default_floormap_uuid = document.location.hash.substr(1);
             }
         }
         var data = reply_data["MapObjects"];
@@ -344,17 +354,19 @@ function processJSON(err, reply_data) {
         }
         if (get_map_from_uuid(current_map_uuid) == null) {
             if (new_default_floormap_uuid != undefined) {
-                current_map_uuid = new_default_floormap_uuid;
+                current_set_map_uuid = new_default_floormap_uuid;
             } else {
-                current_map_uuid = undefined;
+                current_set_map_uuid = undefined;
             }
         }
-        if (current_map_uuid != current_set_map_uuid) {
-            set_current_map(current_map_uuid);
-            console.log("SET CURRENT MAP");
-            var elt = get_map_from_uuid(current_map_uuid);
-            if (elt != null) {
-                elt.scrollIntoView();
+        if (current_set_map_uuid != undefined) {
+            if (current_map_uuid != current_set_map_uuid) {
+                set_current_map(current_set_map_uuid);
+                console.log("SET CURRENT MAP:" + current_set_map_uuid);
+                var elt = get_map_from_uuid(current_set_map_uuid);
+                if (elt != null) {
+                    elt.scrollIntoView();
+                }
             }
         }
         setTimeout(JsonPollCycle, 1000);
@@ -1028,7 +1040,8 @@ function apply_item_style_from(node, from_node) {
 
 function set_item_visibility(node) {
     if (node.parent_map_uuid == current_map_uuid) {
-        node.style.visibility = "visible";
+        // node.style.visibility = "visible";
+        node.style.display = "";
         var lbl = node.childNodes[0];
         if (lbl != null) {
             if ((current_quick_search != "") && TextHasText(lbl.data, current_quick_search)) {
@@ -1039,7 +1052,8 @@ function set_item_visibility(node) {
         }
         // apply_item_style(node);
     } else {
-        node.style.visibility = "hidden";
+        // node.style.visibility = "hidden";
+        node.style.display = "none";
     }
     redraw_item_arrow(node);
 }
@@ -1072,13 +1086,15 @@ function set_item_arrow(node, x, y) {
     var dy = Math.round(rect.height / 2);
 
     if (arrow != null) {
-        arrow.style.visibility = node.style.visibility;
+        // arrow.style.visibility = node.style.visibility;
+        arrow.style.display = node.style.display;
         arrow.innerHTML = '<svg  style="position:absolute; left:' + (tx + dx) + 'px;top:' + (ty + dy) + 'px; width:auto; height:auto; overflow:visible;">' +
             '<path   d="M 0 0 L ' + (x - dx) + ' ' + (y - dy) + '" fill="none" stroke="#f00"></path>' +
             '<circle cx="' + (x - dx) + '" cy="' + (y - dy) + '" r="3" fill="#f00" stroke="none"></circle></svg>';
         // console.log(arrow.outerHTML);
         if (x == 0 && y == 0) {
-            arrow.style.visibility = 'hidden';
+            // arrow.style.visibility = 'hidden';
+            arrow.style.display = 'none';
         }
     }
     node.arrow_x = x;
@@ -1306,10 +1322,10 @@ function QuickSearchHandler(e) {
             }
             console.debug(el.childNodes[0].quickSearchString);
             if (found) {
-                el.style.visibility = "visible";
+                // el.style.visibility = "visible";
                 el.style.display = "";
             } else {
-                el.style.visibility = "hidden";
+                // el.style.visibility = "hidden";
                 el.style.display = "none";
             }
         }
