@@ -175,9 +175,8 @@ pub fn db_insert_new_floormap(
         use super::schema::FloorMaps::dsl::*;
         *FloorMaps
             .filter(
-                Deleted
-                    .eq(false)
-                    .and(SortOrder.lt(insert_before_order))
+                SortOrder
+                    .lt(insert_before_order)
                     .and(ParentFloorPlanUUID.eq(new_parent)),
             )
             .select(count_star())
@@ -193,8 +192,7 @@ pub fn db_insert_new_floormap(
         FloorMaps.filter(
             ParentFloorPlanUUID
                 .eq(new_parent)
-                .and(SortOrder.ge(new_sort_order_i32))
-                .and(Deleted.eq(false)),
+                .and(SortOrder.ge(new_sort_order_i32)),
         ),
     )
     .set((SortOrder.eq(SortOrder + 1), UpdatedAt.eq(now_ts)))

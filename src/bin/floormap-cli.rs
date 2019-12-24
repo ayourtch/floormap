@@ -62,7 +62,7 @@ fn import_pages_from(dirname: &str) {
             &full_text,
             &pathname,
             &plan_uuid,
-            0,
+            999999,
         );
 
         page_nr = page_nr + 1;
