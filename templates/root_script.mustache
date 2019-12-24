@@ -310,7 +310,7 @@ function set_current_map(uuid) {
         el.src = get_floormap_src(uuid);
     } else {
         var el = document.getElementById("map");
-        el.src = "static/grid_10.png";
+        el.src = "static/grid_page.png";
     }
     set_map_items_visibility();
     set_map_svg();
@@ -366,7 +366,7 @@ function set_current_map2(uuid) {
         draw_compare_map2();
     } else {
         var el = document.getElementById("map2");
-        el.src = "static/grid_10.png";
+        el.src = "static/grid_page.png";
     }
     set_map_items_visibility();
     set_map_svg();
@@ -416,13 +416,15 @@ function processJSON(err, reply_data) {
                 }
             }
 
-            var el_id = get_map2_id(jse);
-            var el = document.getElementById(el_id);
-            if (el != null) {
-                update_map2_jso(el, jse)
-            } else {
-                if (!jse["Deleted"]) {
-                    add_map2_jso(jse)
+            if (document.getElementById("map2") != null) {
+                var el_id = get_map2_id(jse);
+                var el = document.getElementById(el_id);
+                if (el != null) {
+                    update_map2_jso(el, jse)
+                } else {
+                    if (!jse["Deleted"]) {
+                        add_map2_jso(jse)
+                    }
                 }
             }
         }
@@ -1309,6 +1311,19 @@ function set_map_label(node, label) {
 function update_map_jso(node, jso) {
 
     if (jso["Deleted"]) {
+        if (node.uuid == current_map_uuid) {
+            var next_li_node = node.parentNode.nextSibling;
+            if (next_li_node != null) {
+                if (next_li_node.nodeName == "LI") {
+                    var next_node = next_li_node.childNodes[0];
+                    if (next_node != null) {
+                        set_current_map(next_node.uuid);
+                    }
+                }
+            } else {
+                set_current_map(undefined);
+            }
+        }
         node.outerHTML = "";
         console.debug("Deleting map " + node.uuid);
     } else {
@@ -1329,6 +1344,19 @@ function update_map_jso(node, jso) {
 function update_map2_jso(node, jso) {
 
     if (jso["Deleted"]) {
+        if (node.uuid == current_map2_uuid) {
+            var next_li_node = node.parentNode.nextSibling;
+            if (next_li_node != null) {
+                if (next_li_node.nodeName == "LI") {
+                    var next_node = next_li_node.childNodes[0];
+                    if (next_node != null) {
+                        set_current_map2(next_node.uuid);
+                    }
+                }
+            } else {
+                set_current_map2(undefined);
+            }
+        }
         node.outerHTML = "";
         console.debug("Deleting map2 " + node.uuid);
     } else {

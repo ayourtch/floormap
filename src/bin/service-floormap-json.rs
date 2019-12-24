@@ -420,7 +420,7 @@ fn main() {
             );
             // let mut resp = Response::with((status::NotFound, payload));
             // return Ok(resp);
-            let mut f = File::open("staticfiles/grid_10.png").unwrap();
+            let mut f = File::open("staticfiles/grid_page.png").unwrap();
             f.read_to_end(&mut buffer).unwrap();
         } else {
             let floor = floor.unwrap();

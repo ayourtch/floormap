@@ -19,7 +19,6 @@
 function delete_map_click() {
   if (current_map_uuid != undefined) {
      DeleteFloorMapByUUID(current_map_uuid);
-     set_current_map(undefined);
   }
 }
 
@@ -48,7 +47,7 @@ function delete_map_click() {
 <input type="button" value="<-- XOR --" onclick="toggle_compare_map2()"></input><br/><br/>
 </div>
 <div class="img-overlay-wrap-small" id="floor_canvas2">
-  <img id="map2" class="map" src="static/out-21.ppm.png"/>
+  <img id="map2" class="map" src="static/grid_page.png"/>
   <!-- <div id="map_svg2"></div> -->
 </div>
 <!--
