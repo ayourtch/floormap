@@ -1391,13 +1391,11 @@ function update_map_jso(node, jso) {
         console.debug("Updating map " + node.uuid + " : " + jso["Deleted"]);
         var old_file_version = node.file_version;
         map_node_update(node, jso);
+        if (old_file_version != node.file_version) {
+            refresh_map_images(node);
+        }
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
-            /* FIXME
-             if (old_file_version != node.file_version) {
-		refresh_map_images(node.uuid);
-            }
-            */
         }
         if (node.sort_order != jso["SortOrder"]) {
             node.sort_order = jso["SortOrder"];
@@ -1414,7 +1412,11 @@ function update_map2_jso(node, jso) {
         console.debug("Deleting map2 " + node.uuid);
     } else {
         console.debug("Updating map2 " + node.uuid + " : " + jso["Deleted"]);
+        var old_file_version = node.file_version;
         map_node_update(node, jso);
+        if (old_file_version != node.file_version) {
+            refresh_map2_images(node);
+        }
         if (node.sort_order != jso["SortOrder"]) {
             node.sort_order = jso["SortOrder"];
             reinsert_node("page_thumbnails2", node);
@@ -1422,6 +1424,25 @@ function update_map2_jso(node, jso) {
         if (node.uuid == current_map2_uuid) {
             node.classList.add("selected-thumbnail");
         }
+    }
+}
+
+function refresh_map_images(node) {
+    var node_thumb_img = document.getElementById(node.id + "_thumbnail");
+    node_thumb_img.src = get_floormap_thumbnail_src(node.uuid);
+    if (node.uuid == current_map_uuid) {
+        var el = document.getElementById("map");
+        el.src = get_floormap_src(node.uuid);
+        draw_compare_map2();
+    }
+}
+
+function refresh_map2_images(node) {
+    var node_thumb_img = document.getElementById(node.id + "_thumbnail");
+    node_thumb_img.src = get_floormap_thumbnail_src(node.uuid);
+    if (node.uuid == current_map_uuid) {
+        var el = document.getElementById("map2");
+        el.src = get_floormap_src(node.uuid);
     }
 }
 
@@ -1446,6 +1467,7 @@ function create_map_node_from_jso(id_prefix, jso) {
     node_label.appendChild(textnode);
     var node_img = document.createElement("img");
     node_img.classList.add("thumbnail-image");
+    node_img.id = el_id + "_thumbnail";
     node_img.src = get_floormap_thumbnail_src(node.uuid);
     node_img.title = jso["Description"];
 
