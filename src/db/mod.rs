@@ -36,7 +36,23 @@ pub fn db_put_json(data: &str) {
         use schema::FloorMaps::dsl::*;
 
         for d in &bk.FloorMaps {
-            let rows_inserted = diesel::insert_into(FloorMaps).values(d).execute(db.conn());
+            let mut d = d.clone();
+            if d.SortOrder == 0 {
+                let new_sort_order = 1 + {
+                    use self::diesel::dsl::count_star;
+                    *FloorMaps
+                        .filter(ParentFloorPlanUUID.eq(&d.ParentFloorPlanUUID))
+                        .select(count_star())
+                        .load::<i64>(db.conn())
+                        .expect("Error loading floormaps")
+                        .first()
+                        .unwrap()
+                };
+
+                let new_sort_order_i32: i32 = new_sort_order as i32;
+                d.SortOrder = new_sort_order_i32;
+            }
+            let rows_inserted = diesel::insert_into(FloorMaps).values(&d).execute(db.conn());
         }
     }
     {
@@ -249,7 +265,7 @@ pub fn db_insert_new_floormap(
     let db = get_db();
     let now_ts = FlexTimestamp::now();
 
-    let new_sort_order = {
+    let new_sort_order = 1 + {
         use super::schema::FloorMaps::dsl::*;
         *FloorMaps
             .filter(
