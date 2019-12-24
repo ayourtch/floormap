@@ -34,6 +34,7 @@ pub struct FloorMap {
     pub Locked: bool,
     pub LockedBy: Option<String>,
     pub LockedAt: Option<FlexTimestamp>,
+    pub SortOrder: i32,
     pub ClipLeft: i32,
     pub ClipTop: i32,
     pub ClipWidth: i32,

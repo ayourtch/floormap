@@ -31,6 +31,7 @@ pub struct ApiV1FloorMap {
     pub Name: String,
     pub Description: String,
     pub Deleted: bool,
+    pub SortOrder: i32,
     pub ClipLeft: i32,
     pub ClipTop: i32,
     pub ClipWidth: i32,
@@ -121,6 +122,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
         MapObjects
             // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
             .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .order(UpdatedAt.asc())
             .limit(20000)
             .load::<MapObject>(db.conn())
             .expect("Error loading mapobjects")
@@ -130,6 +132,8 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
         FloorMaps
             // .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
             .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            // .order(SortOrder.asc())
+            .order(UpdatedAt.asc())
             .limit(20000)
             .load::<FloorMap>(db.conn())
             .expect("Error loading floormaps")
@@ -147,6 +151,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             Name: x.Name,
             Description: x.Description,
             Deleted: x.Deleted,
+            SortOrder: x.SortOrder,
             ClipLeft: x.ClipLeft,
             ClipTop: x.ClipTop,
             ClipWidth: x.ClipWidth,

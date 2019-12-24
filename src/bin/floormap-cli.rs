@@ -40,7 +40,7 @@ fn import_pages_from(dirname: &str) {
                     .map(|x| x.clone().trim())
                     .unwrap_or("")
                     .to_string();
-                full_text = contents;
+                // full_text = contents;
             }
         }
         let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
@@ -56,7 +56,14 @@ fn import_pages_from(dirname: &str) {
             break;
         }
         let page_name = format!("Page {:02}", page_nr);
-        db_insert_new_floormap(&page_name, &description, &full_text, &pathname, &plan_uuid);
+        db_insert_new_floormap(
+            &page_name,
+            &description,
+            &full_text,
+            &pathname,
+            &plan_uuid,
+            0,
+        );
 
         page_nr = page_nr + 1;
     }

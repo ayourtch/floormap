@@ -119,9 +119,43 @@ pub fn db_insert_new_floormap(
     new_full_text: &str,
     new_filename: &str,
     new_parent: &FlexUuid,
+    insert_before_order: i32,
 ) -> FlexUuid {
+    use self::diesel::dsl::count_star;
     use self::diesel::prelude::*;
     use schema::FloorMaps::dsl::*;
+    let db = get_db();
+    let now_ts = FlexTimestamp::now();
+
+    let new_sort_order = {
+        use super::schema::FloorMaps::dsl::*;
+        *FloorMaps
+            .filter(
+                Deleted
+                    .eq(false)
+                    .and(SortOrder.lt(insert_before_order))
+                    .and(ParentFloorPlanUUID.eq(new_parent)),
+            )
+            .select(count_star())
+            .load::<i64>(db.conn())
+            .expect("Error loading floormaps")
+            .first()
+            .unwrap()
+    };
+
+    let new_sort_order_i32: i32 = new_sort_order as i32;
+
+    let updated_row_res = diesel::update(
+        FloorMaps.filter(
+            ParentFloorPlanUUID
+                .eq(new_parent)
+                .and(SortOrder.ge(new_sort_order_i32))
+                .and(Deleted.eq(false)),
+        ),
+    )
+    .set((SortOrder.eq(SortOrder + 1), UpdatedAt.eq(now_ts)))
+    .execute(db.conn());
+    println!("Updated row res: {:?}", updated_row_res);
 
     let new_item = FloorMap {
         Name: new_name.to_string(),
@@ -129,10 +163,10 @@ pub fn db_insert_new_floormap(
         FullText: new_full_text.to_string(),
         FloorPlanFileName: new_filename.to_string(),
         ParentFloorPlanUUID: new_parent.clone(),
+        SortOrder: new_sort_order_i32,
         ..Default::default()
     };
 
-    let db = get_db();
     let rows_inserted = diesel::insert_into(FloorMaps)
         .values(&new_item)
         .execute(db.conn());

@@ -38,6 +38,7 @@ CREATE TABLE FloorMaps (
 	Locked  BOOLEAN NOT NULL,
 	LockedBy VARCHAR,
 	LockedAt datetime,
+	SortOrder INT NOT NULL,
 	ClipLeft INT NOT NULL,
 	ClipTop INT NOT NULL,
 	ClipWidth INT NOT NULL,

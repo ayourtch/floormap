@@ -19,6 +19,7 @@ table! {
         Locked -> Bool,
         LockedBy -> Nullable<Text>,
         LockedAt -> Nullable<Timestamp>,
+        SortOrder -> Integer,
         ClipLeft -> Integer,
         ClipTop -> Integer,
         ClipWidth -> Integer,
