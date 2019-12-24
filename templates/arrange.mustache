@@ -31,13 +31,14 @@
 </div>
 <div class="img-overlay-wrap-small" id="floor_canvas">
   <img id="map" class="map" src=""/>
+  <img id="map2compare" class="overlay_map blend" src=""/>
   <!-- <div id="map_svg"></div> -->
 </div>
 <div class="arrange-controls">
 <input type="button" value="<-- replace --"></input><br/><br/>
 <input type="button" value="<-- delete --"></input><br/><br/>
 <input type="button" value="<-- ins after --"></input><br/><br/>
-<input type="button" value="<-- XOR --"></input><br/><br/>
+<input type="button" value="<-- XOR --" onclick="toggle_compare_map2()"></input><br/><br/>
 </div>
 <div class="img-overlay-wrap-small" id="floor_canvas2">
   <img id="map2" class="map" src="static/out-21.ppm.png"/>

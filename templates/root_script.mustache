@@ -184,6 +184,7 @@ console.log(document.location);
 var next_poll_horizon = 0;
 var current_map_uuid = null;
 var current_map2_uuid = null;
+var compare_map2_active = false;
 var current_set_map_uuid = null;
 var current_set_map2_uuid = null;
 var current_quick_search = "";
@@ -310,6 +311,26 @@ function set_current_map(uuid) {
     set_map_svg();
 }
 
+function draw_compare_map2() {
+    var uuid = current_map2_uuid;
+    if (uuid != undefined) {
+        if (compare_map2_active) {
+            var el = document.getElementById("map2compare");
+            el.src = get_floormap_src(uuid);
+        } else {
+            var el = document.getElementById("map2compare");
+            el.src = "";
+        }
+    }
+}
+
+function toggle_compare_map2() {
+    if (current_map2_uuid != undefined) {
+        compare_map2_active = !compare_map2_active;
+        draw_compare_map2();
+    }
+}
+
 function set_current_map2(uuid) {
     console.log(new Error().stack);
     console.log("SET CURR MAP2:" + uuid);
@@ -337,6 +358,7 @@ function set_current_map2(uuid) {
     if (uuid != undefined) {
         var el = document.getElementById("map2");
         el.src = get_floormap_src(uuid);
+        draw_compare_map2();
     } else {
         var el = document.getElementById("map2");
         el.src = "static/layer_3_switch.png";
