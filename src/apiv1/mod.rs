@@ -83,6 +83,20 @@ pub struct ApiV1FloorMapDeleteRecord {
     pub FloorMapUUID: flexuuid::FlexUuid,
 }
 
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq, PartialOrd)]
+pub enum ApiV1FloorMapCopyOperation {
+    FloorMapOverwrite,
+    FloorMapInsertBefore,
+    FloorMapInsertAfter,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorMapCopyRecord {
+    pub DstFloorMapUUID: flexuuid::FlexUuid,
+    pub SrcFloorMapUUID: flexuuid::FlexUuid,
+    pub Operation: ApiV1FloorMapCopyOperation,
+}
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1MapObjectSetNameDescriptionRecord {
     pub MapObjectUUID: flexuuid::FlexUuid,

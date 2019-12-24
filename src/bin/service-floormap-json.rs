@@ -147,6 +147,11 @@ fn main() {
         "set floormap deleted",
     );
     router.put(
+        "/api/v1/floormaps/copy/put/json",
+        api_http_put_floormap_copy,
+        "floormap copy",
+    );
+    router.put(
         "/api/v1/mapobjects/name_description/put/json",
         api_http_put_mapobject_name_description,
         "set mapobjects-for-map name",
@@ -320,6 +325,50 @@ fn main() {
                 println!("CR: {:?}", &cr);
                 for o in cr {
                     db_set_floormap_deleted(&o.FloorMapUUID, true).unwrap();
+                }
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+
+    fn api_http_put_floormap_copy(req: &mut Request) -> IronResult<Response> {
+        use std::str::FromStr;
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1FloorMapCopyRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    match o.Operation {
+                        ApiV1FloorMapCopyOperation::FloorMapOverwrite => {}
+                        ApiV1FloorMapCopyOperation::FloorMapInsertBefore => {
+                            let dst = db_get_floormap(&o.DstFloorMapUUID);
+                            let src = db_get_floormap(&o.SrcFloorMapUUID);
+                            if src.is_ok() && dst.is_ok() {
+                                use floormap::db::db_insert_new_floormap;
+
+                                let src = src.unwrap();
+                                let dst = dst.unwrap();
+                                db_insert_new_floormap(
+                                    &src.Name,
+                                    &src.Description,
+                                    &src.FullText,
+                                    &src.FloorMapFileName,
+                                    &dst.ParentFloorPlanUUID,
+                                    dst.SortOrder,
+                                );
+                            }
+                        }
+                        ApiV1FloorMapCopyOperation::FloorMapInsertAfter => {}
+                    }
+                    // db_set_floormap_deleted(&o.FloorMapUUID, true).unwrap();
                 }
 
                 Ok(Response::with((status::Ok, payload)))

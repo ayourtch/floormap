@@ -18,6 +18,49 @@
 
 /* beautify ignore:end */
 
+function CopyFloorMap(operation, dst_uuid, src_uuid) {
+    var api_url = api_root + "v1/floormaps/copy/put/json";
+    var data = new Object();
+    data["SrcFloorMapUUID"] = src_uuid;
+    data["DstFloorMapUUID"] = dst_uuid;
+    data["Operation"] = operation;
+    total_saving++;
+    document.body.style.cursor = 'wait';
+    var arr = new Array();
+    arr[0] = data;
+    putJSON(api_url, arr, function(err, res) {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+    });
+}
+
+function overwrite_click() {
+    if (current_map_uuid != undefined && current_map2_uuid != undefined) {
+        CopyFloorMap("FloorMapOverwrite", current_map_uuid, current_map2_uuid);
+    } else {
+        alert("Select src and dst floormaps");
+    }
+}
+
+function insert_before_click() {
+    if (current_map_uuid != undefined && current_map2_uuid != undefined) {
+        CopyFloorMap("FloorMapInsertBefore", current_map_uuid, current_map2_uuid);
+    } else {
+        alert("Select src and dst floormaps");
+    }
+}
+
+function insert_after_click() {
+    if (current_map_uuid != undefined && current_map2_uuid != undefined) {
+        CopyFloorMap("FloorMapInsertAfter", current_map_uuid, current_map2_uuid);
+    } else {
+        alert("Select src and dst floormaps");
+    }
+}
+
+
 function delete_map_click() {
     if (current_map_uuid != undefined) {
         DeleteFloorMapByUUID(current_map_uuid);
@@ -62,9 +105,9 @@ function sel_floorplan2() {
 <center>
 <input type="button" value="<-- delete --" onclick="delete_map_click()"></input><br/><br/>
 <hr size=1 noshade></hr>
-<input type="button" value="<-- ins before--"></input><br/><br/>
-<input type="button" value="<-- replace --"></input><br/><br/>
-<input type="button" value="<-- ins after --"></input>
+<input type="button" value="<-- ins before--" onclick="insert_before_click()"></input><br/><br/>
+<input type="button" value="<-- replace --" onclick="overwrite_click()"></input><br/><br/>
+<input type="button" value="<-- ins after --" onclick="insert_after_click()"></input>
 <hr size=1 noshade></hr>
 <input type="button" value="<-- XOR --" onclick="toggle_compare_map2()"></input>
 </center>
