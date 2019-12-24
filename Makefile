@@ -1,4 +1,4 @@
-default: first-time-done export-maybe regen-db sqlite-cli import-maybe sqlite
+default: export-maybe regen-db sqlite-cli import-maybe sqlite
 first: first-time regen-db sqlite
 first-time:
 	mkdir db
