@@ -203,7 +203,7 @@ pub fn db_insert_new_floormap(
         Name: new_name.to_string(),
         Description: new_description.to_string(),
         FullText: new_full_text.to_string(),
-        FloorPlanFileName: new_filename.to_string(),
+        FloorMapFileName: new_filename.to_string(),
         ParentFloorPlanUUID: new_parent.clone(),
         SortOrder: new_sort_order_i32,
         ..Default::default()

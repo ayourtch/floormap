@@ -117,7 +117,7 @@ fn export_cropped_floorplan(dir: &str) {
             let db = get_db();
             let fm = db_get_floormap(&floor.FloorMapUUID).unwrap();
 
-            let mut img = image::open(&fm.FloorPlanFileName).unwrap();
+            let mut img = image::open(&fm.FloorMapFileName).unwrap();
 
             let (mut clip_W, mut clip_H) = img.dimensions();
             if fm.ClipWidth != 0 {

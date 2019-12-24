@@ -425,7 +425,7 @@ fn main() {
         } else {
             let floor = floor.unwrap();
 
-            let mut f = File::open(&floor.FloorPlanFileName).unwrap();
+            let mut f = File::open(&floor.FloorMapFileName).unwrap();
             f.read_to_end(&mut buffer).unwrap();
         }
 
@@ -466,7 +466,7 @@ fn main() {
             return Ok(resp);
         }
         let floor = floor.unwrap();
-        let filename = format!("{}-thumb.png", &floor.FloorPlanFileName);
+        let filename = format!("{}-thumb.png", &floor.FloorMapFileName);
         println!("Filename: {}", &filename);
 
         let mut f = File::open(&filename).unwrap();
