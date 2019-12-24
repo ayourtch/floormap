@@ -59,10 +59,15 @@ function sel_floorplan2() {
   <select id="curr_floorplan" onchange="sel_floorplan()"></select>
 </div>
 <div class="arrange-controls">
-<input type="button" value="<-- replace --"></input><br/><br/>
+<center>
 <input type="button" value="<-- delete --" onclick="delete_map_click()"></input><br/><br/>
-<input type="button" value="<-- ins after --"></input><br/><br/>
-<input type="button" value="<-- XOR --" onclick="toggle_compare_map2()"></input><br/><br/>
+<hr size=1 noshade></hr>
+<input type="button" value="<-- ins before--"></input><br/><br/>
+<input type="button" value="<-- replace --"></input><br/><br/>
+<input type="button" value="<-- ins after --"></input>
+<hr size=1 noshade></hr>
+<input type="button" value="<-- XOR --" onclick="toggle_compare_map2()"></input>
+</center>
 </div>
 <div class="img-overlay-wrap-small" id="floor_canvas2">
   <img id="map2" class="map" src="static/grid_page.png"/>
