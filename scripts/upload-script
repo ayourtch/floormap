@@ -1,0 +1,29 @@
+#!/bin/sh
+set -eu
+
+# must be run as www-data!
+
+# cp "${REAL_FILENAME}" /tmp/uploaded-"${ORIG_FILENAME}"
+
+CURR_TS=$(date '+%s')
+PDF_FILE=${REAL_FILENAME}
+TIMESTAMP="${2:-${CURR_TS}}"
+IMAGE_ROOT_DIR="/var/a3s/http/floor-plan-images"
+TARGET_DIR="${IMAGE_ROOT_DIR}/${TIMESTAMP}"
+
+mkdir "${TARGET_DIR}"
+mkdir "${TARGET_DIR}/images"
+echo "Target dir is: ${TARGET_DIR}"
+echo "Copying the PDF file to target dir..."
+cp "${PDF_FILE}" "${TARGET_DIR}/source.pdf"
+echo "${PDF_FILE}" | tee "${TARGET_DIR}/source.txt"
+echo "Converting the pdf to ppm..."
+pdftoppm -png "${TARGET_DIR}/source.pdf" "${TARGET_DIR}/images/page"
+find  "${TARGET_DIR}/images" -type f -exec convert {} -resize 400x400 {}-thumb.png \;
+echo "Extracting the text from pdf pages..."
+gs -sDEVICE=txtwrite -sOutputFile="${TARGET_DIR}/images/page-%d.txt" -dNOPAUSE -dBATCH "${TARGET_DIR}/source.pdf"
+echo "Removing extra spaces from txt files..."
+find "${TARGET_DIR}/images" -name '*.txt' -exec sed -i -e 's/  \+/ /g' {} \;
+echo "Importing into the database"
+./target/debug/floormap-cli import-floor-plan -i ${TARGET_DIR}
+
