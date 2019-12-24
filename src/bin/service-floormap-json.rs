@@ -412,20 +412,22 @@ fn main() {
 
         let floor = db_get_floormap(&query_uuid);
         println!("Got floormap: {:?}", &floor);
+        let mut buffer = Vec::new();
         if floor.is_err() {
             let payload = format!(
                 "Floor plan with uuid {} not found: {:?}",
                 &query_uuid, &floor
             );
-            let mut resp = Response::with((status::NotFound, payload));
-            return Ok(resp);
+            // let mut resp = Response::with((status::NotFound, payload));
+            // return Ok(resp);
+            let mut f = File::open("staticfiles/grid_10.png").unwrap();
+            f.read_to_end(&mut buffer).unwrap();
+        } else {
+            let floor = floor.unwrap();
+
+            let mut f = File::open(&floor.FloorPlanFileName).unwrap();
+            f.read_to_end(&mut buffer).unwrap();
         }
-        let floor = floor.unwrap();
-
-        let mut f = File::open(&floor.FloorPlanFileName).unwrap();
-        let mut buffer = Vec::new();
-
-        f.read_to_end(&mut buffer).unwrap();
 
         let mut resp = Response::with((status::Ok, buffer));
         resp.headers.set(ContentType::png());
