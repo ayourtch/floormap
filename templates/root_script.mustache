@@ -1356,6 +1356,22 @@ function select_next_mapX(curr_map_uuid, set_curr_map, node) {
     }
 }
 
+function map_node_update(node, jso) {
+    var label = jso["Name"];
+    set_map_label(node, label);
+    node.clip_top = jso["ClipTop"];
+    node.clip_left = jso["ClipLeft"];
+    node.clip_width = jso["ClipWidth"];
+    node.clip_height = jso["ClipHeight"];
+}
+
+function reinsert_node(canvas_id, node) {
+    var cnv = document.getElementById(canvas_id);
+    var li_node = node.parentNode;
+    li_node.parentNode.removeChild(li_node);
+    insert_map_li_node(cnv, li_node);
+}
+
 function update_map_jso(node, jso) {
     if (jso["Deleted"]) {
         select_next_mapX(current_map_uuid, set_current_map, node);
@@ -1363,14 +1379,13 @@ function update_map_jso(node, jso) {
         console.debug("Deleting map " + node.uuid);
     } else {
         console.debug("Updating map " + node.uuid + " : " + jso["Deleted"]);
-        var label = jso["Name"];
-        set_map_label(node, label);
-        node.clip_top = jso["ClipTop"];
-        node.clip_left = jso["ClipLeft"];
-        node.clip_width = jso["ClipWidth"];
-        node.clip_height = jso["ClipHeight"];
+        map_node_update(node, jso);
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
+        }
+        if (node.sort_order != jso["SortOrder"]) {
+            node.sort_order = jso["SortOrder"];
+            reinsert_node("page_thumbnails", node);
         }
         set_map_svg();
     }
@@ -1383,12 +1398,11 @@ function update_map2_jso(node, jso) {
         console.debug("Deleting map2 " + node.uuid);
     } else {
         console.debug("Updating map2 " + node.uuid + " : " + jso["Deleted"]);
-        var label = jso["Name"];
-        set_map_label(node, label);
-        node.clip_top = jso["ClipTop"];
-        node.clip_left = jso["ClipLeft"];
-        node.clip_width = jso["ClipWidth"];
-        node.clip_height = jso["ClipHeight"];
+        map_node_update(node, jso);
+        if (node.sort_order != jso["SortOrder"]) {
+            node.sort_order = jso["SortOrder"];
+            reinsert_node("page_thumbnails2", node);
+        }
         if (node.uuid == current_map2_uuid) {
             node.classList.add("selected-thumbnail");
         }
