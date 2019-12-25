@@ -3,6 +3,7 @@ first: first-time regen-db sqlite
 first-time:
 	mkdir db
 	diesel migration run || rmdir db
+	./scripts/make-secrets
 
 export-maybe:
 	if [ -f ./target/debug/floormap-cli ]; then if [ -f /tmp/floormap-export.json ]; then exit 1; else ./target/debug/floormap-cli export-database -o /tmp/floormap-export.json; fi; fi

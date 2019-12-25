@@ -1,0 +1,55 @@
+#!/bin/sh
+set -eu
+export PSQL=`which psql`
+export REALPATH=`which realpath`
+export DIRNAME=`which dirname`
+export NEWSQL=$1
+
+if [ ! -e "$REALPATH" ]; then
+  echo "can not find realpath"
+  exit
+fi
+if [ ! -e "$DIRNAME" ]; then
+  echo "can not find dirname"
+  exit
+fi
+if [ ! -e "$NEWSQL" ]; then
+  echo "can not find postgresql backup '$NEWSQL'"
+  exit
+fi
+
+if [ ! -e "$PSQL" ]; then
+  sudo apt-get install -y postgresql
+  export PSQL=`which psql`
+fi
+
+MYPATH=`$REALPATH $0`
+MYDIR=`$DIRNAME $MYPATH`
+ROOTDIR="$MYDIR/..";
+ROOT=`$REALPATH $ROOTDIR`
+
+. /secrets/floormap
+
+echo create the database and grant privs
+cat $MYDIR/data/postgres-initial-steps.sql | sed \
+	-e "s/{{pg_user}}/$pg_user/g" \
+	-e "s/{{pg_pass}}/$pg_pass/g" \
+	-e "s/{{pg_db}}/$pg_db/g" \
+	-e "s/{{pg_schema}}/$pg_schema/g" | sudo -u postgres psql -f -
+
+echo drop and recreate the database
+sudo -u postgres dropdb $pg_db || { echo "Can not drop floormap DB!" ; exit 10; }
+sudo -u postgres createdb $pg_db || { echo "Can not create floormap DB!" ; exit 11; }
+
+LOGFILE="/tmp/floormap-import-log"
+echo import $NEWSQL, log is in $LOGFILE
+export ON_ERROR_STOP=on
+export ECHO=errors
+
+# ((echo "\\set ON_ERROR_STOP on\n\\set ECHO errors\n"; cat $NEWSQL) | sudo -u postgres psql $A3S_POSTGRESQL_DB_URL 2>$LOGFILE >$LOGFILE) || { echo "Error importing generated SQL into postgres!"; exit 13; }  
+
+echo DB URL: $POSTGRES_DB_URL
+sudo -u postgres psql $POSTGRES_DB_URL -f $NEWSQL
+
+exit 0
+
