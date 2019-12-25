@@ -5,6 +5,7 @@ use chrono::NaiveDateTime;
 
 use diesel::backend::Backend;
 use diesel::deserialize::{self, FromSql};
+use diesel::pg::{Pg, PgConnection};
 use diesel::serialize::{self, Output, ToSql};
 use diesel::sql_types::Text;
 use diesel::sqlite::{Sqlite, SqliteConnection};
@@ -46,6 +47,22 @@ impl ToSql<Text, Sqlite> for FlexUuid {
 impl FromSql<Text, Sqlite> for FlexUuid {
     fn from_sql(input: Option<&<Sqlite as Backend>::RawValue>) -> deserialize::Result<Self> {
         let val_s = <String as FromSql<Text, Sqlite>>::from_sql(input)?;
+        let val = uuid::Uuid::from_str(&val_s)?;
+        let ret = FlexUuid { Uuid: val };
+        Ok(ret)
+    }
+}
+
+impl ToSql<Text, Pg> for FlexUuid {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> serialize::Result {
+        let t = format!("{}", self.Uuid);
+        <String as ToSql<Text, Pg>>::to_sql(&t, out)
+    }
+}
+
+impl FromSql<Text, Pg> for FlexUuid {
+    fn from_sql(input: Option<&<Pg as Backend>::RawValue>) -> deserialize::Result<Self> {
+        let val_s = <String as FromSql<Text, Pg>>::from_sql(input)?;
         let val = uuid::Uuid::from_str(&val_s)?;
         let ret = FlexUuid { Uuid: val };
         Ok(ret)

@@ -5,6 +5,7 @@ use chrono::NaiveDateTime;
 
 use diesel::backend::Backend;
 use diesel::deserialize::{self, FromSql};
+use diesel::pg::{Pg, PgConnection};
 use diesel::serialize::{self, Output, ToSql};
 use diesel::sqlite::{Sqlite, SqliteConnection};
 use diesel::*;
@@ -49,6 +50,21 @@ impl ToSql<Timestamp, Sqlite> for FlexTimestamp {
 impl FromSql<Timestamp, Sqlite> for FlexTimestamp {
     fn from_sql(input: Option<&<Sqlite as Backend>::RawValue>) -> deserialize::Result<Self> {
         let ndt = <NaiveDateTime as FromSql<Timestamp, Sqlite>>::from_sql(input)?;
+        let ret = FlexTimestamp { Ndt: ndt };
+        Ok(ret)
+    }
+}
+
+impl ToSql<Timestamp, Pg> for FlexTimestamp {
+    fn to_sql<W: Write>(&self, out: &mut Output<W, Pg>) -> serialize::Result {
+        let t = self.Ndt;
+        <NaiveDateTime as ToSql<Timestamp, Pg>>::to_sql(&t, out)
+    }
+}
+
+impl FromSql<Timestamp, Pg> for FlexTimestamp {
+    fn from_sql(input: Option<&<Pg as Backend>::RawValue>) -> deserialize::Result<Self> {
+        let ndt = <NaiveDateTime as FromSql<Timestamp, Pg>>::from_sql(input)?;
         let ret = FlexTimestamp { Ndt: ndt };
         Ok(ret)
     }
