@@ -833,8 +833,9 @@ function document_keydown(e) {
     console.log("Logging event: " + e.key);
 }
 
-
+/* beautify ignore:start */
 {{#auth.groups.administrators}}
+/* beautify ignore:end */
 
 function dragElement(elmnt) {
     var pos1 = 0,
@@ -1054,7 +1055,9 @@ function dragElement(elmnt) {
         console.debug("Drag end - closeDragElement");
     }
 }
+/* beautify ignore:start */
 {{/auth.groups.administrators}}
+/* beautify ignore:end */
 
 
 var next_y = 40;
@@ -1306,9 +1309,17 @@ function add_item_jso(jso) {
     // console.debug("Add item " + node.uuid + " parent map " + node.parent_map_uuid);
     cnv.appendChild(node);
     set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
+
+    /* beautify ignore:start */
 {{#auth.groups.administrators}}
+/* beautify ignore:end */
+
     dragElement(node);
+
+    /* beautify ignore:start */
 {{/auth.groups.administrators}}
+/* beautify ignore:end */
+
 }
 
 function set_item_label(node, label) {
