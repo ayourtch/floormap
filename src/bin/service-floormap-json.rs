@@ -108,6 +108,28 @@ fn main() {
         "floormap image thumbnails page",
     );
 
+    macro_rules! page_requires_auth {
+        ( $req: ident => $auth: ident) => {
+            use crate::rsp10::RspUserAuth;
+            let $auth = match pages::CookiePageAuth::from_request($req) {
+                Ok(a) => a,
+                Err(url) => {
+                    return rsp10::http_redirect(&url);
+                }
+            };
+        };
+    }
+    macro_rules! page_requires_admin {
+        ( $auth: ident) => {
+            if !$auth.is_admin() {
+                return Ok(Response::with((
+                    status::BadRequest,
+                    format!("Insufficient privileges"),
+                )));
+            }
+        };
+    }
+
     fn insert_new_service() {
         use schema::Services::dsl::*;
 
@@ -143,8 +165,9 @@ fn main() {
         use floormap::flextimestamp::FlexTimestamp;
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
-
         use std::str::FromStr;
+
+        page_requires_auth!(req => auth);
 
         let ref query_ts = req
             .extensions
@@ -166,6 +189,10 @@ fn main() {
         use floormap::db::db_set_mapobject_arrow_xy;
         use floormap::db::db_set_mapobject_xy;
         use std::str::FromStr;
+
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1MapObjectSetXYRecord>, serde_json::Error> =
@@ -194,6 +221,9 @@ fn main() {
     fn api_http_put_floormaps_clip(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_clip;
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1FloorMapSetClipRecord>, serde_json::Error> =
@@ -222,6 +252,9 @@ fn main() {
     fn api_http_put_mapobject_delete(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_mapobject_deleted;
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1MapObjectDeleteRecord>, serde_json::Error> =
@@ -245,6 +278,9 @@ fn main() {
     fn api_http_put_floormap_delete(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_deleted;
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1FloorMapDeleteRecord>, serde_json::Error> =
@@ -267,6 +303,9 @@ fn main() {
 
     fn api_http_put_floormap_copy(req: &mut Request) -> IronResult<Response> {
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1FloorMapCopyRecord>, serde_json::Error> =
@@ -340,6 +379,9 @@ fn main() {
         use floormap::db::db_set_mapobject_name_description;
         use floormap::db::db_set_mapobject_typeobjectuuid;
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<Vec<ApiV1MapObjectSetNameDescriptionRecord>, serde_json::Error> =
@@ -366,6 +408,9 @@ fn main() {
     fn api_http_put_new_mapobject(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_insert_new_mapobject;
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
         let cr_res: Result<ApiV1NewMapObjectRecord, serde_json::Error> =
@@ -399,8 +444,9 @@ fn main() {
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
         use std::fs::File;
-
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+
         let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
         let map_uuid = Uuid::from_str(map_str).unwrap();
         let flex_uuid = FlexUuid::from_str(map_str).unwrap();
@@ -444,8 +490,9 @@ fn main() {
         use floormap::flexuuid::FlexUuid;
         use iron::headers::{Connection, ContentType};
         use std::fs::File;
-
         use std::str::FromStr;
+        page_requires_auth!(req => auth);
+
         let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
         let map_uuid = Uuid::from_str(map_str).unwrap();
         let flex_uuid = FlexUuid::from_str(map_str).unwrap();

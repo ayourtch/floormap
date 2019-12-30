@@ -1,5 +1,7 @@
 mod imports;
 
+pub use imports::CookiePageAuth;
+
 pub fn get_router() -> router::Router {
     use crate::rsp10::RspState;
     use router::Router;
