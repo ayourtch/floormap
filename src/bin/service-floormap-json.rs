@@ -10,6 +10,7 @@ extern crate router;
 extern crate staticfile;
 extern crate urlencoded;
 extern crate uuid;
+#[macro_use]
 extern crate rsp10;
 
 use uuid::Uuid;
@@ -45,82 +46,11 @@ extern crate params;
 
 use chrono::{NaiveDate, NaiveDateTime};
 
-pub fn build_response(template: mustache::Template, data: mustache::MapBuilder) -> iron::Response {
-    use iron::headers::{Connection, ContentType};
-    let mut bytes = vec![];
-    let data_built = data.build();
-    template
-        .render_data(&mut bytes, &data_built)
-        .expect("Failed to render");
-    let payload = std::str::from_utf8(&bytes).unwrap();
-
-    let mut resp = Response::with((status::Ok, payload));
-    resp.headers.set(ContentType::html());
-    resp.headers.set(Connection::close());
-    resp
-}
-
-macro_rules! render_response {
-    ($template: ident, $data: ident, $redirect_to: ident) => {
-        if $redirect_to.is_empty() {
-            let resp = build_response($template, $data);
-            Ok(resp)
-        } else {
-            use iron::headers::Location;
-            // let mut resp = Response::with((status::TemporaryRedirect, $redirect_to.clone()));
-            let mut resp = Response::with((status::Found, $redirect_to.clone()));
-            resp.headers.set(ContentType::html());
-            resp.headers.set(Location($redirect_to));
-            Ok(resp)
-        }
-    };
-}
-
-fn root_page(req: &mut Request) -> IronResult<Response> {
-    use floormap::template::get_page_mapbuilder;
-    use iron::headers::ContentType;
-    use urlencoded::UrlEncodedQuery;
-
-    let template = floormap::template::maybe_compile_template("root");
-    if let Err(e) = template {
-        return Ok(Response::with((
-            status::Unauthorized,
-            format!("Error occured: {}", e),
-        )));
-    };
-    let template = template.unwrap();
-
-    let page_title = format!("root");
-    let mut data = get_page_mapbuilder(req, &page_title);
-    let redirect_to = "".to_string();
-
-    render_response!(template, data, redirect_to)
-}
-
-fn arrange_page(req: &mut Request) -> IronResult<Response> {
-    use floormap::template::get_page_mapbuilder;
-    use iron::headers::ContentType;
-    use urlencoded::UrlEncodedQuery;
-
-    let template = floormap::template::maybe_compile_template("arrange");
-    if let Err(e) = template {
-        return Ok(Response::with((
-            status::Unauthorized,
-            format!("Error occured: {}", e),
-        )));
-    };
-    let template = template.unwrap();
-
-    let page_title = format!("arrange");
-    let mut data = get_page_mapbuilder(req, &page_title);
-    let redirect_to = "".to_string();
-
-    render_response!(template, data, redirect_to)
-}
+mod pages;
 
 fn main() {
     use floormap::flextimestamp::FlexTimestamp;
-    let mut router = Router::new();
+    let mut router = pages::get_router();
 
     use mount::Mount;
     use staticfile::Static;
@@ -177,8 +107,6 @@ fn main() {
         http_get_floormap_thumbnail_image,
         "floormap image thumbnails page",
     );
-    router.get("/", root_page, "root_page");
-    router.get("/arrange.aspx", arrange_page, "arrange_page");
 
     fn insert_new_service() {
         use schema::Services::dsl::*;
