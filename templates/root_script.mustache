@@ -1155,12 +1155,13 @@ function apply_item_style_from_type(node, type_uuid) {
 }
 
 function apply_item_style_from(node, from_node) {
-    if (true) {
-        var meta = node.meta;
-        if (meta != null) {
-            // console.log("Node: " + get_item_label(node) + " Applying style: " + meta);
+    var desc = from_node.description;
+    if (desc != undefined) {
+        var attrs = desc.match(/~([^~]+)~/i);
+        if (attrs != null) {
+            // console.log("Node: " + get_item_label(node) + " Applying style: " + attrs[1]);
             var i;
-            var pair_strings = meta.split(";");
+            var pair_strings = attrs[1].split(";");
             for (i = 0; i < pair_strings.length; i++) {
                 var pp = pair_strings[i].split(":");
                 // console.log(node.id + " [" + i + "] PP: " + pp[0]);
@@ -1318,7 +1319,6 @@ function add_item_jso(jso) {
     var textnode = document.createTextNode(label);
     textnode.id = el_id + "_label";
     node.appendChild(textnode);
-    node.label = label;
     var baggage = document.createElement("div");
     // baggage.innerHTML = "<img src='static/layer_3_switch.png'></img>";
     baggage.innerHTML = "Attention";
@@ -1336,8 +1336,6 @@ function add_item_jso(jso) {
     add_item_to_quicksearch(node, label);
     // console.debug("Add item " + node.uuid + " parent map " + node.parent_map_uuid);
     cnv.appendChild(node);
-    set_item_meta_from_jso(node, jso);
-
     set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
 
     /* beautify ignore:start */
@@ -1355,7 +1353,6 @@ function set_item_label(node, label) {
     console.debug("Setting item label to " + label);
     del_item_from_quicksearch(node);
     node.replaceChild(document.createTextNode(label), node.childNodes[0]);
-    node.label = label;
     add_item_to_quicksearch(node, label);
 }
 
@@ -1382,16 +1379,6 @@ function set_item_description(node, txt) {
     apply_item_style(node);
 }
 
-function set_item_meta_from_jso(node, jso) {
-    var desc = jso["Description"];
-    var attrs = desc.match(/~([^~]+)~/i);
-    if (attrs != null) {
-       node.meta = attrs[1];
-    } else {
-       node.meta = null;
-    }
-}
-
 function update_item_jso(node, jso) {
     var cnv = document.getElementById("floor_canvas");
     console.debug("Updating " + node.uuid + " X: " + jso["MapX"] + " Y: " + jso["MapY"]);
@@ -1406,7 +1393,6 @@ function update_item_jso(node, jso) {
         }
         var label = jso["Name"];
         set_item_label(node, label);
-        set_item_meta_from_jso(node, jso);
         node.type_object_uuid = jso["TypeObjectUUID"];
         set_item_description(node, jso["Description"]);
         set_item_labelsize(node, jso["LabelSize"]);
