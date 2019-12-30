@@ -38,6 +38,7 @@
   <div class="thumbnail-filter" id="search_thumbnails">
   <hr size=1 noshade/>
   Find:<input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
+{{#auth.groups.administrators}}
   Add:
           <input id="new_item_name" type="text" value="New Item" class="textedit" size="6"/>
           <input id="new_item_add_fixed" type="button" value="add"/>
@@ -48,7 +49,8 @@
           <option value=''>-</option>
           </select>
           <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name', 'edit_item_desc')"/>
-{{#auth.username}} {{auth.username}} {{#auth.groups.administrators}} ADMIN {{/auth.groups.administrators}}[<a href="/logout">logout</a>] {{/auth.username}} 
+{{/auth.groups.administrators}}
+{{#auth.username}}| {{auth.username}} {{#auth.groups.administrators}} ADMIN {{/auth.groups.administrators}}[<a href="/logout">logout</a>] {{/auth.username}} 
   <hr size=1 noshade/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">
@@ -76,9 +78,11 @@
 // document.getElementById("new_item_add").onclick=add_item;
 // document.getElementById("new_item_add").onclick=function(e) { add_new_item("new_item"); };
 
+{{#auth.groups.administrators}}
 document.getElementById("new_item_add_fixed").onclick = function(e) {
     add_new_item("new_item_name");
 };
+{{/auth.groups.administrators}}
 
 /*
 document.getElementById("page_1").onclick= function(e) {

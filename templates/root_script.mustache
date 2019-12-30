@@ -833,6 +833,9 @@ function document_keydown(e) {
     console.log("Logging event: " + e.key);
 }
 
+
+{{#auth.groups.administrators}}
+
 function dragElement(elmnt) {
     var pos1 = 0,
         pos2 = 0,
@@ -1051,6 +1054,7 @@ function dragElement(elmnt) {
         console.debug("Drag end - closeDragElement");
     }
 }
+{{/auth.groups.administrators}}
 
 
 var next_y = 40;
@@ -1302,7 +1306,9 @@ function add_item_jso(jso) {
     // console.debug("Add item " + node.uuid + " parent map " + node.parent_map_uuid);
     cnv.appendChild(node);
     set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
-    dragElement(node)
+{{#auth.groups.administrators}}
+    dragElement(node);
+{{/auth.groups.administrators}}
 }
 
 function set_item_label(node, label) {

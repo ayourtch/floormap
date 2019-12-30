@@ -60,10 +60,15 @@ div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
   margin-bottom: 0px;
   position: absolute;
   background-color: white !important;
-  cursor: move;
   z-index: 10;
   font-size: 8px;
-  cursor: pointer;
+{{#auth.groups.administrators}}
+  cursor: move;
+{{/auth.groups.administrators}}
+{{^auth.groups.administrators}}
+  cursor: crosshair;
+{{/auth.groups.administrators}}
+
   border-radius: 20px;
   /* force color for printing */
   -webkit-print-color-adjust: exact;
