@@ -20,6 +20,20 @@ div.sw1 { border: solid 1px #f00; color: red; padding: 0px 5px 0px 5px; }
 div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
 }
 
+{{^auth.groups.administrators}}
+/* Disable selection in anything but quicksearch */
+
+*:not(#quickSearch) {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
+}
+{{/auth.groups.administrators}}
+
 .img-overlay-wrap-small {
   position: relative;
   display: inline-block; /* <= shrinks container to image size  */
