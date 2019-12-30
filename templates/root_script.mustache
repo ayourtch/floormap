@@ -1204,9 +1204,35 @@ function apply_item_style_from(node, from_node) {
     }
 }
 
+var item_legend_element = null;
+
+
+function set_item_legend(node, show) {
+    var map_legend = document.getElementById("map_legend");
+    if (map_legend == null) {
+        return;
+    }
+    var tr_id = node.id + "_legend";
+    var tr = document.getElementById(tr_id);
+    if (show && (node.type_object_uuid != null)) {
+        if (tr == null) {
+            // need to show
+            var tr = document.createElement("tr");
+            tr.id = tr_id;
+            tr.innerHTML = "<td>" + get_item_label(node) + "</td><td>" + node.type_object_uuid + "</td><td>" + node.description + "</td>";
+            map_legend.appendChild(tr);
+        }
+    } else {
+        if (tr != null) {
+            // need to delete
+            tr.outerHTML = "";
+        }
+    }
+}
 
 function set_item_visibility(node) {
-    if (node.parent_map_uuid == current_map_uuid) {
+    var visible = (node.parent_map_uuid == current_map_uuid)
+    if (visible) {
         // node.style.visibility = "visible";
         node.style.display = "";
         var lbl = node.childNodes[0];
@@ -1222,6 +1248,7 @@ function set_item_visibility(node) {
         // node.style.visibility = "hidden";
         node.style.display = "none";
     }
+    set_item_legend(node, visible)
     redraw_item_arrow(node);
 }
 
@@ -1229,6 +1256,7 @@ function del_item_accessories(node) {
     var arrow_id = node.id + "_svg";
     var arrow = document.getElementById(arrow_id);
     arrow.outerHTML = "";
+    set_item_legend(node, false);
 }
 
 function redraw_item_arrow(node) {
