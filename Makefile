@@ -36,7 +36,7 @@ postgres:
 clippy-sqlite:
 	cargo clippy --features floormap_sqlite
 js-beautify:
-	find templates -name '*.mustache' -exec js-beautify -r {} \;
+	find templates -maxdepth 1 -name '*.mustache' -exec js-beautify -r {} \;
 cute: rustfmt js-beautify
 
 
