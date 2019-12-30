@@ -10,6 +10,7 @@ extern crate router;
 extern crate staticfile;
 extern crate urlencoded;
 extern crate uuid;
+extern crate rsp10;
 
 use uuid::Uuid;
 
@@ -555,25 +556,6 @@ fn main() {
         Ok(resp)
     }
 
-    let mut mount = Mount::new();
-    mount.mount("/", router);
-    mount.mount("/static/", Static::new(Path::new("staticfiles/")));
-
-    use std::time::Duration;
-    // use iron::prelude::*;
-    //  use iron::status;
-    use iron::Timeouts;
-
-    let mut iron = Iron::new(mount);
-    iron.threads = 1;
-    iron.timeouts = Timeouts {
-        keep_alive: Some(Duration::from_secs(10)),
-        read: Some(Duration::from_secs(10)),
-        write: Some(Duration::from_secs(10)),
-    };
-
-    let port = 4242;
-    let bind_ip = std::env::var("BIND_IP").unwrap_or("127.0.0.1".to_string());
-    println!("HTTP server starting on {}:{}", &bind_ip, port);
-    iron.http(&format!("{}:{}", &bind_ip, port)).unwrap();
+    let mut s = rsp10::RspServer::new();
+    s.run(router, "MyFloorMap JSON/HTML service", 4242);
 }
