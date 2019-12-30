@@ -3,12 +3,10 @@
 use super::imports::*;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct PageKey {
-}
+pub struct PageKey {}
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]
-pub struct PageState {
-}
+pub struct PageState {}
 
 type MyPageAuth = CookiePageAuth;
 
