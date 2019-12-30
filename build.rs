@@ -39,19 +39,20 @@ fn commit_hash() -> Result<String, Ignore> {
     Ok((String::from_utf8(
         (Command::new("git")
             .args(&["rev-parse", "--short=9", "HEAD"])
-            .output()).unwrap()
-        .stdout
-    )).unwrap())
+            .output())
+        .unwrap()
+        .stdout,
+    ))
+    .unwrap())
 }
-
-
 
 fn commit_date() -> Result<String, Ignore> {
     Ok((String::from_utf8(
         (Command::new("git")
             .args(&["log", "-1", "--date=short", "--pretty=format:%cd"])
-            .output()).unwrap()
-        .stdout
-    )).unwrap())
+            .output())
+        .unwrap()
+        .stdout,
+    ))
+    .unwrap())
 }
-
