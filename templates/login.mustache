@@ -1,0 +1,37 @@
+<html>
+<head>
+<title>MyFloorMaps Login</title>
+</head>
+<body>
+<h1>MyFloorMaps Login</h1>
+{{#state.message}}
+<font color="red">{{state.message}}</font>
+{{/state.message}}
+
+<form method="post">
+<table>
+<tr>
+<td>Username:</td>
+<td>{{#txtUsername}} {{> html/text }} {{/txtUsername}}
+</tr>
+
+<tr>
+<td>Password:</td>
+<td>{{#txtPassword}} {{> html/pass }} {{/txtPassword}}
+</tr>
+</table>
+<br />
+
+<input type="hidden" name="return_url" value="{{state.return_url}}">
+<input type="hidden" name="return_url_urlencoded" value="{{state.return_url_urlencoded}}">
+<input type="hidden" name="csrf_token" value="{{state.csrf_token}}">
+<input type="hidden" name="initial_state_json" value="{{initial_state_json}}">
+<input type="hidden" name="state_json" value="{{state_json}}">
+<input type="submit" name="submit_login" value="Login">
+</form>
+
+<a href="/do_sso?ReturnUrl={{state.return_url_urlencoded}}">External Authentication</a>
+</body>
+</html>
+
+
