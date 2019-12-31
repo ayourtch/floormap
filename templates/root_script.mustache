@@ -1097,27 +1097,6 @@ function dragElement(elmnt) {
 /* beautify ignore:end */
 
 
-var next_y = 40;
-var next_number = 3;
-
-/*
-function add_item(e) {
-    var api_url = api_root + "v1/mapobjects/new/put/json";
-    var o = new Object();
-    o["Name"] = document.getElementById("new_item").value;
-    o["MapX"] = 100;
-    o["MapY"] = next_y;
-    o["ParentMapUUID"] = current_map_uuid;
-    o["TypeObjectUUID"] = defaultTypeObjectUUID;
-    console.log("new node: " + JSON.stringify(o));
-    next_y = next_y + 20;
-    next_number = next_number + 1;
-    putJSON(api_url, o, function(err, d) {
-        console.debug("err: " + err);
-        console.debug("Made new node: " + d);
-    });
-}
-*/
 
 function add_item_to_quicksearch(node, label) {
     var map_uuid = node.parent_map_uuid;
@@ -1152,19 +1131,21 @@ function del_item_from_quicksearch(node) {
     }
 }
 
+function getRandomInt(max) {
+  return Math.floor(Math.random() * Math.floor(max));
+}
+
 function add_new_item(input_field_id) {
     var api_url = api_root + "v1/mapobjects/new/put/json";
     var o = new Object();
     o["Name"] = document.getElementById(input_field_id).value;
     o["Description"] = "FIXME-description";
     o["MapX"] = 100;
-    o["MapY"] = next_y;
+    o["MapY"] = 30 + getRandomInt(50);
     o["LabelSize"] = defaultLabelSize;
     o["ParentMapUUID"] = current_map_uuid;
     o["TypeObjectUUID"] = defaultTypeObjectUUID;
     console.log("NEW ITEM: " + JSON.stringify(o));
-    next_y = next_y + 20;
-    next_number = next_number + 1;
     putJSON(api_url, o, function(err, d) {
         console.debug("err: " + err);
         console.debug("Made new node: " + d);
