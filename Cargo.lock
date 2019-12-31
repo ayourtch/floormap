@@ -1237,7 +1237,7 @@ dependencies = [
 [[package]]
 name = "rsp10"
 version = "0.1.0"
-source = "git+https://github.com/ayourtch/rsp10.git#461d37ef4fcaf04c9687f27c4e137262fb05fa3d"
+source = "git+https://github.com/ayourtch/rsp10.git#dc55685af6d25cb21f73420e5dc2ca8c8933fcaf"
 dependencies = [
  "arrayref 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "base64 0.10.1 (registry+https://github.com/rust-lang/crates.io-index)",
