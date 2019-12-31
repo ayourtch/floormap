@@ -265,7 +265,7 @@ function set_map_items_visibility() {
         set_item_visibility(elts[i]);
         apply_item_style(elts[i]);
     }
-
+    sort_legend_table();
 }
 
 function svg_crosshairs(color) {
@@ -1202,12 +1202,72 @@ function apply_item_style_from(node, from_node) {
 
 var item_legend_element = null;
 
+// this function gets data from the rows and cells 
+// within an html tbody element
+function table2data(tableBody) {
+    const tableData = []; // create the array that'll hold the data rows
+    tableBody.querySelectorAll('tr')
+        .forEach(row => { // for each table row...
+            const rowData = []; // make an array for that row
+            row.querySelectorAll('td') // for each cell in that row
+                .forEach(cell => {
+                    rowData.push(cell.innerText); // add it to the row data
+                });
+            rowData.push(row.id);
+            row.querySelectorAll('td') // for each cell in that row
+                .forEach(cell => {
+                    rowData.push(cell.innerHTML); // add it to the row data
+                });
+            tableData.push(rowData); // add the full row to the table data 
+        });
+    return tableData;
+}
+
+// this function puts data into an html tbody element
+function data2table(tableBody, tableData) {
+    tableBody.querySelectorAll('tr') // for each table row...
+        .forEach((row, i) => {
+            const rowData = tableData[i]; // get the array for the row data
+            var rowlen = row.querySelectorAll('td').length;
+            row.querySelectorAll('td') // for each table cell ...
+                .forEach((cell, j) => {
+                    cell.innerHTML = rowData[j + 1 + rowlen]; // put the appropriate array element into the cell
+                })
+            row.id = rowData[rowlen];
+            // tableData.push(rowData);
+        });
+}
+
+function sortTable(table, sortColumn) {
+    // get the data from the table cells
+    const tableBody = table.querySelector('tbody')
+    const tableData = table2data(tableBody);
+    // sort the extracted data
+    tableData.sort((a, b) => {
+        if (a[sortColumn] > b[sortColumn]) {
+            return 1;
+        }
+        return -1;
+    });
+    // put the sorted data back into the table
+    data2table(tableBody, tableData);
+}
+
+function sort_legend_table() {
+    var map_legend = document.getElementById("map_legend");
+    if (map_legend == null) {
+        alert("no legend to sort");
+        return;
+    }
+    sortTable(map_legend, 0);
+}
 
 function set_item_legend(node, show) {
     var map_legend = document.getElementById("map_legend");
     if (map_legend == null) {
         return;
     }
+    map_legend = map_legend.querySelector('tbody')
     var tr_id = node.id + "_legend";
     var tr = document.getElementById(tr_id);
     var type_uuid = node.type_object_uuid;
@@ -1220,6 +1280,7 @@ function set_item_legend(node, show) {
                 if (tr == null) {
                     tr = document.createElement("tr");
                     tr.id = tr_id;
+                    map_legend.appendChild(tr);
                 } else {
                     tr.innerHTML = "";
                 }
@@ -1233,7 +1294,6 @@ function set_item_legend(node, show) {
                 tr.appendChild(td2);
                 tr.appendChild(td3);
                 apply_item_style_from_type(td1, node.type_object_uuid);
-                map_legend.appendChild(tr);
             }
         }
     } else {
