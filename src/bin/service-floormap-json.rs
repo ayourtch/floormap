@@ -58,16 +58,6 @@ fn main() {
 
     router.get("/services", api_http_get_services_json, "get the services");
 
-    use multipart::server::iron::Intercept;
-    use multipart::server::Entries;
-
-    let mut multpart_chain = Chain::new(multpart_handler);
-    multpart_chain.link_before(Intercept::default().file_size_limit(64000000));
-    router.get("/multpart-handler", multpart_chain, "GET/multpart handler");
-    let mut multpart_chain = Chain::new(multpart_handler);
-    multpart_chain.link_before(Intercept::default().file_size_limit(64000000));
-    router.post("/multpart-handler", multpart_chain, "POST/multpart handler");
-
     router.get(
         "/api/v1/mapobjects/get/json/:query_timestamp",
         api_http_get_map_objects,
@@ -168,36 +158,6 @@ fn main() {
             .values(&svc)
             .execute(db.conn())
             .unwrap();
-    }
-
-    fn multpart_handler(req: &mut Request) -> IronResult<Response> {
-        use iron::headers::ContentType;
-        if let Some(entries) = req.extensions.get::<Entries>() {
-            println!("Upload handler called: {:#?}", &entries);
-            if let Some(file) = entries.files.get("test") {
-                if file.len() == 1 {
-                    let file = &file[0];
-                    println!("File found: {:#?}, size: {}", &file, file.size);
-                    if file.size > 0 {
-                        println!("Handling multpart...");
-                        let orig_fname: String = file
-                            .filename
-                            .as_ref()
-                            .unwrap_or(&"unknown".to_string())
-                            .to_string();
-                        let real_fname = file.path.to_str().unwrap_or("x").to_string();
-                        // handle_multpart(&orig_fname, &real_fname);
-                    }
-                }
-            }
-            Ok(Response::with(format!("{:#?}", entries)))
-        } else {
-            println!("multpart handler called but no entries");
-            let contents = std::fs::read_to_string("upload_form.html").unwrap();
-            let mut resp = Response::with(contents);
-            resp.headers.set(ContentType::html());
-            Ok(resp)
-        }
     }
 
     fn api_http_get_services_json(_: &mut Request) -> IronResult<Response> {
