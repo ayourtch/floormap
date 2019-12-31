@@ -1210,13 +1210,31 @@ function set_item_legend(node, show) {
     }
     var tr_id = node.id + "_legend";
     var tr = document.getElementById(tr_id);
-    if (show && (node.type_object_uuid != null)) {
-        if (tr == null) {
-            // need to show
-            var tr = document.createElement("tr");
-            tr.id = tr_id;
-            tr.innerHTML = "<td>" + get_item_label(node) + "</td><td>" + node.type_object_uuid + "</td><td>" + node.description + "</td>";
-            map_legend.appendChild(tr);
+    var type_uuid = node.type_object_uuid;
+    if (show && (type_uuid != null)) {
+        var type_node = get_item_from_uuid(type_uuid);
+        if (type_node != null) {
+            var lbl = get_item_label(type_node);
+            if (!lbl.startsWith("*")) {
+                // need to show/update
+                if (tr == null) {
+                    tr = document.createElement("tr");
+                    tr.id = tr_id;
+                } else {
+                    tr.innerHTML = "";
+                }
+                var td1 = document.createElement("td");
+                td1.innerHTML = get_item_label(node);
+                var td2 = document.createElement("td");
+                td2.innerHTML = lbl;
+                var td3 = document.createElement("td");
+                td3.innerHTML = node.description;
+                tr.appendChild(td1);
+                tr.appendChild(td2);
+                tr.appendChild(td3);
+                apply_item_style_from_type(td1, node.type_object_uuid);
+                map_legend.appendChild(tr);
+            }
         }
     } else {
         if (tr != null) {
