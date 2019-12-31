@@ -8,6 +8,8 @@ var currentMouseX = null;
 var currentMouseY = null;
 var mouse_tracking_active = false;
 
+var initial_page_loading = true;
+
 
 function onMouseUpdate(e) {
     var cnv = document.getElementById("floor_canvas");
@@ -513,6 +515,9 @@ function processJSON(err, reply_data) {
                     elt.scrollIntoView();
                 }
             }
+        }
+        if (initial_page_loading) {
+            initial_page_loading = false;
         }
         setTimeout(JsonPollCycle, 1000);
     }
@@ -1244,15 +1249,8 @@ function table2data(tableBody) {
     tableBody.querySelectorAll('tr')
         .forEach(row => { // for each table row...
             const rowData = []; // make an array for that row
-            row.querySelectorAll('td') // for each cell in that row
-                .forEach(cell => {
-                    rowData.push(cell.innerText); // add it to the row data
-                });
-            rowData.push(row.id);
-            row.querySelectorAll('td') // for each cell in that row
-                .forEach(cell => {
-                    rowData.push(cell.innerHTML); // add it to the row data
-                });
+            rowData.push(row.querySelectorAll('td').item(0).innerText);
+            rowData.push(row.outerHTML);
             tableData.push(rowData); // add the full row to the table data 
         });
     return tableData;
@@ -1263,29 +1261,28 @@ function data2table(tableBody, tableData) {
     tableBody.querySelectorAll('tr') // for each table row...
         .forEach((row, i) => {
             const rowData = tableData[i]; // get the array for the row data
-            var rowlen = row.querySelectorAll('td').length;
-            row.querySelectorAll('td') // for each table cell ...
-                .forEach((cell, j) => {
-                    cell.innerHTML = rowData[j + 1 + rowlen]; // put the appropriate array element into the cell
-                })
-            row.id = rowData[rowlen];
-            // tableData.push(rowData);
+            row.outerHTML = rowData[1];
         });
 }
 
-function sortTable(table, sortColumn) {
+function sortTable(table) {
     // get the data from the table cells
     const tableBody = table.querySelector('tbody')
     const tableData = table2data(tableBody);
     // sort the extracted data
     tableData.sort((a, b) => {
-        if (a[sortColumn] > b[sortColumn]) {
+        if (a[0] > b[0]) {
             return 1;
         }
         return -1;
     });
     // put the sorted data back into the table
     data2table(tableBody, tableData);
+    if (tableData.length == 0) {
+        table.style.display = "none";
+    } else {
+        table.style.display = "inline";
+    }
 }
 
 function fixup_legend_table() {
@@ -1467,6 +1464,9 @@ function add_item_jso(jso) {
     node.onclick = function(e) { alert('Clicked ' + get_item_label(node)); };
 {{/auth.groups.administrators}}
 /* beautify ignore:end */
+    if (!initial_page_loading) {
+        fixup_legend_table();
+    }
 
 }
 
