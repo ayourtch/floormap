@@ -95,6 +95,7 @@ pub struct MapObject {
     pub Name: String,
     pub LabelSize: i32,
     pub Description: String,
+    pub Meta: String,
     pub ParentMapUUID: FlexUuid,
     pub TypeObjectUUID: Option<FlexUuid>,
     pub MapX: i32,

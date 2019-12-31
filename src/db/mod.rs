@@ -20,6 +20,21 @@ pub struct DbExport {
     pub MapObjects: Vec<MapObject>,
 }
 
+pub fn split_meta_from_str(str: &str) -> (String, String) {
+    use regex::{Captures, Regex};
+    lazy_static! {
+        static ref RE_TILDE: Regex = Regex::new(r"~(?P<meta>[^~]*)~").unwrap();
+    }
+    let meta_maybe = RE_TILDE.captures(str);
+    if let Some(meta_yes) = meta_maybe {
+        let meta = meta_yes.name("meta").unwrap().as_str();
+        let remainder = RE_TILDE.replace_all(str, "");
+        return (meta.to_string(), remainder.to_string());
+    } else {
+        return (format!(""), str.to_string());
+    }
+}
+
 pub fn db_put_json(data: &str) {
     let db = get_db();
     let bk: DbExport = serde_json::from_str(data).unwrap();
@@ -60,7 +75,15 @@ pub fn db_put_json(data: &str) {
         use schema::MapObjects::dsl::*;
 
         for d in &bk.MapObjects {
-            let rows_inserted = diesel::insert_into(MapObjects).values(d).execute(db.conn());
+            let mut d = d.clone();
+            if (&d.Meta == "") {
+                let (m, desc) = split_meta_from_str(&d.Description);
+                d.Meta = m;
+                d.Description = desc;
+            }
+            let rows_inserted = diesel::insert_into(MapObjects)
+                .values(&d)
+                .execute(db.conn());
         }
     }
 }

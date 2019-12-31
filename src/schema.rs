@@ -77,6 +77,7 @@ table! {
         Name -> Text,
         LabelSize -> Integer,
         Description -> Text,
+        Meta -> Text,
         ParentMapUUID -> Text,
         TypeObjectUUID -> Nullable<Text>,
         MapX -> Integer,
