@@ -33,6 +33,8 @@ sqlite:
 	cargo build --features floormap_sqlite
 postgres:
 	cargo build --features floormap_postgres
+sqlite-release:
+	cargo build --features floormap_sqlite --release
 clippy-sqlite:
 	cargo clippy --features floormap_sqlite
 js-beautify:
