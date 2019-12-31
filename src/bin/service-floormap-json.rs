@@ -60,6 +60,7 @@ fn main() {
 
     use multipart::server::iron::Intercept;
     use multipart::server::Entries;
+
     let mut multpart_chain = Chain::new(multpart_handler);
     multpart_chain.link_before(Intercept::default().file_size_limit(64000000));
     router.get("/multpart-handler", multpart_chain, "GET/multpart handler");
