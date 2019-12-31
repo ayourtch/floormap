@@ -38,6 +38,9 @@ pub struct ApiV1FloorMap {
     pub ClipTop: i32,
     pub ClipWidth: i32,
     pub ClipHeight: i32,
+    pub LegendLeft: i32,
+    pub LegendTop: i32,
+    pub LegendFontSize: i32,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -199,6 +202,9 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             ClipTop: x.ClipTop,
             ClipWidth: x.ClipWidth,
             ClipHeight: x.ClipHeight,
+            LegendLeft: x.LegendLeft,
+            LegendTop: x.LegendTop,
+            LegendFontSize: x.LegendFontSize,
         })
         .collect();
     let new_floorplans = floorplans

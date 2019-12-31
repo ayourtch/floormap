@@ -44,6 +44,9 @@ CREATE TABLE FloorMaps (
 	ClipTop INT NOT NULL,
 	ClipWidth INT NOT NULL,
 	ClipHeight INT NOT NULL,
+	LegendTop INT NOT NULL,
+	LegendLeft INT NOT NULL,
+	LegendFontSize INT NOT NULL,
 	UpdatedAt datetime NOT NULL
 );
 

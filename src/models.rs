@@ -40,6 +40,9 @@ pub struct FloorMap {
     pub ClipTop: i32,
     pub ClipWidth: i32,
     pub ClipHeight: i32,
+    pub LegendTop: i32,
+    pub LegendLeft: i32,
+    pub LegendFontSize: i32,
     pub UpdatedAt: FlexTimestamp,
 }
 

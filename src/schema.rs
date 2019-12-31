@@ -25,6 +25,9 @@ table! {
         ClipTop -> Integer,
         ClipWidth -> Integer,
         ClipHeight -> Integer,
+        LegendTop -> Integer,
+        LegendLeft -> Integer,
+        LegendFontSize -> Integer,
         UpdatedAt -> Timestamp,
     }
 }
