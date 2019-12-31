@@ -102,6 +102,11 @@ fn main() {
         api_http_put_floormaps_clip,
         "set clip for floormap",
     );
+    router.put(
+        "/api/v1/floormaps/legend/put/json",
+        api_http_put_floormaps_legend,
+        "set legend for floormap",
+    );
     router.get(
         "/images/floormaps/thumbnails/:floormap_uuid/:version",
         http_get_floormap_thumbnail_image,
@@ -238,6 +243,36 @@ fn main() {
                         o.ClipTop,
                         o.ClipWidth,
                         o.ClipHeight,
+                    );
+                }
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+    fn api_http_put_floormaps_legend(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_floormap_legend;
+        use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1FloorMapSetLegendRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    db_set_floormap_legend(
+                        &o.FloorMapUUID,
+                        o.LegendLeft,
+                        o.LegendTop,
+                        o.LegendFontSize,
                     );
                 }
 

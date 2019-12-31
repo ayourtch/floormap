@@ -61,6 +61,14 @@ pub struct ApiV1FloorMapSetClipRecord {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorMapSetLegendRecord {
+    pub FloorMapUUID: FlexUuid,
+    pub LegendLeft: i32,
+    pub LegendTop: i32,
+    pub LegendFontSize: i32,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
     pub NextPollHorizon: i64,
     pub FloorPlans: Vec<ApiV1FloorPlan>,

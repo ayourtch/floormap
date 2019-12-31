@@ -265,7 +265,7 @@ function set_map_items_visibility() {
         set_item_visibility(elts[i]);
         apply_item_style(elts[i]);
     }
-    sort_legend_table();
+    fixup_legend_table();
 }
 
 function svg_crosshairs(color) {
@@ -556,6 +556,30 @@ function SaveMapClipArea(node) {
     });
 }
 
+function SaveMapLegendInfoValues(node, X, Y, Size) {
+    var api_url = api_root + "v1/floormaps/legend/put/json";
+    var data = new Object();
+    data["FloorMapUUID"] = node.uuid;
+    data["LegendLeft"] = X;
+    data["LegendTop"] = Y;
+    data["LegendFontSize"] = Size;
+    var arr = new Array();
+    arr[0] = data;
+    total_saving++;
+    document.body.style.cursor = 'wait';
+    putJSON(api_url, arr, function() {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+        console.debug("Saved for " + node.uuid);
+    });
+}
+
+function SaveMapLegendXY(node, X, Y) {
+    SaveMapLegendInfoValues(node, X, Y, node.legend_font_size);
+}
+
 function SavePosition(node) {
     var api_url = api_root + "v1/mapobjects/xy/put/json";
     var cnv = document.getElementById("floor_canvas");
@@ -779,6 +803,17 @@ function set_clip_corner() {
     }
 }
 
+function set_legend_position() {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var cnv = document.getElementById("floor_canvas");
+        var cnv_rect = cnv.getBoundingClientRect();
+        var X = getMouseX() - cnv_rect.left;
+        var Y = getMouseY() - cnv_rect.top;
+        SaveMapLegendXY(el, X, Y);
+    }
+}
+
 function document_onclick(e) {
     // alert(e);
     if (document.activeElement != document.body) {
@@ -813,6 +848,8 @@ function document_keydown(e) {
     } else if (e.key == 'c') {
         set_clip_corner();
         set_map_svg();
+    } else if (e.key == 'l') {
+        set_legend_position();
     } else if (e.key == '0') {
         if (selectedElement != undefined) {
             var node = selectedElement;
@@ -1253,14 +1290,22 @@ function sortTable(table, sortColumn) {
     data2table(tableBody, tableData);
 }
 
-function sort_legend_table() {
+function fixup_legend_table() {
     var map_legend = document.getElementById("map_legend");
     if (map_legend == null) {
-        alert("no legend to sort");
+        console.error("No map_legend to sort!");
         return;
     }
     sortTable(map_legend, 0);
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var cnv = document.getElementById("floor_canvas");
+        var cnv_rect = cnv.getBoundingClientRect();
+        map_legend.style.top = el.legend_top + "px";
+        map_legend.style.left = el.legend_left + "px";
+    }
 }
+
 
 function set_item_legend(node, show) {
     var map_legend = document.getElementById("map_legend");
@@ -1515,6 +1560,9 @@ function map_node_update(node, jso) {
     node.clip_width = jso["ClipWidth"];
     node.clip_height = jso["ClipHeight"];
     node.file_version = jso["FileVersion"];
+    node.legend_top = jso["LegendTop"];
+    node.legend_left = jso["LegendLeft"];
+    node.legend_font_size = jso["LegendFontSize"];
 }
 
 function reinsert_node(canvas_id, node) {
@@ -1538,6 +1586,7 @@ function update_map_jso(node, jso) {
         }
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
+            fixup_legend_table();
         }
         if (node.sort_order != jso["SortOrder"]) {
             node.sort_order = jso["SortOrder"];
@@ -1600,6 +1649,9 @@ function create_map_node_from_jso(id_prefix, jso) {
     node.clip_width = jso["ClipWidth"];
     node.clip_height = jso["ClipHeight"];
     node.file_version = jso["FileVersion"];
+    node.legend_top = jso["LegendTop"];
+    node.legend_left = jso["LegendLeft"];
+    node.legend_font_size = jso["LegendFontSize"];
     node.sort_order = jso["SortOrder"];
     var label = jso["Name"];
 

@@ -383,6 +383,55 @@ pub fn db_set_floormap_clip(
     }
 }
 
+pub fn db_set_floormap_legend(
+    floormap_uuid: &FlexUuid,
+    new_left: i32,
+    new_top: i32,
+    new_fontsize: i32,
+) -> Result<bool, std::io::Error> {
+    use std::io::{Error, ErrorKind};
+    let res = db_get_floormap(&floormap_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!("floormap {} - error setting legend: {:?}", floormap_uuid, e);
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("floormap {} - is locked", &floormap_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+
+            use schema::FloorMaps::dsl::*;
+            let db = get_db();
+            let now_ts = FlexTimestamp::now();
+            let updated_row_res = diesel::update(
+                FloorMaps.filter(FloorMapUUID.eq(floormap_uuid).and(Deleted.eq(false))),
+            )
+            .set((
+                LegendLeft.eq(new_left),
+                LegendTop.eq(new_top),
+                LegendFontSize.eq(new_fontsize),
+                UpdatedAt.eq(now_ts),
+            ))
+            .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!(
+                        "floormap_uuid {} - error updating legend: {:?}",
+                        floormap_uuid, e
+                    );
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
+}
+
 pub fn db_insert_new_mapobject(
     mapfloor_uuid: &FlexUuid,
     new_name: &str,
