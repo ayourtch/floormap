@@ -580,6 +580,10 @@ function SaveMapLegendXY(node, X, Y) {
     SaveMapLegendInfoValues(node, X, Y, node.legend_font_size);
 }
 
+function SaveMapLegendSize(node, Size) {
+    SaveMapLegendInfoValues(node, node.legend_left, node.legend_top, Size);
+}
+
 function SavePosition(node) {
     var api_url = api_root + "v1/mapobjects/xy/put/json";
     var cnv = document.getElementById("floor_canvas");
@@ -803,14 +807,25 @@ function set_clip_corner() {
     }
 }
 
-function set_legend_position() {
+function set_legend_position_or_shrink() {
     if (current_set_map_uuid != undefined) {
         var el = get_map_from_uuid(current_set_map_uuid);
         var cnv = document.getElementById("floor_canvas");
         var cnv_rect = cnv.getBoundingClientRect();
         var X = getMouseX() - cnv_rect.left;
         var Y = getMouseY() - cnv_rect.top;
-        SaveMapLegendXY(el, X, Y);
+        if (el.legend_left == X && el.legend_top == Y) {
+            SaveMapLegendSize(el, el.legend_font_size - 1);
+        } else {
+            SaveMapLegendXY(el, X, Y);
+        }
+    }
+}
+
+function set_legend_grow() {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        SaveMapLegendSize(el, el.legend_font_size + 1);
     }
 }
 
@@ -849,7 +864,9 @@ function document_keydown(e) {
         set_clip_corner();
         set_map_svg();
     } else if (e.key == 'l') {
-        set_legend_position();
+        set_legend_position_or_shrink();
+    } else if (e.key == 'L') {
+        set_legend_grow();
     } else if (e.key == '0') {
         if (selectedElement != undefined) {
             var node = selectedElement;
@@ -1132,7 +1149,7 @@ function del_item_from_quicksearch(node) {
 }
 
 function getRandomInt(max) {
-  return Math.floor(Math.random() * Math.floor(max));
+    return Math.floor(Math.random() * Math.floor(max));
 }
 
 function add_new_item(input_field_id) {
@@ -1284,6 +1301,9 @@ function fixup_legend_table() {
         var cnv_rect = cnv.getBoundingClientRect();
         map_legend.style.top = el.legend_top + "px";
         map_legend.style.left = el.legend_left + "px";
+
+        var sz = 10 + el.legend_font_size * 2;
+        map_legend.style.fontSize = sz + "px";
     }
 }
 
