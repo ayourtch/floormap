@@ -52,6 +52,7 @@ pub struct FloorMap {
 pub struct FloorPlan {
     pub FloorPlanUUID: FlexUuid,
     pub Deleted: bool,
+    pub Active: bool,
     pub Name: String,
     pub Description: String,
     pub ParentFloorPlanUUID: Option<FlexUuid>,

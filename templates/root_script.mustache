@@ -427,24 +427,36 @@ function processJSON(err, reply_data) {
         var floorplans_data = reply_data["FloorPlans"];
         for (var i = 0; i < floorplans_data.length; i++) {
             var jfe = floorplans_data[i];
-            if (current_floorplan_uuid == undefined) {
+            if (current_floorplan_uuid == undefined && jfe["Active"]) {
                 current_floorplan_uuid = jfe["FloorPlanUUID"];
                 console.log("Set current floorplan to " + current_floorplan_uuid);
             }
-            if (current_floorplan2_uuid == undefined) {
+            if (current_floorplan2_uuid == undefined && !jfe["Active"]) {
                 current_floorplan2_uuid = jfe["FloorPlanUUID"];
             }
             var dd = document.getElementById("curr_floorplan");
             if (dd != null) {
                 var option = document.createElement("option");
                 option.text = jfe["Name"] + " : " + jfe["Description"];
+                if (jfe["Active"]) {
+                    option.text = option.text + " (Active)";
+                }
                 option.value = jfe["FloorPlanUUID"];
+                if (current_floorplan_uuid == jfe["FloorPlanUUID"]) {
+                    option.selected = true;
+                }
                 dd.add(option);
             }
             var dd = document.getElementById("curr_floorplan2");
             if (dd != null) {
                 var option = document.createElement("option");
                 option.text = jfe["Name"] + " : " + jfe["Description"];
+                if (jfe["Active"]) {
+                    option.text = option.text + " (Active)";
+                }
+                if (current_floorplan2_uuid == jfe["FloorPlanUUID"]) {
+                    option.selected = true;
+                }
                 option.value = jfe["FloorPlanUUID"];
                 dd.add(option);
             }

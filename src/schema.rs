@@ -36,6 +36,7 @@ table! {
     FloorPlans (FloorPlanUUID) {
         FloorPlanUUID -> Text,
         Deleted -> Bool,
+        Active -> Bool,
         Name -> Text,
         Description -> Text,
         ParentFloorPlanUUID -> Nullable<Text>,

@@ -49,6 +49,7 @@ pub struct ApiV1FloorPlan {
     pub Name: String,
     pub Description: String,
     pub Deleted: bool,
+    pub Active: bool,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -222,6 +223,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             Name: x.Name,
             Description: x.Description,
             Deleted: x.Deleted,
+            Active: x.Active,
         })
         .collect();
     ApiV1GetMapObjectsResponse {
