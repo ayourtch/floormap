@@ -16,9 +16,7 @@ impl RspState<PageKey, MyPageAuth> for PageState {
             ..Default::default()
         }
     }
-    fn event_handler(
-        ri: RspInfo<Self, PageKey, MyPageAuth>,
-    ) -> RspEventHandlerResult<Self, PageKey> {
+    fn event_handler(ri: RspInfo<Self, PageKey, MyPageAuth>) -> RspEventHandlerResult<Self, PageKey> {
         use multipart::server::Entries;
         let mut action = rsp10::RspAction::Render;
         let mut initial_state = ri.initial_state;
