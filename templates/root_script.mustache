@@ -48,6 +48,8 @@ function load_item_details(el) {
     txt.value = get_item_label(el);
     var txt = document.getElementById("edit_item_desc");
     txt.value = get_item_description(el);
+    var txt = document.getElementById("edit_item_meta");
+    txt.value = get_item_meta(el);
     load_item_type(el);
 }
 
@@ -64,12 +66,14 @@ function save_item_type() {
     }
 }
 
-function save_item_details(editor_element_id, desc_element_id) {
+function save_item_details(editor_element_id, desc_element_id, meta_element_id) {
     var txt = document.getElementById(editor_element_id);
     if (selectedElement != undefined) {
         set_item_label(selectedElement, txt.value);
         var txt2 = document.getElementById(desc_element_id);
         set_item_description(selectedElement, txt2.value);
+        var txt3 = document.getElementById(meta_element_id);
+        set_item_meta(selectedElement, txt3.value);
         save_item_type();
 
         SaveName(selectedElement);
@@ -683,6 +687,7 @@ function SaveName(node) {
     var data = new Object();
     data["Name"] = get_item_label(node);
     data["Description"] = get_item_description(node);
+    data["Meta"] = get_item_meta(node);
     data["MapObjectUUID"] = node.uuid;
     data["TypeObjectUUID"] = node.type_object_uuid;
     data["LabelSize"] = node.labelsize;
@@ -1507,8 +1512,17 @@ function get_item_description(node) {
     return desc;
 }
 
+function get_item_meta(node) {
+    var meta = node.meta || "";
+    return meta;
+}
+
 function set_item_description(node, txt) {
     node.description = txt;
+}
+
+function set_item_meta(node, txt) {
+    node.meta = txt;
 }
 
 function set_item_meta(node, txt) {

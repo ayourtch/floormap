@@ -412,7 +412,7 @@ fn main() {
 
     fn api_http_put_mapobject_name_description(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_mapobject_labelsize;
-        use floormap::db::db_set_mapobject_name_description;
+        use floormap::db::db_set_mapobject_name_description_meta;
         use floormap::db::db_set_mapobject_typeobjectuuid;
         use std::str::FromStr;
         page_requires_auth!(req => auth);
@@ -426,8 +426,13 @@ fn main() {
             Ok(cr) => {
                 println!("CR: {:?}", &cr);
                 for o in cr {
-                    db_set_mapobject_name_description(&o.MapObjectUUID, &o.Name, &o.Description)
-                        .unwrap();
+                    db_set_mapobject_name_description_meta(
+                        &o.MapObjectUUID,
+                        &o.Name,
+                        &o.Description,
+                        &o.Meta,
+                    )
+                    .unwrap();
                     db_set_mapobject_labelsize(&o.MapObjectUUID, o.LabelSize).unwrap();
                     db_set_mapobject_typeobjectuuid(&o.MapObjectUUID, o.TypeObjectUUID.as_ref())
                         .unwrap();

@@ -116,6 +116,7 @@ pub struct ApiV1MapObjectSetNameDescriptionRecord {
     pub TypeObjectUUID: Option<flexuuid::FlexUuid>,
     pub Name: String,
     pub Description: String,
+    pub Meta: String,
     pub LabelSize: i32,
 }
 

@@ -595,10 +595,11 @@ pub fn db_set_mapobject_deleted(
     }
 }
 
-pub fn db_set_mapobject_name_description(
+pub fn db_set_mapobject_name_description_meta(
     mapobject_uuid: &FlexUuid,
     new_name: &str,
     new_description: &str,
+    new_meta: &str,
 ) -> Result<bool, std::io::Error> {
     use std::io::{Error, ErrorKind};
     let res = db_get_mapobject(&mapobject_uuid);
@@ -625,6 +626,7 @@ pub fn db_set_mapobject_name_description(
             .set((
                 Name.eq(new_name),
                 Description.eq(new_description),
+                Meta.eq(new_meta),
                 UpdatedAt.eq(now_ts),
             ))
             .execute(db.conn());

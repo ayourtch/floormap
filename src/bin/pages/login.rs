@@ -54,11 +54,15 @@ impl RspState<String, MyPageAuth> for PageState {
             /* replace this "validation" with something more meaningful */
             let env_username = std::env::var("TEST_USERNAME").ok();
             let env_password = std::env::var("TEST_PASSWORD").ok();
+            let env_groups = std::env::var("TEST_GROUPS").unwrap_or("".to_string());
 
             if Some(state.txtUsername.clone()) == env_username
                 && Some(state.txtPassword.clone()) == env_password
             {
                 let mut groups: HashMap<String, bool> = HashMap::new();
+                for group in env_groups.split(",") {
+                    groups.insert(group.to_string(), true);
+                }
                 let username = state.txtUsername.clone();
                 println!("Success!");
                 let res = ri
