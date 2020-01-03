@@ -1552,6 +1552,9 @@ function update_item_jso(node, jso) {
         set_item_visibility(node);
         apply_item_style(node);
         set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
+        if (selectedElement == node) {
+            load_item_details(node);
+        }
     }
 }
 
