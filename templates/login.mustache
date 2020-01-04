@@ -4,12 +4,42 @@
 <html>
 <head>
 <title>MyFloorMaps Login</title>
+<script>
+
+function loadedok() {
+  console.log("Loaded okay!");
+  var elt = document.getElementById("connection_test_img");
+  if (elt.width + elt.high != 0) {
+     document.location = "/do_sso?ReturnUrl={{state.return_url_urlencoded}}";
+  } else {
+     console.log("Could not load the canary, not redirecting");
+  }
+}
+
+document.onreadystatechange = function() {
+    if (document.readyState == "complete") {
+       var parent = document.getElementById("conn_test");
+       var img = document.createElement("img");
+       img.id = "connection_test_img";
+       parent.appendChild(img);
+       img.onload = loadedok;
+       var ts = (new Date()).getTime();
+       img.src = "https://10.100.252.5/static/Images/login/lock.png?ts=" + ts;
+       setTimeout(function() {
+         img.removeAttribute('src')
+         var w = document.getElementById("warning");
+         w.innerHTML = "(Connectivity check failed)";
+       }, 1000);
+    }
+}
+
+
+</script>
 </head>
 <body>
 <h1>MyFloorMaps Login</h1>
-{{#state.message}}
-<font color="red">{{state.message}}</font>
-{{/state.message}}
+This login form is a fallback. If you see it, check your connection.
+<font color="red"><span id="warning">{{state.message}}</span></font>
 
 <form method="post">
 <table>
@@ -32,6 +62,8 @@
 <input type="hidden" name="state_json" value="{{state_json}}">
 <input type="submit" name="submit_login" value="Login">
 </form>
+<div id="conn_test" style="display: none;">
+</div>
 
 <a href="/do_sso?ReturnUrl={{state.return_url_urlencoded}}">External Authentication</a>
 </body>
