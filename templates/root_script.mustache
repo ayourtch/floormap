@@ -43,6 +43,15 @@ function load_item_type(el) {
     }
 }
 
+function clear_item_details() {
+    var txt = document.getElementById("edit_item_name");
+    txt.value = "";
+    var txt = document.getElementById("edit_item_desc");
+    txt.value = "";
+    var txt = document.getElementById("edit_item_meta");
+    txt.value = "";
+}
+
 function load_item_details(el) {
     var txt = document.getElementById("edit_item_name");
     txt.value = get_item_label(el);
@@ -119,6 +128,7 @@ function setSelectedElement(elmnt) {
             // document.getElementById("new_item_details").classList.remove("hidden_pane");
             selectedElement = undefined;
         }
+        clear_item_details();
     }
 }
 
@@ -873,10 +883,14 @@ function document_keydown(e) {
     }
     if (e.keyCode == 8) {
         // backspace
-        delete_active_item();
+        if (confirm("Do you want to delete ?")) {
+            delete_active_item();
+        }
     } else if (e.keyCode == 46) {
         // delete
-        delete_active_item();
+        if (confirm("Do you want to delete ?")) {
+            delete_active_item();
+        }
     } else if (e.key == 'p') {
         set_active_item_arrow();
     } else if (e.key == 'C') {
