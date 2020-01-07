@@ -570,10 +570,10 @@ function SaveMapClipArea(node) {
     var api_url = api_root + "v1/floormaps/clip/put/json";
     var data = new Object();
     data["FloorMapUUID"] = node.uuid;
-    data["ClipLeft"] = node.clip_left;
-    data["ClipTop"] = node.clip_top;
-    data["ClipWidth"] = node.clip_width;
-    data["ClipHeight"] = node.clip_height;
+    data["ClipLeft"] = Math.round(node.clip_left);
+    data["ClipTop"] = Math.round(node.clip_top);
+    data["ClipWidth"] = Math.round(node.clip_width);
+    data["ClipHeight"] = Math.round(node.clip_height);
     var arr = new Array();
     arr[0] = data;
     total_saving++;
@@ -591,8 +591,8 @@ function SaveMapLegendInfoValues(node, X, Y, Size) {
     var api_url = api_root + "v1/floormaps/legend/put/json";
     var data = new Object();
     data["FloorMapUUID"] = node.uuid;
-    data["LegendLeft"] = X;
-    data["LegendTop"] = Y;
+    data["LegendLeft"] = Math.round(X);
+    data["LegendTop"] = Math.round(Y);
     data["LegendFontSize"] = Size;
     var arr = new Array();
     arr[0] = data;
