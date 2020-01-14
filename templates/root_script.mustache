@@ -587,6 +587,24 @@ function SaveMapClipArea(node) {
     });
 }
 
+function SaveMapName(node) {
+    var api_url = api_root + "v1/floormaps/name/put/json";
+    var data = new Object();
+    data["FloorMapUUID"] = node.uuid;
+    data["Name"] = get_map_label(node);
+    var arr = new Array();
+    arr[0] = data;
+    total_saving++;
+    document.body.style.cursor = 'wait';
+    putJSON(api_url, arr, function() {
+        total_saving--;
+        if (total_saving == 0) {
+            document.body.style.cursor = 'default';
+        }
+        console.debug("Saved for " + node.uuid);
+    });
+}
+
 function SaveMapLegendInfoValues(node, X, Y, Size) {
     var api_url = api_root + "v1/floormaps/legend/put/json";
     var data = new Object();
@@ -1573,7 +1591,12 @@ function update_item_jso(node, jso) {
 }
 
 function set_map_label(node, label) {
-    /* FIXME: no-op for now */
+    node.getElementsByTagName("P")[0].innerHTML = label;
+}
+
+function get_map_label(node) {
+    var label = node.getElementsByTagName("P")[0].innerHTML;
+    return label;
 }
 
 function select_next_mapX(curr_map_uuid, set_curr_map, node) {
@@ -1777,6 +1800,20 @@ function add_map_jso(jso) {
         function(e) {
             set_current_map(node.uuid);
         };
+    /* beautify ignore:start */
+{{#auth.groups.administrators}}
+/* beautify ignore:end */
+    node.ondblclick = function(e) {
+        var label = get_map_label(node);
+        var new_name = prompt("Rename " + label, label);
+        if (new_name != null) {
+            set_map_label(node, new_name);
+            SaveMapName(node);
+        }
+    };
+    /* beautify ignore:start */
+{{/auth.groups.administrators}}
+/* beautify ignore:end */
     console.debug("Adding map " + node.uuid);
     set_map_visibility(current_floorplan_uuid, node);
     insert_map_li_node(cnv, li_node);

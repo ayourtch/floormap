@@ -274,6 +274,47 @@ pub fn db_set_floormap_deleted(
     }
 }
 
+pub fn db_set_floormap_name(floormap_uuid: &FlexUuid, name: &str) -> Result<bool, std::io::Error> {
+    use std::io::{Error, ErrorKind};
+    let res = db_get_floormap(&floormap_uuid);
+    match res {
+        Err(e) => {
+            let msg = format!(
+                "port {} - error setting description: {:?}",
+                floormap_uuid, e
+            );
+            return Err(Error::new(ErrorKind::NotFound, msg));
+        }
+        Ok(mo) => {
+            if mo.Locked {
+                let msg = format!("map object {} - is locked", &floormap_uuid);
+                return Err(Error::new(ErrorKind::Other, msg));
+            }
+
+            use schema::FloorMaps::dsl::*;
+            let db = get_db();
+            let now_ts = FlexTimestamp::now();
+            let updated_row_res = diesel::update(FloorMaps.filter(FloorMapUUID.eq(floormap_uuid)))
+                .set((
+                    Name.eq(name),
+                    // DeletedAt.eq(&now_ts),
+                    UpdatedAt.eq(&now_ts),
+                ))
+                .execute(db.conn());
+            match updated_row_res {
+                Err(e) => {
+                    let msg = format!("floormap {} - error setting name: {:?}", floormap_uuid, e);
+                    return Err(Error::new(ErrorKind::Other, msg));
+                }
+                Ok(v) => {
+                    // do nothing
+                    return Ok(true);
+                }
+            }
+        }
+    }
+}
+
 pub fn db_insert_new_floormap(
     new_name: &str,
     new_description: &str,

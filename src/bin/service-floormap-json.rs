@@ -79,6 +79,11 @@ fn main() {
         "set floormap deleted",
     );
     router.put(
+        "/api/v1/floormaps/name/put/json",
+        api_http_put_floormap_name,
+        "set floormap name",
+    );
+    router.put(
         "/api/v1/floormaps/copy/put/json",
         api_http_put_floormap_copy,
         "floormap copy",
@@ -326,6 +331,32 @@ fn main() {
                 println!("CR: {:?}", &cr);
                 for o in cr {
                     db_set_floormap_deleted(&o.FloorMapUUID, true).unwrap();
+                }
+
+                Ok(Response::with((status::Ok, payload)))
+            }
+            Err(e) => Ok(Response::with((
+                status::BadRequest,
+                format!("error: {:?}", e),
+            ))),
+        }
+    }
+
+    fn api_http_put_floormap_name(req: &mut Request) -> IronResult<Response> {
+        use floormap::db::db_set_floormap_name;
+        use std::str::FromStr;
+        page_requires_auth!(req => auth);
+        page_requires_admin!(auth);
+
+        let mut payload = String::new();
+        req.body.read_to_string(&mut payload).unwrap();
+        let cr_res: Result<Vec<ApiV1FloorMapSetNameRecord>, serde_json::Error> =
+            serde_json::from_str(&payload);
+        match cr_res {
+            Ok(cr) => {
+                println!("CR: {:?}", &cr);
+                for o in cr {
+                    db_set_floormap_name(&o.FloorMapUUID, &o.Name).unwrap();
                 }
 
                 Ok(Response::with((status::Ok, payload)))

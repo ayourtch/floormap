@@ -92,6 +92,12 @@ pub struct ApiV1MapObjectDeleteRecord {
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
+pub struct ApiV1FloorMapSetNameRecord {
+    pub FloorMapUUID: flexuuid::FlexUuid,
+    pub Name: String,
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1FloorMapDeleteRecord {
     pub FloorMapUUID: flexuuid::FlexUuid,
 }
