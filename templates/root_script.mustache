@@ -359,6 +359,7 @@ function set_current_map(uuid) {
     }
     set_map_items_visibility();
     set_map_svg();
+    fixup_coloring();
 }
 
 function draw_compare_map2() {
@@ -1334,6 +1335,21 @@ function sortTable(table) {
     }
 }
 
+function fixup_coloring() {
+    if (current_set_map_uuid != undefined) {
+        var el = get_map_from_uuid(current_set_map_uuid);
+        var name = el.map_name;
+        var el = document.getElementById("map");
+        if (name.startsWith("!")) {
+            el.classList.remove("grayscale-map");
+            el.classList.add("color-map");
+        } else {
+            el.classList.remove("color-map");
+            el.classList.add("grayscale-map");
+        }
+    }
+}
+
 function fixup_legend_table() {
     var map_legend = document.getElementById("map_legend");
     if (map_legend == null) {
@@ -1651,9 +1667,11 @@ function update_map_jso(node, jso) {
         if (old_file_version != node.file_version) {
             refresh_map_images(node);
         }
+        node.map_name = jso["Name"];
         if (node.uuid == current_map_uuid) {
             node.classList.add("selected-thumbnail");
             fixup_legend_table();
+            fixup_coloring();
         }
         if (node.sort_order != jso["SortOrder"]) {
             node.sort_order = jso["SortOrder"];
@@ -1794,6 +1812,7 @@ function add_map_jso(jso) {
     var li_node = document.createElement("li");
     var node = create_map_node_from_jso("", jso);
     node.classList.add("map1_floormap");
+    node.map_name = jso["Name"];
 
     li_node.appendChild(node);
     node.onclick =

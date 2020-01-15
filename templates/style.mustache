@@ -55,15 +55,23 @@ div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
 
 
 
-.img-overlay-wrap img.map { /* <= optional, for responsiveness */
+.img-overlay-wrap img.map {
    display: block;
    width: 1400px;
    /* max-width: 100%; */
    height: auto; 
+}
 
+.img-overlay-wrap img.grayscale-map {
   /* black and white */
   -webkit-filter: grayscale(100%); /* Safari 6.0 - 9.0 */
   filter: grayscale(100%);
+}
+
+.img-overlay-wrap img.color-map {
+  /* color */
+  -webkit-filter: grayscale(20%); /* Safari 6.0 - 9.0 */
+  filter: grayscale(20%);
 }
 
 
