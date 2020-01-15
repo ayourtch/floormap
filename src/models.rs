@@ -87,6 +87,23 @@ pub struct Job {
 
 #[serde(default)]
 #[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[table_name = "Logs"]
+pub struct Log {
+    pub LogUUID: FlexUuid,
+    pub LogTimestamp: FlexTimestamp,
+    pub Key1: i32,
+    pub Key2: i32,
+    pub Key3UUID: FlexUuid,
+    pub Key4UUID: FlexUuid,
+    pub Username: String,
+    pub Source: String,
+    pub Message: String,
+    pub Data1: String,
+    pub Data2: String,
+}
+
+#[serde(default)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
 #[table_name = "MapObjects"]
 pub struct MapObject {
     pub MapObjectUUID: FlexUuid,

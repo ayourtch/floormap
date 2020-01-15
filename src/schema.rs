@@ -70,6 +70,22 @@ table! {
 }
 
 table! {
+    Logs (LogUUID) {
+        LogUUID -> Text,
+        LogTimestamp -> Timestamp,
+        Key1 -> Integer,
+        Key2 -> Integer,
+        Key3UUID -> Text,
+        Key4UUID -> Text,
+        Username -> Text,
+        Source -> Text,
+        Message -> Text,
+        Data1 -> Text,
+        Data2 -> Text,
+    }
+}
+
+table! {
     MapObjects (MapObjectUUID) {
         MapObjectUUID -> Text,
         Deleted -> Bool,
@@ -102,4 +118,6 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(Comments, FloorMaps, FloorPlans, Jobs, MapObjects, Services,);
+allow_tables_to_appear_in_same_query!(
+    Comments, FloorMaps, FloorPlans, Jobs, Logs, MapObjects, Services,
+);
