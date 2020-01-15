@@ -18,7 +18,10 @@ echo "Copying the PDF file to target dir..."
 cp "${PDF_FILE}" "${TARGET_DIR}/source.pdf"
 echo "${PDF_FILE}" | tee "${TARGET_DIR}/source.txt"
 echo "Converting the pdf to ppm..."
-pdftoppm -png "${TARGET_DIR}/source.pdf" "${TARGET_DIR}/images/page"
+pdftoppm -scale-to-x 2482 -scale-to-y 1755 -png "${TARGET_DIR}/source.pdf" "${TARGET_DIR}/images/page"
+# make it sane size
+find "${TARGET_DIR}/images/" -name '*.png' -exec convert {} +dither -colors 16 -depth 4  {} \;
+# make thumbnails
 find  "${TARGET_DIR}/images" -type f -exec convert {} -resize 400x400 {}-thumb.png \;
 echo "Extracting the text from pdf pages..."
 gs -sDEVICE=txtwrite -sOutputFile="${TARGET_DIR}/images/page-%d.txt" -dNOPAUSE -dBATCH "${TARGET_DIR}/source.pdf"
