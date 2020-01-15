@@ -43,18 +43,31 @@ fn import_pages_from(dirname: &str) {
                 // full_text = contents;
             }
         }
-        let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
-        let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
-        let path = std::path::Path::new(&pathname);
-        if !path.exists() {
-            break;
-        }
-        let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
-        // println!("Checking path {}", &pathname);
-        let path = Path::new(&pathname);
-        if !path.exists() {
-            break;
-        }
+        let pathname =
+            if std::path::Path::new(&format!("{}/page-{:01}.png-thumb.png", &dirname, page_nr))
+                .exists()
+            {
+                let pathname = format!("{}/page-{:01}.png", &dirname, page_nr);
+                // println!("Checking path {}", &pathname);
+                let path = Path::new(&pathname);
+                if !path.exists() {
+                    break;
+                }
+                pathname
+            } else {
+                let pathname = format!("{}/page-{:02}.png-thumb.png", &dirname, page_nr);
+                let path = std::path::Path::new(&pathname);
+                if !path.exists() {
+                    break;
+                }
+                let pathname = format!("{}/page-{:02}.png", &dirname, page_nr);
+                // println!("Checking path {}", &pathname);
+                let path = Path::new(&pathname);
+                if !path.exists() {
+                    break;
+                }
+                pathname
+            };
         let page_name = format!("Page {:02}", page_nr);
         db_insert_new_floormap(
             &page_name,
