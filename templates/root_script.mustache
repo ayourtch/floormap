@@ -136,11 +136,19 @@ function getJSON(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
+    var timeout_timer = setTimeout(function() {
+        console.debug("Timeout detected by timer...");
+        xhr.abort();
+        var status = xhr.status;
+        callback(status, null);
+    }, 5000);
     xhr.onload = function() {
         var status = xhr.status;
+        clearTimeout(timeout_timer);
         if (status === 200) {
             callback(null, xhr.response);
         } else {
+            console.debug("Request error...");
             callback(status, xhr.response);
         }
     };
@@ -418,17 +426,32 @@ function set_current_map2(uuid) {
     set_map_svg();
 }
 
+function checkTime(i) {
+    return (i < 10) ? "0" + i : i;
+}
 
 function processJSON(err, reply_data) {
     if (err !== null) {
-        // alert('Something went wrong: ' + err);
-        setTimeout(JsonPollCycle, 10000);
+        console.error('Something went wrong: ' + err);
+        setTimeout(JsonPollCycle, 1000);
+        return;
     } else {
         // alert('Your data: ' + data.length);
         if (reply_data == null) {
-            console.debug("Reply data was null...");
+            console.error("Reply data was null...");
+            // alert("Data was null");
+            setTimeout(JsonPollCycle, 1000);
             return;
         }
+
+        var poll_elt = document.getElementById("last_poll_time");
+        poll_elt.classList.remove("gradually-red");
+        void poll_elt.offsetWidth; // trigger a DOM reflow
+        var today = new Date();
+        var time = checkTime(today.getHours()) + ":" + checkTime(today.getMinutes()) + ":" + checkTime(today.getSeconds());
+        poll_elt.innerHTML = "Last polled at " + time;
+        poll_elt.classList.add("gradually-red");
+
         var new_default_floormap_uuid = undefined;
         if (current_map_uuid == null) {
             if (document.location.hash != "") {

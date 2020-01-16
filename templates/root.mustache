@@ -53,6 +53,7 @@
           <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name', 'edit_item_desc', 'edit_item_meta')"/>
 {{/auth.groups.administrators}}
 {{#auth.username}}| {{auth.username}} {{#auth.groups.administrators}} ADMIN {{/auth.groups.administrators}}[<a href="/logout">logout</a>] {{/auth.username}} 
+<span id="last_poll_time" class="gradually-red">Never polled</span>
   <hr size=1 noshade/>
   </div>
 		<div class="img-overlay-wrap" id="floor_canvas">

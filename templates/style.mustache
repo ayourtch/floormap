@@ -20,6 +20,23 @@ div.sw1 { border: solid 1px #f00; color: red; padding: 0px 5px 0px 5px; }
 div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
 }
 
+@keyframes background-fade {
+    0% {
+        background:#ffffff;
+    }
+    30% {
+        background:#ffffff;
+    }
+    100% {
+        background:#ff0000;
+    }
+}
+
+.gradually-red {
+    animation: background-fade 10s forwards;
+}
+
+
 {{^auth.groups.administrators}}
 /* Disable selection in anything but quicksearch */
 
