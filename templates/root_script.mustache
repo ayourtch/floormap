@@ -219,6 +219,7 @@ var compare_map2_active = false;
 var current_set_map_uuid = null;
 var current_set_map2_uuid = null;
 var current_quick_search = "";
+var uploads = new Object();
 
 function get_floormap_srcX_version(base, uuid, file_version) {
     if (file_version != undefined) {
@@ -549,6 +550,15 @@ function processJSON(err, reply_data) {
                 }
             }
         }
+        var upload_data = reply_data["Uploads"];
+        for (var i = 0; i < upload_data.length; i++) {
+            var jse = upload_data[i];
+            if (jse["Deleted"]) {} else {
+                update_upload_from_jse(jse);
+            }
+        }
+
+        var floors_data = reply_data["FloorMaps"];
         if (get_map_from_uuid(current_map_uuid) == null) {
             if (new_default_floormap_uuid != undefined) {
                 current_set_map_uuid = new_default_floormap_uuid;
@@ -1547,6 +1557,42 @@ function upload_item_file() {
     xhr.send(formData);
 }
 
+function upload_to_html(jse) {
+    var node = document.createElement("p");
+    node.classList.add("upload-item");
+    var upload_info = jse["CreatedAt"] + " " + jse["CreatedBy"];
+    node.innerHTML = upload_info + " <a target='_new' href='/uploaded-files/" + jse["ServerFileName"] + "'>" + jse["OriginalFileName"] + "</a> " + jse["Message"];
+    return node;
+}
+
+function update_upload_from_jse(jse) {
+    var modal = document.getElementById("myModal");
+    var old_jse = uploads[jse["UploadUUID"]];
+    uploads[jse["UploadUUID"]] = jse;
+    console.log(["Update upload:", jse]);
+    if (modal.style.display == "block") {
+        var upload_for = document.getElementById("upload_for");
+        if (upload_for.value == jse["RelatedToUUID"]) {
+            var modal_inner = document.getElementById("modal_inner");
+            var elt = upload_to_html(jse);
+            modal_inner.parentNode.appendChild(elt);
+        }
+    }
+}
+
+function append_uploads_for(uuid) {
+    var modal_inner = document.getElementById("modal_inner");
+    for (var upload_uuid in uploads) {
+
+        var u = uploads[upload_uuid];
+        console.log(["check upload:", u]);
+        if (u["RelatedToUUID"] == uuid) {
+            var elt = upload_to_html(u);
+            modal_inner.parentNode.appendChild(elt);
+        }
+    }
+}
+
 function user_has_clicked(node) {
     var modal = document.getElementById("myModal");
     var span = document.getElementsByClassName("close")[0];
@@ -1554,13 +1600,23 @@ function user_has_clicked(node) {
         modal.style.display = "none";
         var file_upload = document.getElementById("item_file_upload");
         file_upload.value = "";
+        var upload_for = document.getElementById("upload_for");
+        upload_for.value = "";
+        var elts = modal.getElementsByClassName("upload-item");
+        while (elts[0]) {
+            elts[0].parentNode.removeChild(elts[0]);
+        }
     }
+    var upload_for = document.getElementById("upload_for");
+    upload_for.value = node.uuid;
 
     var label = get_item_label(node);
 
     modal.style.display = "block";
     var modal_inner = document.getElementById("modal_inner");
-    modal_inner.innerHTML = "</p>" + label + ": " + node.description + "</p>";
+    modal_inner.innerHTML = "<p>" + label + ": " + node.description + "</p>";
+    append_uploads_for(node.uuid);
+
     var file_upload = document.getElementById("item_file_upload");
     file_upload.onchange = function(e) {
         upload_item_file();

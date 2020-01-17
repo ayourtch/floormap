@@ -43,6 +43,8 @@ pub struct ApiV1FloorMap {
     pub LegendFontSize: i32,
 }
 
+type ApiV1Upload = Upload;
+
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1FloorPlan {
     pub FloorPlanUUID: FlexUuid,
@@ -75,6 +77,7 @@ pub struct ApiV1GetMapObjectsResponse {
     pub FloorPlans: Vec<ApiV1FloorPlan>,
     pub FloorMaps: Vec<ApiV1FloorMap>,
     pub MapObjects: Vec<ApiV1MapObject>,
+    pub Uploads: Vec<ApiV1Upload>,
 }
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
@@ -198,6 +201,15 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
             .load::<FloorPlan>(db.conn())
             .expect("Error loading floorplans")
     };
+    let uploads = {
+        use super::schema::Uploads::dsl::*;
+        Uploads
+            .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .order(UpdatedAt.asc())
+            .limit(20000)
+            .load::<Upload>(db.conn())
+            .expect("Error loading uploads")
+    };
 
     let new_results: Vec<ApiV1MapObject> = results
         .into_iter()
@@ -238,5 +250,6 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
         FloorPlans: new_floorplans,
         FloorMaps: new_floormaps,
         MapObjects: new_results,
+        Uploads: uploads,
     }
 }

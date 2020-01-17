@@ -18,6 +18,7 @@ pub struct DbExport {
     pub FloorPlans: Vec<FloorPlan>,
     pub FloorMaps: Vec<FloorMap>,
     pub MapObjects: Vec<MapObject>,
+    pub Uploads: Vec<Upload>,
 }
 
 pub fn split_meta_from_str(str: &str) -> (String, String) {
@@ -86,6 +87,14 @@ pub fn db_put_json(data: &str) {
                 .execute(db.conn());
         }
     }
+    {
+        use self::diesel::prelude::*;
+        use schema::Uploads::dsl::*;
+
+        for d in &bk.Uploads {
+            let rows_inserted = diesel::insert_into(Uploads).values(d).execute(db.conn());
+        }
+    }
 }
 
 pub fn db_get_json() -> String {
@@ -98,6 +107,15 @@ pub fn db_get_json() -> String {
             .limit(20000)
             .load::<FloorPlan>(db.conn())
             .expect("Error loading floorplan")
+    };
+    let result_uploads = {
+        use super::schema::Uploads::dsl::*;
+        Uploads
+            .filter(Deleted.eq(false)) // .and(AssetID.is_not_null()))
+            // .filter(UpdatedAt.ge(since)) // .and(ParentMapUUID.eq(map_uuid)))
+            .limit(20000)
+            .load::<Upload>(db.conn())
+            .expect("Error loading upload")
     };
     let result_floor_maps = {
         use super::schema::FloorMaps::dsl::*;
@@ -121,6 +139,7 @@ pub fn db_get_json() -> String {
         FloorPlans: result_floor_plans,
         FloorMaps: result_floor_maps,
         MapObjects: result_map_objects,
+        Uploads: result_uploads,
     };
 
     let j = serde_json::to_string_pretty(&results).unwrap();
@@ -498,6 +517,50 @@ pub fn db_insert_new_mapobject(
         .values(&new_item)
         .execute(db.conn());
     new_item.MapObjectUUID
+}
+
+pub fn db_insert_new_upload(
+    username: &str,
+    upload_for_uuid: &FlexUuid,
+    temp_filename: &str,
+    original_filename: &str,
+    upload_comments: &str,
+) -> Option<FlexUuid> {
+    use self::diesel::prelude::*;
+    use schema::Uploads::dsl::*;
+
+    let upload_uuid = FlexUuid::default();
+    let dir_name = format!("{}/{}", upload_for_uuid, &upload_uuid);
+    let full_dir_name = format!("/var/a3s/http/uploads/{}/{}", upload_for_uuid, &upload_uuid);
+    let dest_name = format!("{}/{}", &dir_name, original_filename);
+    let full_dest_name = format!("{}/{}", &full_dir_name, original_filename);
+
+    let mkdir_res = std::fs::create_dir_all(&full_dir_name);
+    let copy_res = std::fs::copy(&temp_filename, &full_dest_name);
+    println!(
+        "Mkdir result: {:?}, copy result: {:?}",
+        &mkdir_res, &copy_res
+    );
+
+    if mkdir_res.is_ok() && copy_res.is_ok() {
+        let new_item = Upload {
+            UploadUUID: upload_uuid.clone(),
+            RelatedToUUID: upload_for_uuid.clone(),
+            CreatedBy: username.to_string(),
+            OriginalFileName: original_filename.to_string(),
+            ServerFileName: dest_name.clone(),
+            Message: upload_comments.to_string(),
+            ..Default::default()
+        };
+
+        let db = get_db();
+        let rows_inserted = diesel::insert_into(Uploads)
+            .values(&new_item)
+            .execute(db.conn());
+        Some(new_item.UploadUUID)
+    } else {
+        None
+    }
 }
 
 pub fn db_set_mapobject_xy(

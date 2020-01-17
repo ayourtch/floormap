@@ -94,7 +94,7 @@ div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
 {{^auth.groups.administrators}}
 /* Disable selection in anything but quicksearch */
 
-*:not(#quickSearch) {
+*:not(#quickSearch) *:not(#upload_comments) {
   -webkit-touch-callout: none; /* iOS Safari */
     -webkit-user-select: none; /* Safari */
      -khtml-user-select: none; /* Konqueror HTML */
@@ -103,6 +103,7 @@ div.sw0 { border: solid 1px green; color: black; padding: 0px 5px 0px 5px; }
             user-select: none; /* Non-prefixed version, currently
                                   supported by Chrome, Opera and Firefox */
 }
+
 {{/auth.groups.administrators}}
 
 .img-overlay-wrap-small {

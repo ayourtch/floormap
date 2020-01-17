@@ -168,7 +168,13 @@ server {
                 proxy_set_header        X-Real-IP       $remote_addr;
                 proxy_set_header Host            $host;
         }
-        location /upload {
+        location  /uploaded-files/ {
+		auth_request /check_auth;
+		try_files $uri $uri/ =404;
+                rewrite ^/uploaded-files/(.*)$ /$1 break;
+                root /var/a3s/http/uploads;
+        }
+        location = /upload {
                 # rewrite ^/floormap/(.*)$ /$1 break;
 		auth_request /check_auth;
                 # auth_basic           "Restricted Access!";
