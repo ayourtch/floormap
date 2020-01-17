@@ -1,6 +1,6 @@
 #!/bin/sh
 pkill tmux
-tmux new-session -s foo -d
+tmux new-session -s $(hostname) -d
 echo launch floormap
 tmux new-window "./target/debug/service-floormap-json"
 echo launch upload
