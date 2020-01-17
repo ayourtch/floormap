@@ -3,6 +3,7 @@ drop table jobs;
 drop table comments;
 drop table "Services";
 drop table "Logs";
+drop table "Uploads";
 drop table "FloorPlans";
 drop table "FloorMaps";
 drop table "MapObjects";

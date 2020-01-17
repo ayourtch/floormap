@@ -118,6 +118,30 @@ table! {
     }
 }
 
+table! {
+    Uploads (UploadUUID) {
+        UploadUUID -> Text,
+        RelatedToUUID -> Text,
+        Deleted -> Bool,
+        CreatedBy -> Text,
+        CreatedAt -> Timestamp,
+        UpdatedAt -> Timestamp,
+        OriginalFileName -> Text,
+        ServerFileName -> Text,
+        ServerFileSize -> Integer,
+        MimeType -> Text,
+        Checksum -> Text,
+        ChecksumType -> Text,
+        Key1 -> Integer,
+        Key2 -> Integer,
+        Key3UUID -> Text,
+        Key4UUID -> Text,
+        Message -> Text,
+        Data1 -> Text,
+        Data2 -> Text,
+    }
+}
+
 allow_tables_to_appear_in_same_query!(
-    Comments, FloorMaps, FloorPlans, Jobs, Logs, MapObjects, Services,
+    Comments, FloorMaps, FloorPlans, Jobs, Logs, MapObjects, Services, Uploads,
 );

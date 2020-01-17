@@ -1,0 +1,17 @@
+#!/bin/sh
+
+# The script to update the postgres database with schema changes
+
+set +eux
+
+./target/debug/floormap-cli export-database -o ~/db-export.txt
+make regen-db
+make sqlite
+RUST_BACKTRACE=1 DATABASE_URL=db/floor.sqlite3 ./target/debug/floormap-cli import-database -i ~/db-export.txt
+source /secrets/floormap
+POSTGRES_DB_USER=$pg_user SQLITE3_DB_URL=db/floor.sqlite3 export-sqlite3-to-postgres >~/postgres-backup.txt
+make postgres
+pkill tmux
+./scripts/import-postgres-backup ~/postgres-backup.txt
+./start.sh
+

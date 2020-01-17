@@ -1501,6 +1501,62 @@ function set_item_arrow(node, x, y) {
     node.arrow_y = y;
 }
 
+
+
+function upload_item_file() {
+    var file_upload = document.getElementById("item_file_upload");
+    var file = file_upload.value;
+
+    var xhr = new XMLHttpRequest();
+    xhr.addEventListener('progress', function(e) {
+        var done = e.position || e.loaded,
+            total = e.totalSize || e.total;
+        console.log('xhr progress: ' + (Math.floor(done / total * 1000) / 10) + '%');
+    }, false);
+    if (xhr.upload) {
+        xhr.upload.onprogress = function(e) {
+            var prog = document.getElementById("file_upload_progress");
+            var done = e.position || e.loaded,
+                total = e.totalSize || e.total;
+            console.log('xhr.upload progress: ' + done + ' / ' + total + ' = ' + (Math.floor(done / total * 1000) / 10) + '%');
+            prog.innerHTML = 'xhr.upload progress: ' + done + ' / ' + total + ' = ' + (Math.floor(done / total * 1000) / 10) + '%';
+        };
+    }
+    xhr.onreadystatechange = function(e) {
+        if (4 == this.readyState) {
+            console.log(['xhr upload complete', e]);
+            console.log(this.status);
+            console.log(this.response);
+        }
+    };
+    xhr.open('POST', "/fileupload", true);
+    // xhr.setRequestHeader("Content-Type","multipart/form-data");
+    var form = document.getElementById("file_upload_form");
+    var formData = new FormData(form);
+    xhr.send(formData);
+}
+
+function user_has_clicked(node) {
+    var modal = document.getElementById("myModal");
+    var span = document.getElementsByClassName("close")[0];
+    span.onclick = function() {
+        modal.style.display = "none";
+        var file_upload = document.getElementById("item_file_upload");
+        file_upload.value = "";
+    }
+
+    var label = get_item_label(node);
+
+    modal.style.display = "block";
+    var modal_inner = document.getElementById("modal_inner");
+    modal_inner.innerHTML = "</p>" + label + ": " + node.description + "</p>";
+    var file_upload = document.getElementById("item_file_upload");
+    file_upload.onchange = function(e) {
+        upload_item_file();
+    }
+
+}
+
 function add_item_jso(jso) {
     var cnv = document.getElementById("floor_canvas");
     var node = document.createElement("div");
@@ -1549,7 +1605,7 @@ function add_item_jso(jso) {
     node.ondblclick = function(e) { alert('Double Clicked ' + get_item_label(node)); };
 {{/auth.groups.administrators}}
 {{^auth.groups.administrators}}
-    node.onclick = function(e) { alert('Clicked ' + get_item_label(node)); };
+    node.onclick = function(e) { user_has_clicked(node); };
 {{/auth.groups.administrators}}
 /* beautify ignore:end */
     if (!initial_page_loading) {

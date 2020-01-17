@@ -136,3 +136,28 @@ pub struct Service {
     pub ServiceName: String,
     pub ServiceLabel: String,
 }
+
+#[serde(default)]
+#[derive(Queryable, Insertable, Serialize, Deserialize, Debug, Clone, Default, PartialEq)]
+#[table_name = "Uploads"]
+pub struct Upload {
+    pub UploadUUID: FlexUuid,
+    pub RelatedToUUID: FlexUuid,
+    pub Deleted: bool,
+    pub CreatedBy: String,
+    pub CreatedAt: FlexTimestamp,
+    pub UpdatedAt: FlexTimestamp,
+    pub OriginalFileName: String,
+    pub ServerFileName: String,
+    pub ServerFileSize: i32,
+    pub MimeType: String,
+    pub Checksum: String,
+    pub ChecksumType: String,
+    pub Key1: i32,
+    pub Key2: i32,
+    pub Key3UUID: FlexUuid,
+    pub Key4UUID: FlexUuid,
+    pub Message: String,
+    pub Data1: String,
+    pub Data2: String,
+}

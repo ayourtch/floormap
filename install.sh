@@ -55,6 +55,12 @@ make postgres
 echo setting the postgres url
 echo "DATABASE_URL=${POSTGRES_DB_URL}" >.env
 
+sudo mkdir -p /var/a3s/http
+MYUSER=$(whoami)
+sudo chown -R ${MYUSER} /var/a3s/http
+mkdir -p /var/a3s/http/floor-plan-images
+mkdir -p /var/a3s/http/uploads
+
 # FIXME: fill in the .env inside rsp10auth directory
 # FIXME: cp .secret to rsp10auth directory
 
