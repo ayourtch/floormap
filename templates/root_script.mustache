@@ -1602,7 +1602,7 @@ function add_item_jso(jso) {
     /* beautify ignore:start */
 {{#auth.groups.administrators}}
     dragElement(node);
-    node.ondblclick = function(e) { alert('Double Clicked ' + get_item_label(node)); };
+    node.ondblclick = function(e) { user_has_clicked(node); };
 {{/auth.groups.administrators}}
 {{^auth.groups.administrators}}
     node.onclick = function(e) { user_has_clicked(node); };
