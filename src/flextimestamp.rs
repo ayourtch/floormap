@@ -103,7 +103,10 @@ impl<'de> de::Visitor<'de> for FlexTimestampVisitor {
     {
         match NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S.%f") {
             Ok(t) => Ok(FlexTimestamp { Ndt: t }),
-            Err(_) => Err(de::Error::invalid_value(de::Unexpected::Str(s), &self)),
+            Err(_) => match NaiveDateTime::parse_from_str(s, "%Y-%m-%dT%H:%M:%S") {
+                Ok(t) => Ok(FlexTimestamp { Ndt: t }),
+                Err(_) => Err(de::Error::invalid_value(de::Unexpected::Str(s), &self)),
+            },
         }
     }
 }
