@@ -1444,14 +1444,17 @@ function set_item_visibility(node) {
         if (lbl != null) {
             if ((current_quick_search != "") && TextHasText(lbl.data, current_quick_search)) {
                 node.style["font-weight"] = 'bold';
+                node.style.zIndex = 20;
             } else {
                 node.style["font-weight"] = 'normal';
+                node.style.zIndex = 10;
             }
         }
         // apply_item_style(node);
     } else {
         // node.style.visibility = "hidden";
         node.style.display = "none";
+        node.style.zIndex = 10;
     }
     set_item_legend(node, visible)
     redraw_item_arrow(node);
@@ -2023,6 +2026,12 @@ function QuickSearchHandler(e) {
     var el = get_map_from_uuid(current_map_uuid);
     if (el != null) {
         el.scrollIntoView();
+    }
+    var searchscreen = document.getElementById("searchscreen");
+    if (q == "") {
+        searchscreen.style.display = "none";
+    } else {
+        searchscreen.style.display = "block";
     }
     set_map_items_visibility();
 }
