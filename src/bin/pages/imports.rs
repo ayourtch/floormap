@@ -69,9 +69,23 @@ impl iron_sessionstorage::Value for CookiePageAuth {
     }
 }
 
+fn fixup_forwarded_proto(req: &Request, url: &str) -> String {
+    header! { (XForwardedProto, "X-Forwarded-Proto") => [String] }
+    match req.headers.get::<XForwardedProto>() {
+        Some(xri) => if url.starts_with("http:") {
+            url.replace("http://", &format!("{}://", xri.clone().to_string()))
+                        } else {
+                            url.to_string()
+                        }
+        None => url.to_string(),
+    }
+}
+
+
 impl rsp10::RspUserAuth for CookiePageAuth {
     fn from_request(req: &mut iron::Request) -> Result<CookiePageAuth, String> {
-        let login_url = format!("/login?ReturnUrl={}", &req.url);
+        let req_url = req.url.clone().to_string();
+        let login_url = format!("/login?ReturnUrl={}", &fixup_forwarded_proto(req, &req_url));
         let login_res = req.session().get::<CookiePageAuth>();
         let error = match login_res {
             Ok(ref login_opt) => login_opt.is_none(),
