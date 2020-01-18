@@ -16,6 +16,8 @@ var poll_max_timeout = 15000;
 var poll_cur_timeout = poll_min_timeout;
 var poll_start_time = 0;
 
+var client_restart_epoch = -1;
+var client_message = "";
 
 
 function onMouseUpdate(e) {
@@ -183,7 +185,7 @@ function check_poll_timeout(start_time, is_timeout) {
     if (timeout_count > 0) {
         txt = " probe " + timeout_count;
     }
-    info.innerHTML = "(" + delta + " / wait " + poll_cur_timeout + "ms)" + txt;
+    info.innerHTML = "(" + delta + " / wait " + poll_cur_timeout + "ms)" + txt + " " + client_message;
 }
 
 function getJSON(url, callback) {
@@ -520,6 +522,18 @@ function processJSON(err, reply_data) {
         var time = checkTime(today.getHours()) + ":" + checkTime(today.getMinutes()) + ":" + checkTime(today.getSeconds());
         poll_elt.innerHTML = "Last polled at " + time;
         poll_elt.classList.add("gradually-red");
+        if (client_restart_epoch == -1) {
+            client_restart_epoch = reply_data["ClientRestartEpoch"];
+        } else {
+            if (reply_data["ClientRestartEpoch"] > client_restart_epoch) {
+                client_restart_epoch = reply_data["ClientRestartEpoch"];
+                var tim = Math.round(Math.random() * 30000);
+                client_message = "Server-initiated reload (" + tim + "ms)";
+                setTimeout(function() {
+                    location.reload(true);
+                }, tim);
+            }
+        }
 
         var new_default_floormap_uuid = undefined;
         if (current_map_uuid == null) {

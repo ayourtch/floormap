@@ -74,6 +74,7 @@ pub struct ApiV1FloorMapSetLegendRecord {
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1GetMapObjectsResponse {
     pub NextPollHorizon: i64,
+    pub ClientRestartEpoch: u64,
     pub FloorPlans: Vec<ApiV1FloorPlan>,
     pub FloorMaps: Vec<ApiV1FloorMap>,
     pub MapObjects: Vec<ApiV1MapObject>,
@@ -165,9 +166,22 @@ pub fn api_get_all_services() -> Vec<ApiV1ServiceRecord> {
     new_results
 }
 
+fn get_restart_epoch() -> u64 {
+    let metadata_maybe = std::fs::metadata("client_restart");
+    use std::time::{Duration, SystemTime};
+    metadata_maybe.ok().map_or(0, |x| {
+        x.modified().ok().map_or(0, |x| {
+            x.duration_since(SystemTime::UNIX_EPOCH)
+                .ok()
+                .map_or(0, |x| x.as_secs())
+        })
+    })
+}
+
 pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse {
     let db = get_db();
     let next_ts = flextimestamp::FlexTimestamp::now().timestamp();
+    let restart_ts = get_restart_epoch();
 
     let results = {
         use super::schema::MapObjects::dsl::*;
@@ -247,6 +261,7 @@ pub fn api_get_map_objects(since: &FlexTimestamp) -> ApiV1GetMapObjectsResponse 
         .collect();
     ApiV1GetMapObjectsResponse {
         NextPollHorizon: next_ts,
+        ClientRestartEpoch: restart_ts,
         FloorPlans: new_floorplans,
         FloorMaps: new_floormaps,
         MapObjects: new_results,
