@@ -37,7 +37,7 @@
 </div>
   <div class="thumbnail-filter" id="search_thumbnails">
   <hr size=1 noshade/>
-  Find:<input type="text" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
+  Find:<input type="text" class="user-text-input" id="quickSearch" value="" size="10" autocorrect="off" autocapitalize="none"/>
 {{#auth.groups.administrators}}
   Add:
           <input id="new_item_name" type="text" value="New Item" class="textedit" size="6"/>
@@ -72,7 +72,7 @@
     </div>
     <form id="file_upload_form" enctype="multipart/form-data" method="post">
     <input type="hidden" id="upload_for" name="upload_for" value=""/>
-    Comment:<input type="text" name="upload_comments" id="upload_comments"/>
+    Comment:<input type="text" name="upload_comments" class="user-text-input" id="upload_comments"/>
     File: <input type="file" name="item_file_upload" id="item_file_upload"/>
     <span id="file_upload_progress"></span>
     </form>
