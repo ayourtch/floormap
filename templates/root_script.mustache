@@ -10,6 +10,13 @@ var mouse_tracking_active = false;
 
 var initial_page_loading = true;
 
+var poll_min_timeout = 1000;
+var poll_max_timeout = 15000;
+
+var poll_cur_timeout = poll_min_timeout;
+var poll_start_time = 0;
+
+
 
 function onMouseUpdate(e) {
     var cnv = document.getElementById("floor_canvas");
@@ -132,25 +139,80 @@ function setSelectedElement(elmnt) {
     }
 }
 
+var poll_timeout_reset = 0;
+var ok_request_count = 0;
+var timeout_count = 0;
+
+function check_poll_timeout(start_time, is_timeout) {
+    var delta = get_time_ms() - start_time;
+    if (is_timeout) {
+        delta = poll_cur_timeout;
+        ok_request_count = 0;
+        timeout_count = timeout_count + 1;
+    } else {
+        ok_request_count = ok_request_count + 1;
+        timeout_count = 0;
+    }
+    var txt = "";
+
+    if (delta > poll_cur_timeout / 2) {
+        /* backend not responsive */
+        poll_cur_timeout = 2 * poll_cur_timeout;
+        if (poll_cur_timeout > poll_max_timeout) {
+            poll_cur_timeout = poll_max_timeout;
+        }
+    } else {
+        if (ok_request_count > 1) {
+            poll_cur_timeout = poll_cur_timeout - 100;
+        } else {
+            poll_cur_timeout = poll_min_timeout;
+            poll_timeout_reset = get_time_ms();
+        }
+        if (poll_cur_timeout < poll_min_timeout) {
+            poll_cur_timeout = poll_min_timeout;
+        }
+
+    }
+    console.debug("New poll timeout: " + poll_cur_timeout);
+    var info = document.getElementById("last_poll_duration");
+    if (is_timeout) {
+        delta = "timeout or error";
+    } else {
+        delta = "last rtt " + delta + "ms";
+    }
+    if (timeout_count > 0) {
+        txt = " probe " + timeout_count;
+    }
+    info.innerHTML = "(" + delta + " / wait " + poll_cur_timeout + "ms)" + txt;
+}
+
 function getJSON(url, callback) {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
+    poll_start_time = get_time_ms();
+
     var timeout_timer = setTimeout(function() {
         console.debug("Timeout detected by timer...");
         xhr.abort();
         var status = xhr.status;
+        check_poll_timeout(poll_start_time, true);
         callback(status, null);
-    }, 5000);
+        xhr = null;
+    }, poll_max_timeout);
     xhr.onload = function() {
         var status = xhr.status;
         clearTimeout(timeout_timer);
+        timeout_timer = null;
         if (status === 200) {
+            check_poll_timeout(poll_start_time, false);
             callback(null, xhr.response);
         } else {
+            check_poll_timeout(poll_start_time, true);
             console.debug("Request error...");
             callback(status, xhr.response);
         }
+        xhr = null;
     };
     xhr.send();
 }
@@ -431,17 +493,23 @@ function checkTime(i) {
     return (i < 10) ? "0" + i : i;
 }
 
+function get_time_ms() {
+    var d = new Date();
+    var n = d.getTime();
+    return n;
+}
+
 function processJSON(err, reply_data) {
     if (err !== null) {
         console.error('Something went wrong: ' + err);
-        setTimeout(JsonPollCycle, 1000);
+        setTimeout(JsonPollCycle, poll_cur_timeout);
         return;
     } else {
         // alert('Your data: ' + data.length);
         if (reply_data == null) {
             console.error("Reply data was null...");
             // alert("Data was null");
-            setTimeout(JsonPollCycle, 1000);
+            setTimeout(JsonPollCycle, poll_cur_timeout);
             return;
         }
 
@@ -579,7 +647,7 @@ function processJSON(err, reply_data) {
         if (initial_page_loading) {
             initial_page_loading = false;
         }
-        setTimeout(JsonPollCycle, 1000);
+        setTimeout(JsonPollCycle, poll_cur_timeout);
     }
 }
 
