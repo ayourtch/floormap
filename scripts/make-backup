@@ -1,0 +1,7 @@
+#!/bin/sh
+
+OUTNAME=$(date +"%Y-%m-%d-%H-%M")
+echo "Export: ${OUTNAME}"
+mkdir -p /home/ubuntu/exports
+(cd /home/ubuntu/floormap; ./target/debug/floormap-cli export-database -o /home/ubuntu/exports/${OUTNAME}.json)
+
