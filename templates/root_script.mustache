@@ -185,7 +185,9 @@ function check_poll_timeout(start_time, is_timeout) {
     if (timeout_count > 0) {
         txt = " probe " + timeout_count;
     }
-    info.innerHTML = "(" + delta + " / wait " + poll_cur_timeout + "ms)" + txt + " " + client_message;
+    if (info != null) {
+        info.innerHTML = "(" + delta + " / wait " + poll_cur_timeout + "ms)" + txt + " " + client_message;
+    }
 }
 
 function getJSON(url, callback) {
@@ -516,12 +518,16 @@ function processJSON(err, reply_data) {
         }
 
         var poll_elt = document.getElementById("last_poll_time");
-        poll_elt.classList.remove("gradually-red");
-        void poll_elt.offsetWidth; // trigger a DOM reflow
+        if (poll_elt != null) {
+            poll_elt.classList.remove("gradually-red");
+            void poll_elt.offsetWidth; // trigger a DOM reflow
+        }
         var today = new Date();
         var time = checkTime(today.getHours()) + ":" + checkTime(today.getMinutes()) + ":" + checkTime(today.getSeconds());
-        poll_elt.innerHTML = "Last polled at " + time;
-        poll_elt.classList.add("gradually-red");
+        if (poll_elt != null) {
+            poll_elt.innerHTML = "Last polled at " + time;
+            poll_elt.classList.add("gradually-red");
+        }
         if (client_restart_epoch == -1) {
             client_restart_epoch = reply_data["ClientRestartEpoch"];
         } else {
@@ -1709,7 +1715,10 @@ function user_has_clicked(node) {
 function add_item_jso(jso) {
     var cnv = document.getElementById("floor_canvas");
     var node = document.createElement("div");
-    node.classList.add("item")
+    node.classList.add("item");
+    if (jso["Locked"]) {
+        node.classList.add("locked");
+    }
     node.classList.add("sw0");
     node.style.top = jso["MapY"] + "px";
     node.style.left = jso["MapX"] + "px";
@@ -1829,6 +1838,11 @@ function update_item_jso(node, jso) {
         node.parent_map_uuid = jso["ParentMapUUID"];
         set_item_visibility(node);
         apply_item_style(node);
+        if (jso["Locked"]) {
+            node.classList.add("locked");
+        } else {
+            node.classList.remove("locked");
+        }
         set_item_arrow(node, jso["ArrowX"], jso["ArrowY"]);
         if (selectedElement == node) {
             load_item_details(node);
