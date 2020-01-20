@@ -1658,7 +1658,7 @@ function update_upload_from_jse(jse) {
     var old_jse = uploads[jse["UploadUUID"]];
     uploads[jse["UploadUUID"]] = jse;
     console.log(["Update upload:", jse]);
-    if (modal.style.display == "block") {
+    if (modal != null && modal.style.display == "block") {
         var upload_for = document.getElementById("upload_for");
         if (upload_for.value == jse["RelatedToUUID"]) {
             var modal_inner = document.getElementById("modal_inner");
