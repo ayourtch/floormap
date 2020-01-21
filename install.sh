@@ -22,6 +22,12 @@ if [ "x${DIESEL_CLI}" = "x" ]; then
   cargo install diesel_cli --no-default-features --features sqlite,postgres
 fi
 
+
+if [ ! -e .env ]; then
+	echo "Making temporary .env for sqlite database"
+	echo "DATABASE_URL=./db/floor.sqlite3" >.env
+fi
+
 if [ ! -e /secrets/floormap ]; then
 	echo Making secrets and other arrangements..
 	make first-time
