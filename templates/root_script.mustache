@@ -1352,6 +1352,8 @@ function apply_item_style(node) {
     node.style.color = "";
     node.style.border = "";
     node.style.borderRadius = "";
+    node.vars = new Object();
+    node.links = new Array();
     if (node.type_object_uuid != null && node.type_object_uuid != node.uuid) {
         // console.log("ITEM " + get_item_label(node) + " Apply type " + node.type_object_uuid);
         apply_item_style_from_type(node, node.type_object_uuid);
@@ -1374,11 +1376,21 @@ function apply_item_style_from_type(node, type_uuid) {
 function apply_item_style_from(node, from_node) {
     var meta = from_node.meta;
     if (meta != null) {
+        if (node.links == null) {
+            node.links = new Array();
+        }
+        if (node.vars == null) {
+            node.vars = new Object();
+        }
         // console.log("Node: " + get_item_label(node) + " Applying style: " + meta);
         var i;
         var pair_strings = meta.split(";");
         for (i = 0; i < pair_strings.length; i++) {
-            var pp = pair_strings[i].split(":");
+            var pair_strings_escaped = pair_strings[i].replace(/:\/\//gi, "_//");
+            var pp = pair_strings_escaped.split(":");
+            for (var j = 0; j < pp.length; j++) {
+                pp[j] = pp[j].replace(/_\/\//gi, "://");
+            }
             // console.log(node.id + " [" + i + "] PP: " + pp[0]);
             if (pp[0] == "background-color") {
                 node.style.setProperty(pp[0], pp[1], "important");
@@ -1390,6 +1402,12 @@ function apply_item_style_from(node, from_node) {
                 node.style.setProperty(pp[0], pp[1]);
             } else if (pp[0] == "labelsize") {
                 set_item_labelsize(node, Math.round(pp[1]));
+            } else if (pp[0] == "link") {
+                if (node.links) {
+                    node.links.push([pp[1], pp[2]]);
+                } else {
+                    alert("Node links null:" + get_item_label(node));
+                }
             } else if (pp[0] == "type") {
                 if (pp[1] == "type" && node == from_node) {
                     node.classList.add("type_type");
@@ -1412,6 +1430,9 @@ function apply_item_style_from(node, from_node) {
                         }
                     }
                 }
+            }
+            if (node.vars != null) {
+                node.vars[pp[0]] = pp[1];
             }
         }
     }
@@ -1685,6 +1706,33 @@ function append_uploads_for(uuid) {
     }
 }
 
+
+function link_to_html(node, link) {
+    var new_node = document.createElement("p");
+    new_node.classList.add("upload-item");
+
+    var link_href = link[1].replace(/[{][{]([^}]+)[}][}]/g,
+        function(a, b) {
+            var ret = "uNknOwn";
+            if (node.vars) {
+                ret = node.vars[b];
+            }
+            return ret;
+        });
+    var link_title = link[0];
+    new_node.innerHTML = "<a target='_new' href='" + link_href + "'>" + link_title + "</a>";
+    return new_node;
+}
+
+function append_node_links(node) {
+    var modal_inner = document.getElementById("modal_inner");
+    for (var i = 0; i < node.links.length; i++) {
+        var link = node.links[i];
+        var elt = link_to_html(node, link);
+        modal_inner.parentNode.appendChild(elt);
+    }
+}
+
 function user_has_clicked(node) {
     var modal = document.getElementById("myModal");
     var span = document.getElementsByClassName("close")[0];
@@ -1698,6 +1746,7 @@ function user_has_clicked(node) {
         while (elts[0]) {
             elts[0].parentNode.removeChild(elts[0]);
         }
+
     }
     var upload_for = document.getElementById("upload_for");
     upload_for.value = node.uuid;
@@ -1707,6 +1756,8 @@ function user_has_clicked(node) {
     modal.style.display = "block";
     var modal_inner = document.getElementById("modal_inner");
     modal_inner.innerHTML = "<p>" + label + ": " + node.description + "</p>";
+
+    append_node_links(node);
     append_uploads_for(node.uuid);
 
     var file_upload = document.getElementById("item_file_upload");
