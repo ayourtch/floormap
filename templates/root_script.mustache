@@ -1858,6 +1858,9 @@ function set_item_label(node, label) {
     console.debug("Setting item label to " + label);
     del_item_from_quicksearch(node);
     node.replaceChild(document.createTextNode(label), node.childNodes[0]);
+    if (node.vars != null) {
+        node.vars["label"] = label;
+    }
     add_item_to_quicksearch(node);
 }
 
