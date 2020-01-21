@@ -19,6 +19,8 @@ var poll_start_time = 0;
 var client_restart_epoch = -1;
 var client_message = "";
 
+var populate_quick_search_value = null;
+
 
 function onMouseUpdate(e) {
     var cnv = document.getElementById("floor_canvas");
@@ -668,6 +670,12 @@ function processJSON(err, reply_data) {
             initial_page_loading = false;
         }
         setTimeout(JsonPollCycle, poll_cur_timeout);
+    }
+    if (populate_quick_search_value) {
+        var e = document.getElementById('quickSearch');
+        e.value = populate_quick_search_value;
+        populate_quick_search_value = null;
+        PerformQuickSearch(e.value);
     }
 }
 
@@ -2203,9 +2211,7 @@ function TextHasText(text, q) {
     return found;
 }
 
-function QuickSearchHandler(e) {
-    // console.log("keyup event detected! coming from this element:", e.target);
-    var q = e.target.value;
+function PerformQuickSearch(q) {
     current_quick_search = q;
     var t = document.getElementById('page_thumbnails'); // .childNodes[1];
     // console.log("Value: ", q);
@@ -2251,4 +2257,10 @@ function QuickSearchHandler(e) {
         searchscreen.style.display = "block";
     }
     set_map_items_visibility();
+}
+
+function QuickSearchHandler(e) {
+    // console.log("keyup event detected! coming from this element:", e.target);
+    var q = e.target.value;
+    PerformQuickSearch(q);
 }

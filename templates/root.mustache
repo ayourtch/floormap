@@ -136,6 +136,10 @@ document.onreadystatechange = function() {
         canvas_activate();
 
         document.addEventListener('keydown', document_keydown, false);
+        var searching_for = location.search.substring(1);
+        if (searching_for != "") {
+            populate_quick_search_value = searching_for;
+        }
 
         JsonPollCycle();
     }
