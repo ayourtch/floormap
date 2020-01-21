@@ -1348,6 +1348,10 @@ function add_new_item(input_field_id) {
 }
 
 function apply_item_style(node) {
+    node.style.backgroundColor = "";
+    node.style.color = "";
+    node.style.border = "";
+    node.style.borderRadius = "";
     if (node.type_object_uuid != null && node.type_object_uuid != node.uuid) {
         // console.log("ITEM " + get_item_label(node) + " Apply type " + node.type_object_uuid);
         apply_item_style_from_type(node, node.type_object_uuid);
