@@ -2287,3 +2287,10 @@ function QuickSearchHandler(e) {
     var q = e.target.value;
     PerformQuickSearch(q);
 }
+
+function ClearQuickSearch() {
+    var el = document.getElementById("quickSearch");
+    el.value = "";
+    PerformQuickSearch("");
+    return false;
+}
