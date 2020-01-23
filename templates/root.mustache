@@ -50,7 +50,7 @@
           <input id="edit_item_meta" type="text" value="" class="textedit" size=15/>
           <input id="edit_item_save" type="button" value="save" onclick="save_item_details('edit_item_name', 'edit_item_desc', 'edit_item_meta')"/>
 {{/auth.groups.administrators}}
-{{#auth.username}}| {{auth.username}} {{#auth.groups.administrators}} ADMIN {{/auth.groups.administrators}}[<a href="/logout">logout</a>] {{/auth.username}} 
+{{#auth.username}}| {{auth.username}} {{#auth.groups.administrators}} <a href="#" id='adminLabel' onclick="clickAdmin(); return false;">ADMIN</a> {{/auth.groups.administrators}}[<a href="/logout">logout</a>] {{/auth.username}} 
 <span id="last_poll_time" class="gradually-red">Never polled</span>
 <span id="last_poll_duration"></span>
   <hr size=1 noshade/>
@@ -128,6 +128,7 @@ document.getElementById("page_1").onclick= function(e) {
 
 document.onreadystatechange = function() {
     if (document.readyState == "complete") {
+        is_mobile = (navigator.userAgent.indexOf("Mobile") != -1);
         var e = document.getElementById('quickSearch');
         e.oninput = QuickSearchHandler;
         e.onpropertychange = e.oninput; // for IE8

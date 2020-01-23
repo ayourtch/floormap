@@ -20,6 +20,21 @@ var client_restart_epoch = -1;
 var client_message = "";
 
 var populate_quick_search_value = null;
+var is_mobile = false;
+var is_xy_locked = true;
+
+function clickAdmin() {
+    lbl = document.getElementById("adminLabel");
+    if (lbl != null) {
+        is_xy_locked = !is_xy_locked;
+        if (is_xy_locked) {
+            lbl.style.backgroundColor = "white";
+        } else {
+            lbl.style.backgroundColor = "red";
+        }
+    }
+
+}
 
 
 function onMouseUpdate(e) {
@@ -403,6 +418,7 @@ function set_map_svg() {
 }
 
 function set_current_map(uuid) {
+    is_xy_locked = true;
     console.log(new Error().stack);
     console.log("SET CURR MAP:" + uuid);
     if (current_set_map_uuid != undefined) {
@@ -1107,7 +1123,11 @@ function dragElement(elmnt) {
         elmnt.onmousedown = dragMouseDown;
         elmnt.ontouchstart = handleTouchStart;
         elmnt.onclick = noop;
+
         document.addEventListener('touchmove', function(event) {
+            if (is_mobile && is_locked) {
+                return;
+            }
             if (event.scale !== 1) {
                 event.preventDefault();
             }
@@ -1212,6 +1232,10 @@ function dragElement(elmnt) {
 
     function handleTouchStart(e) {
         var touches = e.changedTouches;
+        if (is_mobile && is_xy_locked) {
+            return;
+        }
+
         if (event.target.classList.contains('draggable')) {
             e.preventDefault();
         } else {
@@ -2146,6 +2170,9 @@ function add_map_jso(jso) {
     li_node.appendChild(node);
     node.onclick =
         function(e) {
+            if (selectedElement != undefined) {
+                setSelectedElement(undefined)
+            }
             set_current_map(node.uuid);
         };
     /* beautify ignore:start */
