@@ -1,4 +1,6 @@
-default: export-maybe regen-db sqlite-cli import-maybe sqlite
+default:
+	echo "Doing nothing with empty target..."
+old-default: export-maybe regen-db sqlite-cli import-maybe sqlite
 first: first-time regen-db sqlite
 first-time:
 	mkdir db
