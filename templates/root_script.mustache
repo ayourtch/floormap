@@ -303,6 +303,7 @@ var current_set_map_uuid = null;
 var current_set_map2_uuid = null;
 var current_quick_search = "";
 var uploads = new Object();
+var magic_flags = new Object();
 
 function get_floormap_srcX_version(base, uuid, file_version) {
     if (file_version != undefined) {
@@ -1460,6 +1461,10 @@ function apply_item_style_from(node, from_node) {
                     alert("Node links null:" + get_item_label(node));
                 }
             } else if (pp[0] == "type") {
+                if (pp[1] == "flag") {
+                    node.is_magic_flag = true;
+                }
+
                 if (pp[1] == "type" && node == from_node) {
                     node.classList.add("type_type");
                     var dd = document.getElementById("edit_item_type");
@@ -1631,12 +1636,20 @@ function set_item_visibility(node) {
                 node.style["font-weight"] = 'normal';
                 node.style.zIndex = 10;
             }
+            if (node.is_magic_flag) {
+                var label = get_item_label(node);
+                magic_flags[label] = true;
+            }
         }
         // apply_item_style(node);
     } else {
         // node.style.visibility = "hidden";
         node.style.display = "none";
         node.style.zIndex = 10;
+        if (node.is_magic_flag) {
+            var label = get_item_label(node);
+            magic_flags[label] = false;
+        }
     }
     set_item_legend(node, visible)
     redraw_item_arrow(node);
@@ -1647,6 +1660,10 @@ function del_item_accessories(node) {
     var arrow = document.getElementById(arrow_id);
     arrow.outerHTML = "";
     set_item_legend(node, false);
+    if (node.is_magic_flag) {
+        var label = get_item_label(node);
+        magic_flags[label] = false;
+    }
 }
 
 function redraw_item_arrow(node) {
