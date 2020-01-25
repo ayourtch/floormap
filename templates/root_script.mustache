@@ -1661,7 +1661,11 @@ function build_summary_table(full_table) {
         var property = mapnode.uuid;
         var visible = full_table || (property == current_map_uuid);
         var tr_id = property + "_legend";
-        make_legend_table_row(map_legend, tr_id, visible, "- " + get_map_label(mapnode), "count", per_floormap_item_counts[property]);
+        if (full_table) {
+            make_legend_table_row(map_legend, tr_id, visible, "- " + get_map_label(mapnode), "count", per_floormap_item_counts[property]);
+        } else {
+            make_legend_table_row(map_legend, tr_id, visible, "- ", "count", per_floormap_item_counts[property]);
+        }
         grand_total += per_floormap_item_counts[property];
     }
     make_legend_table_row(map_legend, "xxxxxx_total_summary_xxxxxx", full_table, "TOTAL IN ALL LEGENDS", "count", grand_total);
