@@ -370,10 +370,20 @@ function set_map_items_visibility() {
         return;
     }
 
+    per_floormap_item_counts = new Object();
     for (var i = 0; i < elts.length; i++) {
+        var node = elts[i];
+        if (per_floormap_item_counts[node.parent_map_uuid] == undefined) {
+            per_floormap_item_counts[node.parent_map_uuid] = 0;
+        }
         set_item_visibility(elts[i]);
         apply_item_style(elts[i]);
+        if (elts[i].add_to_legend) {
+            per_floormap_item_counts[node.parent_map_uuid]++;
+        }
     }
+
+    build_summary_table(magic_flags["summary"]);
     fixup_legend_table();
 }
 
@@ -1407,6 +1417,7 @@ function apply_item_style(node) {
     node.vars = new Object();
     node.links = new Array();
     if (node.type_object_uuid != null && node.type_object_uuid != node.uuid) {
+        node.add_to_legend = true;
         // console.log("ITEM " + get_item_label(node) + " Apply type " + node.type_object_uuid);
         apply_item_style_from_type(node, node.type_object_uuid);
     }
@@ -1463,6 +1474,13 @@ function apply_item_style_from(node, from_node) {
             } else if (pp[0] == "type") {
                 if (pp[1] == "flag") {
                     node.is_magic_flag = true;
+                }
+
+                if (pp[1] == "type") {
+                    var lbl = get_item_label(from_node);
+                    if (lbl.startsWith("*")) {
+                        node.add_to_legend = false;
+                    }
                 }
 
                 if (pp[1] == "type" && node == from_node) {
@@ -1532,6 +1550,12 @@ function sortTable(table) {
     });
     // put the sorted data back into the table
     data2table(tableBody, tableData);
+}
+
+function show_legend_if_nonempty_or_hide(table) {
+    // get the data from the table cells
+    const tableBody = table.querySelector('tbody')
+    const tableData = table2data(tableBody);
     if (tableData.length == 0) {
         table.style.display = "none";
     } else {
@@ -1560,7 +1584,11 @@ function fixup_legend_table() {
         console.error("No map_legend to sort!");
         return;
     }
-    sortTable(map_legend, 0);
+    if (!magic_flags["summary"]) {
+        sortTable(map_legend, 0);
+    }
+    show_legend_if_nonempty_or_hide(map_legend);
+
     if (current_set_map_uuid != undefined) {
         var el = get_map_from_uuid(current_set_map_uuid);
         var cnv = document.getElementById("floor_canvas");
@@ -1574,6 +1602,73 @@ function fixup_legend_table() {
 }
 
 
+function make_legend_table_row(map_legend, tr_id, visible, val1, val2, val3) {
+    var tr = document.getElementById(tr_id);
+    if (visible) {
+        if (tr == null) {
+            tr = document.createElement("tr");
+            tr.id = tr_id;
+            map_legend.appendChild(tr);
+        } else {
+            tr.innerHTML = "";
+        }
+        var td1 = document.createElement("td");
+        td1.innerHTML = val1;
+        var td2 = document.createElement("td");
+        td2.innerHTML = val2;
+        var td3 = document.createElement("td");
+        td3.innerHTML = val3;
+        tr.appendChild(td1);
+        tr.appendChild(td2);
+        tr.appendChild(td3);
+    } else {
+        if (tr != null) {
+            // need to delete
+            tr.outerHTML = "";
+        }
+    }
+}
+
+function build_summary_table(full_table) {
+    var map_legend = document.getElementById("map_legend");
+    if (map_legend == null) {
+        return;
+    }
+    map_legend = map_legend.querySelector('tbody')
+
+    var map_array = new Array();
+    for (var property in per_floormap_item_counts) {
+        if (!per_floormap_item_counts.hasOwnProperty(property)) {
+            continue;
+        }
+        var mapnode = get_map_from_uuid(property);
+        if (mapnode == null) {
+            continue;
+        }
+        map_array[mapnode.sort_order] = mapnode;
+    }
+
+    var grand_total = 0;
+
+    for (var i = 0; i < map_array.length; i++) {
+        var mapnode = map_array[i];
+        if (mapnode == null) {
+            continue;
+        }
+        if (full_table && (mapnode.uuid == current_map_uuid)) {
+            continue;
+        }
+        var property = mapnode.uuid;
+        var visible = full_table || (property == current_map_uuid);
+        var tr_id = property + "_legend";
+        make_legend_table_row(map_legend, tr_id, visible, "- " + get_map_label(mapnode), "count", per_floormap_item_counts[property]);
+        grand_total += per_floormap_item_counts[property];
+    }
+    make_legend_table_row(map_legend, "xxxxxx_total_summary_xxxxxx", full_table, "TOTAL IN ALL LEGENDS", "count", grand_total);
+
+
+}
+
 function set_item_legend(node, show) {
     var map_legend = document.getElementById("map_legend");
     if (map_legend == null) {
@@ -1586,8 +1681,10 @@ function set_item_legend(node, show) {
     if (show && (type_uuid != null)) {
         var type_node = get_item_from_uuid(type_uuid);
         if (type_node != null) {
-            var lbl = get_item_label(type_node);
-            if (!lbl.startsWith("*")) {
+            // var lbl = get_item_label(type_node);
+            // if (!lbl.startsWith("*")) {
+            if (node.add_to_legend) {
+                var lbl = get_item_label(type_node);
                 // need to show/update
                 if (tr == null) {
                     tr = document.createElement("tr");
@@ -1898,9 +1995,15 @@ function add_item_jso(jso) {
 function set_item_label(node, label) {
     console.debug("Setting item label to " + label);
     del_item_from_quicksearch(node);
+    if (magic_flags[label]) {
+        magic_flags[label] = false;
+    }
     node.replaceChild(document.createTextNode(label), node.childNodes[0]);
     if (node.vars != null) {
         node.vars["label"] = label;
+    }
+    if (node.is_magic_flag) {
+        magic_flags[label] = true;
     }
     add_item_to_quicksearch(node);
 }
