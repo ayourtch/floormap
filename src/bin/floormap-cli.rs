@@ -1,10 +1,9 @@
 extern crate clap;
 extern crate csv;
 extern crate image;
-extern crate serde;
 extern crate zip;
 #[macro_use]
-extern crate serde_derive;
+extern crate serde;
 
 use clap::{App, Arg, SubCommand};
 

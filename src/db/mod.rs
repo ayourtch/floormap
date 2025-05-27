@@ -3,6 +3,7 @@ use super::*;
 
 use std::io::Read;
 use std::sync::{Arc, Mutex};
+use serde::{Serialize, Deserialize};
 
 use router::Router;
 

@@ -1,4 +1,6 @@
-table! {
+// @generated automatically by Diesel CLI.
+
+diesel::table! {
     Comments (RecordUUID) {
         RecordUUID -> Text,
         Deleted -> Bool,
@@ -7,7 +9,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     FloorMaps (FloorMapUUID) {
         FloorMapUUID -> Text,
         Deleted -> Bool,
@@ -32,7 +34,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     FloorPlans (FloorPlanUUID) {
         FloorPlanUUID -> Text,
         Deleted -> Bool,
@@ -46,7 +48,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     Jobs (RecordUUID) {
         RecordUUID -> Text,
         JobGrouName -> Text,
@@ -69,7 +71,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     Logs (LogUUID) {
         LogUUID -> Text,
         LogTimestamp -> Timestamp,
@@ -85,7 +87,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     MapObjects (MapObjectUUID) {
         MapObjectUUID -> Text,
         Deleted -> Bool,
@@ -108,7 +110,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     Services (ServiceUUID) {
         ServiceUUID -> Text,
         Deleted -> Bool,
@@ -118,7 +120,7 @@ table! {
     }
 }
 
-table! {
+diesel::table! {
     Uploads (UploadUUID) {
         UploadUUID -> Text,
         RelatedToUUID -> Text,
@@ -142,6 +144,6 @@ table! {
     }
 }
 
-allow_tables_to_appear_in_same_query!(
+diesel::allow_tables_to_appear_in_same_query!(
     Comments, FloorMaps, FloorPlans, Jobs, Logs, MapObjects, Services, Uploads,
 );

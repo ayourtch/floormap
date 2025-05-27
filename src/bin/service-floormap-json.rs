@@ -10,8 +10,8 @@ extern crate router;
 extern crate staticfile;
 extern crate urlencoded;
 extern crate uuid;
-#[macro_use]
-extern crate rsp10;
+// #[macro_use]
+// extern crate rsp10;
 
 use uuid::Uuid;
 
@@ -36,8 +36,6 @@ use std::sync::{Arc, Mutex};
 use router::Router;
 
 #[macro_use]
-extern crate serde_derive;
-
 extern crate serde;
 extern crate serde_json;
 #[macro_use]
@@ -46,11 +44,47 @@ extern crate params;
 
 use chrono::{NaiveDate, NaiveDateTime};
 
-mod pages;
+use iron::Handler;
+/*
+trait ReadToString {
+  fn read_to_string(&self, &mut result: Option<String>)
+
+}
+impl ReadAsString for iron::request::Body {
+}
+*/
+
+fn run_http_server<H: Handler>(service_name: &str, port: u16, handler: H) {
+    use iron::Timeouts;
+    use std::env;
+    use std::time::Duration;
+
+    let bind_ip = env::var("BIND_IP").unwrap_or_else(|_| "127.0.0.1".to_string());
+    let bind_port_s = env::var("BIND_PORT").unwrap_or(port.to_string());
+    let bind_port = bind_port_s.parse::<u16>().unwrap_or(port);
+    let mut iron = Iron::new(handler);
+    // let threads_s = env::var("IRON_HTTP_THREADS").unwrap_or("1".to_string());
+    // let threads = threads_s.parse::<usize>().unwrap_or(1);
+    // iron.threads = threads;
+/*
+    iron.timeouts = Timeouts {
+        keep_alive: Some(Duration::from_millis(10)),
+        read: Some(Duration::from_secs(10)),
+        write: Some(Duration::from_secs(10)),
+    };
+*/
+
+    println!(
+        "HTTP server for {} starting on {}:{} without address/port reuse",
+        service_name, &bind_ip, bind_port
+    );
+    iron.http(&format!("{}:{}", &bind_ip, bind_port));
+}
+
 
 fn main() {
     use floormap::flextimestamp::FlexTimestamp;
-    let mut router = pages::get_router();
+    let mut router = Router::new();
 
     use mount::Mount;
     use staticfile::Static;
@@ -119,6 +153,8 @@ fn main() {
         "floormap image thumbnails page",
     );
 
+/* FIXME : add authentication
+
     macro_rules! page_requires_auth {
         ( $req: ident => $auth: ident) => {
             use crate::rsp10::RspUserAuth;
@@ -134,12 +170,13 @@ fn main() {
         ( $auth: ident) => {
             if !$auth.is_admin() {
                 return Ok(Response::with((
-                    status::BadRequest,
+                    StatusCode::BAD_REQUEST,
                     format!("Insufficient privileges"),
                 )));
             }
         };
     }
+*/
 
     fn insert_new_service() {
         use schema::Services::dsl::*;
@@ -178,7 +215,7 @@ fn main() {
         use iron::headers::{Connection, ContentType};
         use std::str::FromStr;
 
-        page_requires_auth!(req => auth);
+        // page_requires_auth!(req => auth);
 
         let ref query_ts = req
             .extensions
@@ -201,8 +238,8 @@ fn main() {
         use floormap::db::db_set_mapobject_xy;
         use std::str::FromStr;
 
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -232,8 +269,8 @@ fn main() {
     fn api_http_put_floormaps_clip(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_clip;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -263,8 +300,8 @@ fn main() {
     fn api_http_put_floormaps_legend(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_legend;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -293,8 +330,8 @@ fn main() {
     fn api_http_put_mapobject_delete(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_mapobject_deleted;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -319,8 +356,8 @@ fn main() {
     fn api_http_put_floormap_delete(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_deleted;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -345,8 +382,8 @@ fn main() {
     fn api_http_put_floormap_name(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_set_floormap_name;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -370,8 +407,8 @@ fn main() {
 
     fn api_http_put_floormap_copy(req: &mut Request) -> IronResult<Response> {
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -446,8 +483,8 @@ fn main() {
         use floormap::db::db_set_mapobject_name_description_meta;
         use floormap::db::db_set_mapobject_typeobjectuuid;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -480,8 +517,8 @@ fn main() {
     fn api_http_put_new_mapobject(req: &mut Request) -> IronResult<Response> {
         use floormap::db::db_insert_new_mapobject;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
-        page_requires_admin!(auth);
+        // page_requires_auth!(req => auth);
+        // page_requires_admin!(auth);
 
         let mut payload = String::new();
         req.body.read_to_string(&mut payload).unwrap();
@@ -517,7 +554,7 @@ fn main() {
         use iron::headers::{Connection, ContentType};
         use std::fs::File;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
+        // page_requires_auth!(req => auth);
 
         let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
         let map_uuid = Uuid::from_str(map_str).unwrap();
@@ -563,7 +600,7 @@ fn main() {
         use iron::headers::{Connection, ContentType};
         use std::fs::File;
         use std::str::FromStr;
-        page_requires_auth!(req => auth);
+        // page_requires_auth!(req => auth);
 
         let map_str = "1e79ba6e-fb3a-11e9-b124-03c84357f69a";
         let map_uuid = Uuid::from_str(map_str).unwrap();
@@ -603,6 +640,10 @@ fn main() {
         Ok(resp)
     }
 
-    let mut s = rsp10::RspServer::new();
-    s.run(router, "MyFloorMap JSON/HTML service", 4242);
+ let mut mount = Mount::new();
+        mount.mount("/", router);
+        mount.mount("/static/", Static::new(Path::new("staticfiles/")));
+        let mut ch = Chain::new(mount);
+
+    run_http_server("MyFloorMap JSON/HTML service", 4242, ch);
 }

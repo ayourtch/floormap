@@ -20,6 +20,7 @@ DIESEL_CLI=$(which diesel)
 if [ "x${DIESEL_CLI}" = "x" ]; then
   echo Installing diesel_cli
   cargo install diesel_cli --no-default-features --features sqlite,postgres
+  cargo install diesel_cli_ext
 fi
 
 

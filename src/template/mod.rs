@@ -29,12 +29,16 @@ pub fn get_page_mapbuilder(req: &mut Request, page_title: &str) -> mustache::Map
 }
 
 fn get_real_ip(req: &mut Request) -> Option<String> {
+/*
+    FIXME
     header! { (XRealIP, "X-Real-IP") => [String] }
     // let x_real_ip = req.headers.get_raw("X-Real-IP");
     match req.headers.get::<XRealIP>() {
         Some(xri) => Some(xri.clone().to_string()),
         None => None, // "0.0.0.0".to_string(),
     }
+*/
+    None
 }
 
 pub fn maybe_compile_template(name: &str) -> Result<Template, mustache::Error> {

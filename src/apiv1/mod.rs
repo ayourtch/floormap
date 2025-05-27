@@ -14,6 +14,7 @@ use chrono::{NaiveDate, NaiveDateTime};
 use flextimestamp::FlexTimestamp;
 use flexuuid::FlexUuid;
 use uuid::Uuid;
+use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct ApiV1ServiceRecord {
